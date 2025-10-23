@@ -226,7 +226,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const forecastedTotalSpending = dailyAvgSpending * totalDaysInMonthForForecast;
   const forecastedRemainingBalance = totalBudgeted - forecastedTotalSpending;
 
-  const { runOutMessage, runOutColor, runOutIcon } = useMemo(() => {
+  const { runOutMessage, runOutColor, runOutIcon: RunOutIcon } = useMemo(() => {
     let message = '';
     let color = 'text-foreground';
     let icon: LucideIcon = Lightbulb;
@@ -460,7 +460,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       {/* Smart Forecast Card */}
       <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
         <div className="flex items-center space-x-3 mb-3">
-          {runOutIcon && <runOutIcon className={`w-5 h-5 ${runOutColor}`} />}
+          {RunOutIcon && <RunOutIcon className={`w-5 h-5 ${runOutColor}`} />}
           <h3 className={`text-base sm:text-lg font-semibold ${runOutColor}`}>Smart Forecast</h3>
         </div>
         <p className={`text-sm sm:text-base ${runOutColor} mb-4`}>{runOutMessage}</p>
@@ -472,7 +472,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
               <LineChart data={spendingForecastChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} />
-                <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} format={(value) => formatCurrency(Number(value))} />
+                <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} tickFormatter={(value) => formatCurrency(Number(value))} />
                 <Tooltip
                   contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                   formatter={(value) => formatCurrency(Number(value))}
