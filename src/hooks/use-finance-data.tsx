@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'; // Added useMemo
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'; // Added useRef
 import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { isTransactionInCurrentWeek, isTransactionInPreviousWeek, isTransactionInCurrentMonth, getStartOfCurrentWeek, getEndOfCurrentWeek, getStartOfPreviousWeek, getEndOfPreviousWeek } from '@/lib/utils'; // Import new utils
-import { format, parseISO, getDaysInMonth } from 'date-fns'; // Added getDaysInMonth
+import { isTransactionInCurrentWeek, isTransactionInPreviousWeek, isTransactionInCurrentMonth, getStartOfCurrentWeek, getEndOfCurrentWeek, getStartOfPreviousWeek, getEndOfPreviousWeek } from '@/lib/utils';
+import { format, parseISO, getDaysInMonth } from 'date-fns';
 
 // TypeScript Interfaces (re-defined for clarity within the hook context)
 interface Transaction {
@@ -62,8 +62,8 @@ interface BudgetSettings {
   previousMonthLeftover: number;
   ownerUid: string;
   totalBudgeted?: number;
-  microInvestingEnabled?: boolean; // New field
-  microInvestingPercentage?: number; // New field
+  microInvestingEnabled?: boolean;
+  microInvestingPercentage?: number;
 }
 
 export const useFinanceData = (userUid: string | null) => {
@@ -75,6 +75,9 @@ export const useFinanceData = (userUid: string | null) => {
   const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ id: '', rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // New ref to track if default budget settings have been attempted to be created
+  const hasCreatedDefaultBudgetSettings = useRef(false);
 
   useEffect(() => {
     if (!userUid) {
@@ -114,21 +117,26 @@ export const useFinanceData = (userUid: string | null) => {
     const unsubscribeBudgetSettings = onSnapshot(qBudgetSettings, (snapshot) => {
       if (!snapshot.empty) {
         setBudgetSettings({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as BudgetSettings);
+        hasCreatedDefaultBudgetSettings.current = true; // Mark as true if settings are found
       } else {
-        // If no settings exist, create default ones
-        addDoc(budgetSettingsRef, {
-          ownerUid: userUid,
-          rolloverEnabled: true,
-          previousMonthLeftover: 0,
-          totalBudgeted: 0,
-          microInvestingEnabled: true, // Default to enabled
-          microInvestingPercentage: 30, // Default to 30%
-        }).then(docRef => {
-          setBudgetSettings({ id: docRef.id, ownerUid: userUid, rolloverEnabled: true, previousMonthLeftover: 0, totalBudgeted: 0, microInvestingEnabled: true, microInvestingPercentage: 30 });
-        }).catch(err => {
-          console.error("Error creating default budget settings:", err);
-          toast.error("Failed to create default budget settings.");
-        });
+        // If no settings exist AND we haven't tried to create them yet
+        if (!hasCreatedDefaultBudgetSettings.current) {
+          hasCreatedDefaultBudgetSettings.current = true; // Mark immediately to prevent re-entry
+          addDoc(budgetSettingsRef, {
+            ownerUid: userUid,
+            rolloverEnabled: true,
+            previousMonthLeftover: 0,
+            totalBudgeted: 0,
+            microInvestingEnabled: true,
+            microInvestingPercentage: 30,
+          }).then(() => {
+            // No need to set state here, onSnapshot will pick it up
+          }).catch(err => {
+            console.error("Error creating default budget settings:", err);
+            toast.error("Failed to create default budget settings.");
+            hasCreatedDefaultBudgetSettings.current = false; // Reset if creation failed
+          });
+        }
       }
     }, (err) => {
       console.error("Error fetching budget settings:", err);
@@ -182,12 +190,14 @@ export const useFinanceData = (userUid: string | null) => {
       toast.error("Authentication required to delete data.");
       return;
     }
-    try {
-      await deleteDoc(doc(db, collectionName, id));
-      toast.success(`${collectionName.slice(0, -1)} deleted successfully!`);
-    } catch (e) {
-      console.error(`Error deleting ${collectionName.slice(0, -1)}:`, e);
-      toast.error(`Failed to delete ${collectionName.slice(0, -1)}.`);
+    if (confirm('Are you sure you want to delete this item?')) {
+      try {
+        await deleteDoc(doc(db, collectionName, id));
+        toast.success(`${collectionName.slice(0, -1)} deleted successfully!`);
+      } catch (e) {
+        console.error(`Error deleting ${collectionName.slice(0, -1)}:`, e);
+        toast.error(`Failed to delete ${collectionName.slice(0, -1)}.`);
+      }
     }
   }, [userUid]);
 
@@ -265,6 +275,6 @@ export const useFinanceData = (userUid: string | null) => {
     remainingBudgetMonthly,
     weeklyBudgetTarget,
     topSpendingCategories,
-    currentMonthTransactions, // Export for forecast in Index.tsx
+    currentMonthTransactions,
   };
 };
