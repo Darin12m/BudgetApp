@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronRight, Palette } from 'lucide-react';
+import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronRight, Palette, Zap } from 'lucide-react'; // Added Zap icon
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,8 @@ interface SettingsPageProps {
 const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [monthlyBudgetInput, setMonthlyBudgetInput] = useState<string>('');
+  const [microInvestingEnabled, setMicroInvestingEnabled] = useState<boolean>(true);
+  const [microInvestingPercentage, setMicroInvestingPercentage] = useState<string>('30');
 
   const { budgetSettings, updateDocument, loading: financeLoading } = useFinanceData(userUid);
 
@@ -42,6 +44,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
   useEffect(() => {
     if (budgetSettings && budgetSettings.id) {
       setMonthlyBudgetInput(budgetSettings.totalBudgeted?.toString() || '');
+      setMicroInvestingEnabled(budgetSettings.microInvestingEnabled ?? true); // Default to true
+      setMicroInvestingPercentage(budgetSettings.microInvestingPercentage?.toString() || '30');
     }
   }, [budgetSettings]);
 
@@ -75,6 +79,28 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
     } catch (error) {
       console.error("Error updating monthly budget:", error);
       toast.error("Failed to update monthly budget.");
+    }
+  };
+
+  const handleSaveMicroInvestingSettings = async () => {
+    if (!userUid || !budgetSettings?.id) {
+      toast.error("User not authenticated or budget settings not loaded.");
+      return;
+    }
+    const newPercentage = parseFloat(microInvestingPercentage);
+    if (isNaN(newPercentage) || newPercentage < 0 || newPercentage > 100) {
+      toast.error("Please enter a valid percentage between 0 and 100.");
+      return;
+    }
+    try {
+      await updateDocument('budgetSettings', budgetSettings.id, {
+        microInvestingEnabled: microInvestingEnabled,
+        microInvestingPercentage: newPercentage,
+      });
+      toast.success("Micro-investing settings updated successfully!");
+    } catch (error) {
+      console.error("Error updating micro-investing settings:", error);
+      toast.error("Failed to update micro-investing settings.");
     }
   };
 
@@ -136,11 +162,51 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                 placeholder="e.g., 3000.00"
                 className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
               />
-              <Button onClick={handleSaveMonthlyBudget} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90">
-                Save Budget
+              <Button onClick={handleSaveMonthlyBudget} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground">
+                Save Monthly Budget
               </Button>
             </div>
             {/* Add other budget settings here, e.g., rollover toggle */}
+          </CardContent>
+        </Card>
+
+        {/* Micro-Investing Settings */}
+        <Card className="card-shadow border-none bg-card border border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center">
+              <Zap className="w-5 h-5 mr-2 text-muted-foreground" /> Micro-Investing
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="micro-investing-toggle" className="flex items-center text-base">
+                Enable Suggestions
+              </Label>
+              <Switch
+                id="micro-investing-toggle"
+                checked={microInvestingEnabled}
+                onCheckedChange={setMicroInvestingEnabled}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="micro-investing-percentage" className="text-base">
+                Suggestion Percentage (%)
+              </Label>
+              <Input
+                id="micro-investing-percentage"
+                type="number"
+                step="1"
+                min="0"
+                max="100"
+                value={microInvestingPercentage}
+                onChange={(e) => setMicroInvestingPercentage(e.target.value)}
+                placeholder="e.g., 30"
+                className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
+              />
+              <Button onClick={handleSaveMicroInvestingSettings} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground">
+                Save Micro-Investing Settings
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

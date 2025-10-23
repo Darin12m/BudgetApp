@@ -9,11 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useFinanceData } from '@/hooks/use-finance-data';
 import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
-import { formatCurrency, calculateGainLoss } from '@/lib/utils';
+import { formatCurrency, calculateGainLoss, getStartOfCurrentWeek, getEndOfCurrentWeek } from '@/lib/utils'; // Added getStartOfCurrentWeek, getEndOfCurrentWeek
 import RemainingBudgetCard from '@/components/RemainingBudgetCard';
 import QuickAddTransactionModal from '@/components/QuickAddTransactionModal';
 import AddInvestmentModal from '@/components/AddInvestmentModal';
 import BottomNavBar from '@/components/BottomNavBar';
+import MicroInvestingSuggestionCard from '@/components/MicroInvestingSuggestionCard'; // New import
+import SmartFinancialCoachCard from '@/components/SmartFinancialCoachCard'; // New import
+import { format } from 'date-fns'; // Added format for date display
 
 interface IndexPageProps {
   userUid: string | null;
@@ -29,6 +32,15 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
     addDocument,
     loading: financeLoading,
     error: financeError,
+    // New derived values from useFinanceData
+    currentWeekSpending,
+    previousWeekSpending,
+    totalBudgetedMonthly,
+    totalSpentMonthly,
+    remainingBudgetMonthly,
+    weeklyBudgetTarget,
+    topSpendingCategories,
+    currentMonthTransactions,
   } = useFinanceData(userUid);
 
   const {
@@ -43,24 +55,13 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false);
   const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
+  const [showMicroInvestingSuggestion, setShowMicroInvestingSuggestion] = useState(true); // State to dismiss suggestion
 
   // --- Derived Budget Values ---
-  const totalBudgeted = useMemo(() =>
-    (budgetSettings?.totalBudgeted || 0) + categories.reduce((sum, cat) => sum + cat.budgeted, 0),
-    [categories, budgetSettings?.totalBudgeted]
-  );
-
-  const totalSpent = useMemo(() =>
-    categories.reduce((sum, cat) => sum + cat.spent, 0),
-    [categories]
-  );
-
-  const remainingBudget = useMemo(() =>
-    budgetSettings.rolloverEnabled
-      ? totalBudgeted - totalSpent + budgetSettings.previousMonthLeftover
-      : totalBudgeted - totalSpent,
-    [totalBudgeted, totalSpent, budgetSettings]
-  );
+  // Using totalBudgetedMonthly and totalSpentMonthly from useFinanceData
+  const totalBudgeted = totalBudgetedMonthly;
+  const totalSpent = totalSpentMonthly;
+  const remainingBudget = remainingBudgetMonthly;
 
   const today = new Date();
   const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -144,11 +145,32 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
     await updateInvestment(id, updatedData);
   }, [updateInvestment]);
 
+  const handleMicroInvest = useCallback(async (amount: number, assetName: string, assetType: 'Stock' | 'Crypto', symbol?: string, coingeckoId?: string) => {
+    // For simplicity, we'll use the current price as buy price for micro-investments
+    // In a real app, you'd fetch the live price at the moment of investment
+    const currentPrice = existingInvestments.find(inv => inv.name === assetName)?.currentPrice || 1; // Default to 1 if not found
+    const quantity = amount / currentPrice;
+
+    await addInvestment({
+      name: assetName,
+      type: assetType,
+      quantity: quantity,
+      buyPrice: currentPrice,
+      currentPrice: currentPrice, // Will be updated by live price fetch
+      datePurchased: format(new Date(), 'yyyy-MM-dd'),
+      symbol: symbol,
+      coingeckoId: coingeckoId,
+    });
+  }, [addInvestment, existingInvestments]);
+
   const isLoading = financeLoading || investmentsLoading;
   const hasError = financeError || investmentsError;
 
   const portfolioGainLossColor = overallPortfolioSummary.totalGainLossPercentage >= 0 ? 'text-emerald' : 'text-destructive';
   const PortfolioGainLossIcon: LucideIcon = overallPortfolioSummary.totalGainLossPercentage >= 0 ? TrendingUp : TrendingDown;
+
+  const currentWeekStart = format(getStartOfCurrentWeek(), 'MMM dd');
+  const currentWeekEnd = format(getEndOfCurrentWeek(), 'MMM dd');
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20 sm:pb-0">
@@ -170,6 +192,29 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
         {!isLoading && !hasError && (
           <>
+            {/* Smart Financial Coach Card */}
+            <SmartFinancialCoachCard
+              currentWeekSpending={currentWeekSpending}
+              previousWeekSpending={previousWeekSpending}
+              topSpendingCategories={topSpendingCategories}
+              totalBudgetedMonthly={totalBudgetedMonthly}
+              totalSpentMonthly={totalSpentMonthly}
+              currentMonthTransactions={currentMonthTransactions}
+            />
+
+            {/* Micro-Investing Suggestion Card */}
+            {showMicroInvestingSuggestion && (
+              <MicroInvestingSuggestionCard
+                weeklyRemainingBudget={weeklyBudgetTarget - currentWeekSpending} // Simplified remaining for suggestion
+                weeklyBudgetTarget={weeklyBudgetTarget}
+                microInvestingPercentage={budgetSettings.microInvestingPercentage || 30}
+                microInvestingEnabled={budgetSettings.microInvestingEnabled ?? true}
+                existingInvestments={investments}
+                onInvest={handleMicroInvest}
+                onDismiss={() => setShowMicroInvestingSuggestion(false)}
+              />
+            )}
+
             {/* Monthly Remaining Budget Card */}
             <RemainingBudgetCard
               totalBudgeted={totalBudgeted}
