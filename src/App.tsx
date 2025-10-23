@@ -8,10 +8,10 @@ import NotFound from "./pages/NotFound";
 import BudgetApp from "./pages/BudgetApp";
 import InvestmentsPage from "./pages/Investments";
 import SettingsPage from "./pages/Settings";
-import LoginPage from "./pages/Login"; // Import the new Login page
+import LoginPage from "./pages/Login";
 import { useEffect, useState } from "react";
 import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged, User, setPersistence, browserLocalPersistence } from "firebase/auth"; // Import setPersistence and browserLocalPersistence
 
 const queryClient = new QueryClient();
 
@@ -35,20 +35,32 @@ const App = () => {
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && !user.isAnonymous) {
-        // User is signed in and is NOT anonymous
-        setUserUid(user.uid);
-        setIsAuthenticated(true);
-      } else {
-        // No user is signed in, or it's an anonymous user
-        setUserUid(null);
-        setIsAuthenticated(false);
-      }
-      setAuthLoading(false);
-    });
+    const setupAuth = async () => {
+      try {
+        // Set persistence to local storage
+        await setPersistence(auth, browserLocalPersistence);
 
-    return () => unsubscribe(); // Clean up the listener
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user && !user.isAnonymous) {
+            // User is signed in and is NOT anonymous
+            setUserUid(user.uid);
+            setIsAuthenticated(true);
+          } else {
+            // No user is signed in, or it's an anonymous user
+            setUserUid(null);
+            setIsAuthenticated(false);
+          }
+          setAuthLoading(false);
+        });
+        return () => unsubscribe(); // Clean up the listener
+      } catch (error) {
+        console.error("Error setting Firebase persistence:", error);
+        setAuthLoading(false);
+        // Handle error, e.g., show a message to the user
+      }
+    };
+
+    setupAuth();
   }, []);
 
   if (authLoading) {
