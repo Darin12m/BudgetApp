@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 // Firebase imports
 import { db, auth } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 // TypeScript Interfaces
@@ -17,6 +17,7 @@ interface Transaction {
   category: string;
   status: 'pending' | 'cleared';
   account: string;
+  ownerUid: string; // Added ownerUid
 }
 
 interface Category {
@@ -26,6 +27,7 @@ interface Category {
   spent: number;
   color: string;
   emoji: string;
+  ownerUid: string; // Added ownerUid
 }
 
 interface Account {
@@ -34,6 +36,7 @@ interface Account {
   balance: number;
   type: 'checking' | 'savings' | 'credit' | 'investment';
   lastUpdated: string;
+  ownerUid: string; // Added ownerUid
 }
 
 interface Goal {
@@ -42,6 +45,7 @@ interface Goal {
   target: number;
   current: number;
   color: string;
+  ownerUid: string; // Added ownerUid
 }
 
 interface RecurringTransaction {
@@ -52,6 +56,7 @@ interface RecurringTransaction {
   frequency: 'Monthly' | 'Weekly' | 'Yearly';
   nextDate: string;
   emoji: string;
+  ownerUid: string; // Added ownerUid
 }
 
 interface BudgetSettings {
@@ -159,9 +164,12 @@ const deleteRecurringTransaction = async (id: string): Promise<void> => {
   await deleteDoc(doc(recurringTransactionsCollection, id));
 };
 
+interface FinanceDataProps {
+  userUid: string | null;
+}
 
 // Custom Hooks
-const useFinanceData = () => {
+const useFinanceData = ({ userUid }: FinanceDataProps) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -172,6 +180,12 @@ const useFinanceData = () => {
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
 
   useEffect(() => {
+    if (!userUid) {
+      setLoading(false);
+      setError("User not authenticated.");
+      return;
+    }
+
     const unsubscribes: (() => void)[] = [];
     let initialLoadCount = 0;
     const totalCollections = 5;
@@ -191,33 +205,33 @@ const useFinanceData = () => {
 
     const handleError = (err: any, collectionName: string) => {
       console.error(`Firebase error for ${collectionName}:`, err);
-      setError(`Failed to load ${collectionName}. Please check your Firebase connection.`);
+      setError(`Failed to load ${collectionName}. Please check your Firebase connection and security rules.`);
       setLoading(false);
     };
 
-    unsubscribes.push(onSnapshot(query(transactionsCollection, orderBy('date', 'desc')), 
+    unsubscribes.push(onSnapshot(query(transactionsCollection, where('ownerUid', '==', userUid), orderBy('date', 'desc')), 
       (snapshot) => handleSnapshot<Transaction>(snapshot, setTransactions, 'transactions'),
       (err) => handleError(err, 'transactions')
     ));
-    unsubscribes.push(onSnapshot(query(categoriesCollection, orderBy('name')), 
+    unsubscribes.push(onSnapshot(query(categoriesCollection, where('ownerUid', '==', userUid), orderBy('name')), 
       (snapshot) => handleSnapshot<Category>(snapshot, setCategories, 'categories'),
       (err) => handleError(err, 'categories')
     ));
-    unsubscribes.push(onSnapshot(query(accountsCollection, orderBy('name')), 
+    unsubscribes.push(onSnapshot(query(accountsCollection, where('ownerUid', '==', userUid), orderBy('name')), 
       (snapshot) => handleSnapshot<Account>(snapshot, setAccounts, 'accounts'),
       (err) => handleError(err, 'accounts')
     ));
-    unsubscribes.push(onSnapshot(query(goalsCollection, orderBy('name')), 
+    unsubscribes.push(onSnapshot(query(goalsCollection, where('ownerUid', '==', userUid), orderBy('name')), 
       (snapshot) => handleSnapshot<Goal>(snapshot, setGoals, 'goals'),
       (err) => handleError(err, 'goals')
     ));
-    unsubscribes.push(onSnapshot(query(recurringTransactionsCollection, orderBy('name')), 
+    unsubscribes.push(onSnapshot(query(recurringTransactionsCollection, where('ownerUid', '==', userUid), orderBy('name')), 
       (snapshot) => handleSnapshot<RecurringTransaction>(snapshot, setRecurringTransactions, 'recurringTransactions'),
       (err) => handleError(err, 'recurringTransactions')
     ));
 
     return () => unsubscribes.forEach(unsub => unsub());
-  }, []);
+  }, [userUid]);
 
   return {
     transactions,
@@ -228,19 +242,19 @@ const useFinanceData = () => {
     loading,
     error,
     // CRUD functions
-    addTransaction,
+    addTransaction: (data: Omit<Transaction, 'id' | 'ownerUid'>) => addTransaction({ ...data, ownerUid: userUid! }),
     updateTransaction,
     deleteTransaction,
-    addCategory,
+    addCategory: (data: Omit<Category, 'id' | 'ownerUid'>) => addCategory({ ...data, ownerUid: userUid! }),
     updateCategory,
     deleteCategory,
-    addAccount,
+    addAccount: (data: Omit<Account, 'id' | 'ownerUid'>) => addAccount({ ...data, ownerUid: userUid! }),
     updateAccount,
     deleteAccount,
-    addGoal,
+    addGoal: (data: Omit<Goal, 'id' | 'ownerUid'>) => addGoal({ ...data, ownerUid: userUid! }),
     updateGoal,
     deleteGoal,
-    addRecurringTransaction,
+    addRecurringTransaction: (data: Omit<RecurringTransaction, 'id' | 'ownerUid'>) => addRecurringTransaction({ ...data, ownerUid: userUid! }),
     updateRecurringTransaction,
     deleteRecurringTransaction,
   };
@@ -262,7 +276,11 @@ const getHealthStatus = (spent: number, budgeted: number): HealthStatus => {
   return { status: 'good', color: 'text-green-500', bg: 'bg-green-50' };
 };
 
-const FinanceFlow: React.FC = () => {
+interface BudgetAppProps {
+  userUid: string | null;
+}
+
+const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [selectedMonth, setSelectedMonth] = useState<string>('October 2025'); // This should be dynamic
@@ -292,7 +310,7 @@ const FinanceFlow: React.FC = () => {
     addAccount, updateAccount, deleteAccount,
     addGoal, updateGoal, deleteGoal,
     addRecurringTransaction, updateRecurringTransaction, deleteRecurringTransaction,
-  } = useFinanceData();
+  } = useFinanceData({ userUid }); // Pass userUid to the hook
 
   // Calculate total recurring expenses
   const totalRecurring = useMemo(() => 

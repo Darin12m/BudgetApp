@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 
 // Firebase imports
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where, onSnapshot } from 'firebase/firestore';
 
 // --- Interfaces ---
 interface Investment {
@@ -25,6 +25,7 @@ interface Investment {
   buyPrice: number;
   currentPrice: number;
   datePurchased: string; // YYYY-MM-DD
+  ownerUid: string; // Added ownerUid
 }
 
 interface PortfolioSummary {
@@ -55,12 +56,12 @@ interface TopPerformerData {
 
 // --- Mock Data (as fallback if Firebase is empty) ---
 const MOCK_INVESTMENTS: Investment[] = [
-  { id: 'mock-1', name: 'AAPL', type: 'Stock', quantity: 10, buyPrice: 150, currentPrice: 175, datePurchased: '2023-01-15' },
-  { id: 'mock-2', name: 'GOOGL', type: 'Stock', quantity: 5, buyPrice: 100, currentPrice: 110, datePurchased: '2023-03-20' },
-  { id: 'mock-3', name: 'MSFT', type: 'Stock', quantity: 8, buyPrice: 250, currentPrice: 240, datePurchased: '2023-02-10' },
-  { id: 'mock-4', name: 'BTC', type: 'Crypto', quantity: 0.5, buyPrice: 30000, currentPrice: 35000, datePurchased: '2023-05-01' },
-  { id: 'mock-5', name: 'ETH', type: 'Crypto', quantity: 2, buyPrice: 1800, currentPrice: 1700, datePurchased: '2023-06-10' },
-  { id: 'mock-6', name: 'AMZN', type: 'Stock', quantity: 3, buyPrice: 120, currentPrice: 130, datePurchased: '2023-04-05' },
+  { id: 'mock-1', name: 'AAPL', type: 'Stock', quantity: 10, buyPrice: 150, currentPrice: 175, datePurchased: '2023-01-15', ownerUid: 'mock' },
+  { id: 'mock-2', name: 'GOOGL', type: 'Stock', quantity: 5, buyPrice: 100, currentPrice: 110, datePurchased: '2023-03-20', ownerUid: 'mock' },
+  { id: 'mock-3', name: 'MSFT', type: 'Stock', quantity: 8, buyPrice: 250, currentPrice: 240, datePurchased: '2023-02-10', ownerUid: 'mock' },
+  { id: 'mock-4', name: 'BTC', type: 'Crypto', quantity: 0.5, buyPrice: 30000, currentPrice: 35000, datePurchased: '2023-05-01', ownerUid: 'mock' },
+  { id: 'mock-5', name: 'ETH', type: 'Crypto', quantity: 2, buyPrice: 1800, currentPrice: 1700, datePurchased: '2023-06-10', ownerUid: 'mock' },
+  { id: 'mock-6', name: 'AMZN', type: 'Stock', quantity: 3, buyPrice: 120, currentPrice: 130, datePurchased: '2023-04-05', ownerUid: 'mock' },
 ];
 
 const MOCK_PERFORMANCE_DATA: PerformanceChartData[] = [
@@ -98,11 +99,6 @@ const calculateGainLoss = (investment: Investment) => {
 // --- Firebase Service Functions for Investments ---
 const investmentsCollection = collection(db, 'investments');
 
-const fetchInvestments = async (): Promise<Investment[]> => {
-  const querySnapshot = await getDocs(query(investmentsCollection, orderBy('name')));
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Investment));
-};
-
 const addInvestment = async (investment: Omit<Investment, 'id'>): Promise<string> => {
   const docRef = await addDoc(investmentsCollection, investment);
   return docRef.id;
@@ -116,7 +112,11 @@ const deleteInvestment = async (id: string): Promise<void> => {
   await deleteDoc(doc(investmentsCollection, id));
 };
 
-const InvestmentsPage: React.FC = () => {
+interface InvestmentsPageProps {
+  userUid: string | null;
+}
+
+const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -128,32 +128,30 @@ const InvestmentsPage: React.FC = () => {
 
   // --- Real-time data fetching with Firebase onSnapshot ---
   useEffect(() => {
-    const unsubscribe = onSnapshot(query(investmentsCollection, orderBy('name')), (snapshot) => {
+    if (!userUid) {
+      setLoading(false);
+      setError("User not authenticated.");
+      return;
+    }
+
+    const q = query(investmentsCollection, where('ownerUid', '==', userUid), orderBy('name'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetchedInvestments: Investment[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as Investment));
 
-      if (fetchedInvestments.length === 0) {
-        // If Firebase collection is empty, use mock data as fallback
-        setInvestments(MOCK_INVESTMENTS);
-      } else {
-        setInvestments(fetchedInvestments);
-      }
+      setInvestments(fetchedInvestments);
       setLoading(false);
       setError(null);
     }, (err) => {
       console.error("Error fetching investments:", err);
-      setError("Failed to load investments. Please check your Firebase connection.");
+      setError("Failed to load investments. Please check your Firebase connection and security rules.");
       setLoading(false);
-      // Fallback to mock data on error if no data was loaded
-      if (investments.length === 0) {
-        setInvestments(MOCK_INVESTMENTS);
-      }
     });
 
     return () => unsubscribe(); // Clean up the listener on component unmount
-  }, []); // Empty dependency array means this runs once on mount
+  }, [userUid]); // Re-run when userUid changes
 
   // --- Computed Portfolio Summary ---
   const portfolioSummary: PortfolioSummary = useMemo(() => {
@@ -260,12 +258,16 @@ const InvestmentsPage: React.FC = () => {
     setIsModalOpen(true);
   }, []);
 
-  const handleSaveInvestment = useCallback(async (newInvestment: Omit<Investment, 'id'>) => {
+  const handleSaveInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid'>) => {
+    if (!userUid) {
+      setError("User not authenticated. Cannot save investment.");
+      return;
+    }
     try {
       if (editingInvestment) {
         await updateInvestment(editingInvestment.id, newInvestment);
       } else {
-        await addInvestment(newInvestment);
+        await addInvestment({ ...newInvestment, ownerUid: userUid });
       }
       setIsModalOpen(false);
       setEditingInvestment(null);
@@ -273,7 +275,7 @@ const InvestmentsPage: React.FC = () => {
       console.error("Error saving investment:", err);
       setError("Failed to save investment. Please try again.");
     }
-  }, [editingInvestment]);
+  }, [editingInvestment, userUid]);
 
   const handleDeleteInvestment = useCallback(async (id: string) => {
     try {
@@ -615,7 +617,7 @@ const InvestmentsPage: React.FC = () => {
 // --- Investment Form Component for Modal ---
 interface InvestmentFormProps {
   investment: Investment | null;
-  onSave: (investment: Omit<Investment, 'id'>) => void;
+  onSave: (investment: Omit<Investment, 'id' | 'ownerUid'>) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
 }
@@ -627,11 +629,22 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
   const [buyPrice, setBuyPrice] = useState(investment?.buyPrice.toString() || '');
   const [currentPrice, setCurrentPrice] = useState(investment?.currentPrice.toString() || '');
   const [datePurchased, setDatePurchased] = useState(investment?.datePurchased || format(new Date(), 'yyyy-MM-dd'));
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!name.trim()) newErrors.name = 'Asset Name is required.';
+    if (!quantity || parseFloat(quantity) <= 0) newErrors.quantity = 'Quantity must be a positive number.';
+    if (!buyPrice || parseFloat(buyPrice) <= 0) newErrors.buyPrice = 'Buy Price must be a positive number.';
+    if (!currentPrice || parseFloat(currentPrice) <= 0) newErrors.currentPrice = 'Current Price must be a positive number.';
+    if (!datePurchased) newErrors.datePurchased = 'Date Purchased is required.';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !quantity || !buyPrice || !currentPrice || !datePurchased) {
-      alert('Please fill all fields.');
+    if (!validateForm()) {
       return;
     }
 
@@ -659,7 +672,10 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
         <Label htmlFor="name" className="text-right">
           Asset Name
         </Label>
-        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+        <div className="col-span-3">
+          <Input id="name" value={name} onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }} />
+          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+        </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="type" className="text-right">
@@ -679,25 +695,37 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
         <Label htmlFor="quantity" className="text-right">
           Quantity
         </Label>
-        <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="col-span-3" />
+        <div className="col-span-3">
+          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} />
+          {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity}</p>}
+        </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="buyPrice" className="text-right">
           Buy Price
         </Label>
-        <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)} className="col-span-3" />
+        <div className="col-span-3">
+          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} />
+          {errors.buyPrice && <p className="text-red-500 text-xs mt-1">{errors.buyPrice}</p>}
+        </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="currentPrice" className="text-right">
           Current Price
         </Label>
-        <Input id="currentPrice" type="number" step="0.01" value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="col-span-3" />
+        <div className="col-span-3">
+          <Input id="currentPrice" type="number" step="0.01" value={currentPrice} onChange={(e) => { setCurrentPrice(e.target.value); setErrors(prev => ({ ...prev, currentPrice: '' })); }} />
+          {errors.currentPrice && <p className="text-red-500 text-xs mt-1">{errors.currentPrice}</p>}
+        </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="datePurchased" className="text-right">
           Date Purchased
         </Label>
-        <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => setDatePurchased(e.target.value)} className="col-span-3" />
+        <div className="col-span-3">
+          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} />
+          {errors.datePurchased && <p className="text-red-500 text-xs mt-1">{errors.datePurchased}</p>}
+        </div>
       </div>
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-2 mt-4">
         {investment && (
