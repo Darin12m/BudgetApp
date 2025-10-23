@@ -2,14 +2,14 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { DollarSign, TrendingUp, TrendingDown, Plus, Edit, Trash2, Filter, SortAsc, RefreshCcw, Wallet, BarChart3, X, Save, CalendarDays, ChevronRight, AlertCircle, LucideIcon } from 'lucide-react'; // Import LucideIcon
+import { DollarSign, TrendingUp, TrendingDown, Plus, Edit, Trash2, Filter, SortAsc, RefreshCcw, Wallet, BarChart3, X, Save, CalendarDays, ChevronRight, AlertCircle, LucideIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; // Keep Table imports for InvestmentForm, but not for main display
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -262,10 +262,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-bold">Investments</h1>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={handleRefreshPrices} className="flex items-center space-x-2">
-              <RefreshCcw className="w-4 h-4" />
-              <span className="hidden sm:inline">Refresh Prices</span>
-            </Button>
+            {/* Removed Refresh Prices button as per simplification */}
             <Button onClick={handleAddInvestment} className="flex items-center space-x-2">
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Investment</span>
@@ -324,7 +321,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Clean List View */}
+            {/* Clean List View (unified for all screen sizes) */}
             <div className="space-y-3">
               {filteredAndSortedInvestments.length > 0 ? (
                 filteredAndSortedInvestments.map(inv => (

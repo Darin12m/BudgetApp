@@ -537,7 +537,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
 
   const BudgetView: React.FC = () => (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
-      {/* Mobile-optimized header card */}
+      {/* Simplified Budget Header Card */}
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl p-5 sm:p-6 text-white shadow-lg">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl sm:text-2xl font-bold">October Budget</h2>
@@ -693,16 +693,13 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm active:bg-gray-100">
             Filter
           </button>
-          <button className="hidden sm:flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm">
-            <Download className="w-4 h-4" />
-            <span>Export</span>
-          </button>
+          {/* Removed Export button as per simplification */}
         </div>
       </div>
 
-      {/* Mobile-optimized transaction list */}
+      {/* Unified transaction list using cards */}
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <div className="sm:hidden divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100">
           {transactions.map(txn => (
             <div key={txn.id} className="p-4 active:bg-gray-50 transition-colors">
               <div className="flex items-start justify-between mb-2">
@@ -729,49 +726,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Desktop table view */}
-        <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {transactions.map(txn => (
-                <tr key={txn.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{txn.date}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">{categories.find(c => c.name === txn.category)?.emoji || '💳'}</span>
-                      <span className="text-sm font-medium text-gray-900">{txn.merchant}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{txn.category}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{txn.account}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      txn.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'
-                    }`}>
-                      {txn.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <span className={`text-sm font-semibold ${txn.amount > 0 ? 'text-green-600' : 'text-gray-900'}`}>
-                      {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
@@ -942,60 +896,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           </div>
         </nav>
 
-        {/* Desktop Footer - Hidden on mobile */}
-        <footer className="hidden sm:block mt-12 px-6 py-8 border-t border-gray-200 bg-white">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-                  FinanceFlow
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Smart budgeting that adapts to your lifestyle. Take control of your finances with ease.
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-3">Features</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>Automatic categorization</li>
-                  <li>Budget tracking</li>
-                  <li>Goal setting</li>
-                  <li>Analytics & insights</li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-3">Security</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>🔒 Bank-level encryption</li>
-                  <li>🛡️ No ads or data selling</li>
-                  <li>✅ SOC 2 compliant</li>
-                  <li>🔐 Two-factor auth</li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-3">Support</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>Help Center</li>
-                  <li>Live Chat</li>
-                  <li>Video Tutorials</li>
-                  <li>Community Forum</li>
-                </ul>
-              </div>
-            </div>
-            
-            <div className="mt-8 pt-8 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between">
-              <p className="text-sm text-gray-500">© 2025 FinanceFlow. Built with insights from leading budgeting apps.</p>
-              <div className="flex items-center space-x-6 mt-4 md:mt-0">
-                <a href="#" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">Privacy</a>
-                <a href="#" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">Terms</a>
-                <a href="#" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">Contact</a>
-              </div>
-            </div>
-          </div>
-        </footer>
+        {/* Removed Desktop Footer as per simplification */}
       </div>
 
       {/* iOS-style overlay with blur effect */}
