@@ -25,6 +25,7 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, onRetry }) => (
         )}
       </div>
     </div>
-  );
+  </div>
+);
 
 export default ErrorMessage;
