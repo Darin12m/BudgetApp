@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"; // For segmented control
-import { Save, Trash2, AlertCircle } from 'lucide-react';
+import { Save, Trash2, AlertCircle, RefreshCw } from 'lucide-react'; // Added RefreshCw icon
 import { format } from 'date-fns';
 import { Investment } from '@/hooks/use-investment-data';
-import { fetchSingleCryptoPrice, fetchSingleStockPrice, getCoingeckoId } from '@/lib/api'; // Import API functions
+import { fetchSingleCryptoPrice, fetchStockPrice, fetchCompanyProfile, getCoingeckoId } from '@/lib/api'; // Import new API functions
 import LivePriceDisplay from './LivePriceDisplay'; // New component
 import { toast } from 'sonner'; // Import toast from sonner
 
@@ -26,12 +26,16 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
   const [buyPrice, setBuyPrice] = useState(investment?.buyPrice.toString() || '');
   const [datePurchased, setDatePurchased] = useState(investment?.datePurchased || format(new Date(), 'yyyy-MM-dd'));
   const [symbolOrId, setSymbolOrId] = useState(investment?.symbol || investment?.coingeckoId || '');
+  const [companyName, setCompanyName] = useState(investment?.companyName || null); // New state for company name
 
   const [livePrice, setLivePrice] = useState<number | null>(null);
   const [livePriceLoading, setLivePriceLoading] = useState(false);
   const [livePriceError, setLivePriceError] = useState<string | null>(null);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Debounce timer ref
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Helper function to get current form errors without setting state
   const getFormErrors = useCallback(() => {
@@ -52,16 +56,57 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       }
     }
 
-    if (livePrice === null || livePriceLoading || livePriceError) {
-      // Only add a livePrice error if there's an actual error message or it's not loading
-      if (livePriceError) {
-        newErrors.livePrice = livePriceError;
-      } else if (!livePriceLoading && livePrice === null && symbolOrId.trim()) {
-        newErrors.livePrice = "Live price not available.";
-      }
+    // Only add a livePrice error if there's an actual error message or it's not loading
+    if (livePriceError) {
+      newErrors.livePrice = livePriceError;
+    } else if (!livePriceLoading && livePrice === null && symbolOrId.trim()) {
+      newErrors.livePrice = "Live price not available.";
     }
     return newErrors;
   }, [name, quantity, buyPrice, datePurchased, symbolOrId, type, livePrice, livePriceLoading, livePriceError]);
+
+  const fetchAndSetLivePrice = useCallback(async (currentSymbolOrId: string, currentType: 'Stock' | 'Crypto') => {
+    if (!currentSymbolOrId.trim()) {
+      setLivePrice(null);
+      setLivePriceError(null);
+      setCompanyName(null);
+      return;
+    }
+
+    setLivePriceLoading(true);
+    setLivePriceError(null);
+    setCompanyName(null); // Clear company name on new fetch
+
+    let fetchedPrice: number | null = null;
+    let fetchedName: string | null = null;
+    let errorMsg: string | null = null;
+
+    if (currentType === 'Stock') {
+      const [priceResult, profileResult] = await Promise.all([
+        fetchStockPrice(currentSymbolOrId),
+        fetchCompanyProfile(currentSymbolOrId)
+      ]);
+      fetchedPrice = priceResult.price;
+      fetchedName = profileResult.name;
+      errorMsg = priceResult.error || profileResult.error; // Prioritize price error
+      if (fetchedPrice === null && !errorMsg) {
+        errorMsg = "Invalid stock ticker or price unavailable.";
+      }
+    } else { // Crypto
+      const result = await fetchSingleCryptoPrice(currentSymbolOrId);
+      fetchedPrice = result.price;
+      fetchedName = result.name;
+      errorMsg = result.error;
+      if (fetchedPrice === null && !errorMsg) {
+        errorMsg = "Invalid crypto symbol or price unavailable.";
+      }
+    }
+
+    setLivePrice(fetchedPrice);
+    setCompanyName(fetchedName);
+    setLivePriceError(errorMsg);
+    setLivePriceLoading(false);
+  }, []);
 
   // Effect to populate form when an investment is selected for editing
   useEffect(() => {
@@ -72,7 +117,9 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       setBuyPrice(investment.buyPrice.toString());
       setDatePurchased(investment.datePurchased);
       setSymbolOrId(investment.symbol || investment.coingeckoId || '');
+      setCompanyName(investment.companyName || null);
       setLivePrice(investment.currentPrice); // Use currentPrice as initial live price
+      setLivePriceError(null); // Clear any previous errors
     } else {
       // Reset form for new investment
       setName('');
@@ -81,50 +128,28 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       setBuyPrice('');
       setDatePurchased(format(new Date(), 'yyyy-MM-dd'));
       setSymbolOrId('');
+      setCompanyName(null);
       setLivePrice(null);
+      setLivePriceError(null);
     }
     setErrors({}); // Clear errors on investment change or reset
-    setLivePriceError(null); // Clear live price error
   }, [investment]);
 
   // Effect to fetch live price when type or symbol/ID changes
   useEffect(() => {
-    const fetchPrice = async () => {
-      if (!symbolOrId.trim()) {
-        setLivePrice(null);
-        setLivePriceError(null);
-        return;
-      }
-
-      setLivePriceLoading(true);
-      setLivePriceError(null);
-      let fetchedPrice: number | null = null;
-      let errorMsg: string | null = null;
-
-      if (type === 'Stock') {
-        fetchedPrice = await fetchSingleStockPrice(symbolOrId.toUpperCase());
-        if (fetchedPrice === null) {
-          errorMsg = "Invalid stock ticker symbol. Please try again."; // Updated error message
-        }
-      } else { // Crypto
-        const coingeckoId = getCoingeckoId(symbolOrId);
-        fetchedPrice = await fetchSingleCryptoPrice(coingeckoId);
-        if (fetchedPrice === null) {
-          errorMsg = `Couldn't find crypto. Try full CoinGecko ID (e.g., 'injective-protocol') or a common symbol (e.g., 'BTC').`;
-        }
-      }
-
-      setLivePrice(fetchedPrice);
-      setLivePriceError(errorMsg);
-      setLivePriceLoading(false);
-    };
-
-    const debounceTimeout = setTimeout(() => {
-      fetchPrice();
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      fetchAndSetLivePrice(symbolOrId, type);
     }, 500); // Debounce API calls
 
-    return () => clearTimeout(debounceTimeout);
-  }, [type, symbolOrId]);
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [type, symbolOrId, fetchAndSetLivePrice]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,11 +157,12 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
     setErrors(currentErrors); // Set errors only on submit
 
     if (Object.keys(currentErrors).length > 0) {
+      toast.error("Please fix the errors in the form.");
       return;
     }
 
     if (livePrice === null) {
-      toast.error("Cannot save: Live price is not available.");
+      toast.error("Cannot save: Live price is not available. Please ensure the ticker is valid.");
       return;
     }
 
@@ -149,8 +175,9 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       datePurchased,
       symbol: type === 'Stock' ? symbolOrId.toUpperCase() : undefined,
       coingeckoId: type === 'Crypto' ? getCoingeckoId(symbolOrId) : undefined,
-      lastPrice: livePrice,
-      priceSource: type === 'Stock' ? 'YahooFinance' : 'CoinGecko',
+      companyName: companyName, // Save the fetched company name
+      lastPrice: livePrice, // Initialize lastPrice with current live price
+      priceSource: type === 'Stock' ? 'Finnhub' : 'CoinGecko',
       lastUpdated: new Date().toISOString(),
     });
   };
@@ -160,6 +187,10 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       onDelete(investment.id);
     }
   };
+
+  const handleRefreshPrice = useCallback(() => {
+    fetchAndSetLivePrice(symbolOrId, type);
+  }, [symbolOrId, type, fetchAndSetLivePrice]);
 
   // Determine if save button should be disabled based on current form errors
   const isSaveDisabled = Object.keys(getFormErrors()).length > 0 || livePriceLoading || livePrice === null;
@@ -189,6 +220,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
               setSymbolOrId(''); // Clear symbol/ID when type changes
               setLivePrice(null);
               setLivePriceError(null);
+              setCompanyName(null);
               setErrors(prev => ({ ...prev, symbolOrId: '', livePrice: '' }));
             }
           }}
@@ -216,6 +248,9 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.symbolOrId && <p className="text-destructive text-xs mt-1">{errors.symbolOrId}</p>}
+          {companyName && type === 'Stock' && !errors.symbolOrId && (
+            <p className="text-muted-foreground text-xs mt-1">{companyName}</p>
+          )}
         </div>
       </div>
 
@@ -223,8 +258,18 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
         <Label className="text-right">
           Live Price
         </Label>
-        <div className="col-span-3">
+        <div className="col-span-3 flex items-center space-x-2">
           <LivePriceDisplay price={livePrice} loading={livePriceLoading} error={livePriceError} />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={handleRefreshPrice}
+            disabled={livePriceLoading || !symbolOrId.trim()}
+            className="h-8 w-8 text-muted-foreground hover:bg-muted/50"
+          >
+            <RefreshCw className={`h-4 w-4 ${livePriceLoading ? 'animate-spin' : ''}`} />
+          </Button>
           {errors.livePrice && <p className="text-destructive text-xs mt-1">{errors.livePrice}</p>}
         </div>
       </div>

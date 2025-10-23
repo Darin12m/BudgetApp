@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { fetchCryptoPrices, fetchStockPrices } from '@/lib/api'; // Import API functions
+import { fetchSingleCryptoPrice, fetchStockPrice, fetchCompanyProfile, getCoingeckoId } from '@/lib/api'; // Import new API functions
 import { auth } from '@/lib/firebase'; // Import auth to access currentUser
 
 // TypeScript Interfaces
@@ -17,8 +17,9 @@ export interface Investment {
   ownerUid: string;
   symbol?: string; // For stocks (e.g., AAPL)
   coingeckoId?: string; // For crypto (e.g., bitcoin)
+  companyName?: string | null; // New: For stocks, fetched from Finnhub
   lastPrice?: number; // The last fetched live price
-  priceSource?: 'CoinGecko' | 'YahooFinance'; // Source of the last price
+  priceSource?: 'CoinGecko' | 'Finnhub'; // Source of the last price
   lastUpdated?: string; // Timestamp of last price update
   // For UI animations
   previousPrice?: number; // To track price changes
@@ -28,8 +29,8 @@ export const useInvestmentData = (userUid: string | null) => {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [livePrices, setLivePrices] = useState<Map<string, number>>(new Map()); // Fixed: Use useState
-  const [priceChange, setPriceChange] = useState<Map<string, 'up' | 'down' | 'none'>>(new Map()); // Fixed: Use useState
+  const [livePrices, setLivePrices] = useState<Map<string, number>>(new Map());
+  const [priceChange, setPriceChange] = useState<Map<string, 'up' | 'down' | 'none'>>(new Map());
 
   // Ref to store the latest investments to avoid stale closures in setInterval
   const latestInvestments = useRef<Investment[]>([]);
@@ -66,67 +67,79 @@ export const useInvestmentData = (userUid: string | null) => {
   const fetchAndApplyLivePrices = useCallback(async () => {
     if (!userUid || latestInvestments.current.length === 0) return;
 
-    const stockSymbols = latestInvestments.current
-      .filter(inv => inv.type === 'Stock' && inv.symbol)
-      .map(inv => inv.symbol!);
-    const cryptoIds = latestInvestments.current
-      .filter(inv => inv.type === 'Crypto' && inv.coingeckoId)
-      .map(inv => inv.coingeckoId!);
-
-    const [stockPrices, cryptoPrices] = await Promise.all([
-      fetchStockPrices(stockSymbols),
-      fetchCryptoPrices(cryptoIds),
-    ]);
-
     const newLivePrices = new Map<string, number>();
     const newPriceChange = new Map<string, 'up' | 'down' | 'none'>();
+    const updates: Promise<void>[] = [];
 
-    setInvestments(prevInvestments => {
-      return prevInvestments.map(inv => {
+    for (const inv of latestInvestments.current) {
+      updates.push((async () => {
         let updatedPrice = inv.currentPrice;
-        let identifier = '';
-        let priceSource: 'CoinGecko' | 'YahooFinance' | undefined;
+        let priceSource: 'CoinGecko' | 'Finnhub' | undefined;
+        let fetchedName: string | null | undefined = inv.companyName;
 
         if (inv.type === 'Stock' && inv.symbol) {
-          identifier = inv.symbol;
-          if (stockPrices.has(inv.symbol)) {
-            updatedPrice = stockPrices.get(inv.symbol)!;
-            priceSource = 'YahooFinance';
+          const [priceResult, profileResult] = await Promise.all([
+            fetchStockPrice(inv.symbol),
+            fetchCompanyProfile(inv.symbol)
+          ]);
+          if (priceResult.price !== null) {
+            updatedPrice = priceResult.price;
+            priceSource = 'Finnhub';
+          }
+          if (profileResult.name !== null) {
+            fetchedName = profileResult.name;
           }
         } else if (inv.type === 'Crypto' && inv.coingeckoId) {
-          identifier = inv.coingeckoId;
-          if (cryptoPrices.has(inv.coingeckoId)) {
-            updatedPrice = cryptoPrices.get(inv.coingeckoId)!;
+          const result = await fetchSingleCryptoPrice(inv.coingeckoId);
+          if (result.price !== null) {
+            updatedPrice = result.price;
             priceSource = 'CoinGecko';
           }
-          // If crypto ID is not found, try to resolve from symbol map
-          if (!cryptoPrices.has(inv.coingeckoId) && inv.coingeckoId) {
-            const resolvedId = inv.coingeckoId; // Assuming coingeckoId is already the ID or symbol
-            if (cryptoPrices.has(resolvedId)) {
-              updatedPrice = cryptoPrices.get(resolvedId)!;
-              priceSource = 'CoinGecko';
-            }
+          if (result.name !== null) {
+            fetchedName = result.name;
           }
         }
 
-        if (identifier) {
-          newLivePrices.set(identifier, updatedPrice);
+        if (updatedPrice !== inv.currentPrice) {
           if (updatedPrice > inv.currentPrice) {
             newPriceChange.set(inv.id, 'up');
           } else if (updatedPrice < inv.currentPrice) {
             newPriceChange.set(inv.id, 'down');
-          } else {
-            newPriceChange.set(inv.id, 'none');
           }
+        } else {
+          newPriceChange.set(inv.id, 'none');
         }
+        
+        newLivePrices.set(inv.id, updatedPrice);
 
+        // Update Firestore with the new currentPrice, companyName, lastPrice, priceSource, lastUpdated
+        if (updatedPrice !== inv.currentPrice || fetchedName !== inv.companyName) {
+          await updateDoc(doc(db, "investments", inv.id), {
+            currentPrice: updatedPrice,
+            companyName: fetchedName,
+            lastPrice: updatedPrice,
+            priceSource: priceSource,
+            lastUpdated: new Date().toISOString(),
+            updatedAt: serverTimestamp(),
+          });
+        }
+      })());
+    }
+
+    await Promise.all(updates); // Wait for all updates to complete
+
+    // After all Firestore updates, re-fetch from local state to ensure UI is consistent
+    // This is important because onSnapshot might not trigger immediately for all updates
+    setInvestments(prevInvestments => {
+      return prevInvestments.map(inv => {
+        const newPrice = newLivePrices.get(inv.id);
         return {
           ...inv,
           previousPrice: inv.currentPrice, // Store current price as previous for animation
-          currentPrice: updatedPrice,
-          lastPrice: updatedPrice, // Update lastPrice with the fetched price
-          priceSource: priceSource,
-          lastUpdated: new Date().toISOString(), // Update lastUpdated timestamp
+          currentPrice: newPrice !== undefined ? newPrice : inv.currentPrice,
+          companyName: inv.companyName, // Company name is updated directly in Firestore and will be reflected by onSnapshot
+          lastPrice: newPrice !== undefined ? newPrice : inv.currentPrice,
+          lastUpdated: new Date().toISOString(),
         };
       });
     });
@@ -156,10 +169,6 @@ export const useInvestmentData = (userUid: string | null) => {
 
 
   const addInvestment = useCallback(async (data: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
-    console.log("Attempting to add investment...");
-    console.log("auth.currentUser:", auth.currentUser);
-    console.log("auth.currentUser.uid:", auth.currentUser?.uid);
-
     if (!userUid) {
       toast.error("You must be logged in to save data.");
       return;
@@ -177,8 +186,6 @@ export const useInvestmentData = (userUid: string | null) => {
         delete payload[key];
       }
     });
-
-    console.log("Cleaned payload being sent:", payload);
 
     try {
       await addDoc(collection(db, "investments"), payload);

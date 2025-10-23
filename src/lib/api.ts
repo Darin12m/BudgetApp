@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+// Finnhub API Key provided by the user
+const FINNHUB_API_KEY = 'd3tb37pr01qigeg2akvgd3tb37pr01qigeg2al00'; 
+
 interface CryptoPriceResponse {
   [id: string]: {
     usd: number;
@@ -7,17 +10,28 @@ interface CryptoPriceResponse {
   };
 }
 
-interface YahooFinanceQuote {
-  symbol: string;
-  regularMarketPrice: number;
-  regularMarketChangePercent?: number;
+interface FinnhubQuoteResponse {
+  c: number; // Current price
+  h: number; // High price of the day
+  l: number; // Low price of the day
+  o: number; // Open price of the day
+  pc: number; // Previous close price
+  t: number; // Timestamp
 }
 
-interface YahooFinanceResponse {
-  quoteResponse: {
-    result: YahooFinanceQuote[];
-    error: any;
-  };
+interface FinnhubCompanyProfileResponse {
+  country: string;
+  currency: string;
+  exchange: string;
+  finnhubIndustry: string;
+  ipo: string;
+  logo: string;
+  marketCapitalization: number;
+  name: string;
+  phone: string;
+  shareOutstanding: number;
+  weburl: string;
+  // ... other fields
 }
 
 // Map common crypto symbols to CoinGecko IDs
@@ -32,7 +46,227 @@ const cryptoSymbolMap: { [key: string]: string } = {
   'BNB': 'binancecoin',
   'DOT': 'polkadot',
   'LTC': 'litecoin',
-  // Add more as needed
+  'USDT': 'tether',
+  'USDC': 'usd-coin',
+  'LINK': 'chainlink',
+  'UNI': 'uniswap',
+  'AVAX': 'avalanche',
+  'MATIC': 'polygon',
+  'ICP': 'internet-computer',
+  'ATOM': 'cosmos',
+  'ETC': 'ethereum-classic',
+  'XLM': 'stellar',
+  'VET': 'vechain',
+  'FIL': 'filecoin',
+  'TRX': 'tron',
+  'EOS': 'eos',
+  'XTZ': 'tezos',
+  'AAVE': 'aave',
+  'MKR': 'maker',
+  'DAI': 'dai',
+  'COMP': 'compound',
+  'SNX': 'synthetix-network-token',
+  'GRT': 'the-graph',
+  'ENJ': 'enjincoin',
+  'MANA': 'decentraland',
+  'SAND': 'the-sandbox',
+  'AXS': 'axie-infinity',
+  'CHZ': 'chiliz',
+  'FTM': 'fantom',
+  'NEAR': 'near-protocol',
+  'ALGO': 'algorand',
+  'EGLD': 'elrond',
+  'THETA': 'theta-token',
+  'KSM': 'kusama',
+  'ZEC': 'zcash',
+  'DASH': 'dash',
+  'NEO': 'neo',
+  'IOTA': 'iota',
+  'QTUM': 'qtum',
+  'OMG': 'omisego',
+  'BAT': 'basic-attention-token',
+  'ZRX': '0x',
+  'KNC': 'kyber-network-crystal',
+  'REN': 'ren',
+  'OCEAN': 'ocean-protocol',
+  'BAND': 'band-protocol',
+  'RLC': 'iExec-RLC',
+  'CELO': 'celo',
+  'HBAR': 'hedera-hashgraph',
+  'ONE': 'harmony',
+  'ICX': 'icon',
+  'RVN': 'ravencoin',
+  'WAVES': 'waves',
+  'ONT': 'ontology',
+  'NANO': 'nano',
+  'DCR': 'decred',
+  'SC': 'siacoin',
+  'AR': 'arweave',
+  'FLOW': 'flow',
+  'KLAY': 'klaytn',
+  'ROSE': 'oasis-network',
+  'MINA': 'mina-protocol',
+  'IMX': 'immutable-x',
+  'APE': 'apecoin',
+  'GMT': 'stepn',
+  'APT': 'aptos',
+  'OP': 'optimism',
+  'ARB': 'arbitrum',
+  'SUI': 'sui',
+  'SEI': 'sei',
+  'TIA': 'celestia',
+  'PYTH': 'pyth-network',
+  'JUP': 'jupiter',
+  'WIF': 'dogwifhat',
+  'BONK': 'bonk',
+  'PEPE': 'pepe',
+  'SHIB': 'shiba-inu',
+  'DOG': 'dog-go-to-the-moon',
+  'FLOKI': 'floki',
+  'BOME': 'book-of-meme',
+  'WLD': 'worldcoin',
+  'STRK': 'starknet',
+  'DYM': 'dymension',
+  'ENA': 'ena',
+  'ONDO': 'ondo-finance',
+  'CORE': 'coredaoorg',
+  'FET': 'fetch-ai',
+  'AGIX': 'singularitynet',
+  'RNDR': 'render-token',
+  'RUNE': 'thorchain',
+  'KAS': 'kaspa',
+  'TAO': 'bittensor',
+  'AKT': 'akash-network',
+  'OSMO': 'osmosis',
+  'JTO': 'jito',
+  'ALT': 'altlayer',
+  'MANTA': 'manta-network',
+  'PIXEL': 'pixels',
+  'AEVO': 'aevo',
+  'W': 'wormhole',
+  'TNSR': 'tensor',
+  'REZ': 'etherfi',
+  'NOT': 'notcoin',
+  'ZK': 'polyhedra-network',
+  'IO': 'io-net',
+  'ZRO': 'layerzero',
+  'LISTA': 'lista-dao',
+  'WEN': 'wen-token',
+  'BTT': 'bittorrent',
+  'HOT': 'holo',
+  'ARDR': 'ardor',
+  'DGB': 'digibyte',
+  'NEXO': 'nexo',
+  'CEL': 'celsius-network',
+  'KAVA': 'kava',
+  'ZIL': 'zilliqa',
+  'IOST': 'iostoken',
+  'WTC': 'waltonchain',
+  'GAS': 'gas',
+  'WAN': 'wanchain',
+  'LSK': 'lisk',
+  'STEEM': 'steem',
+  'SNT': 'status',
+  'MCO': 'mco',
+  'KMD': 'komodo',
+  'DGD': 'digixdao',
+  'REP': 'augur',
+  'GNT': 'golem',
+  'PPT': 'populous',
+  'BNT': 'bancor',
+  'FUN': 'funfair',
+  'REQ': 'request-network',
+  'RDN': 'raiden-network-token',
+  'VIB': 'viberate',
+  'POWR': 'power-ledger',
+  'ENG': 'enigma',
+  'SUB': 'substratum',
+  'EDG': 'edgeless',
+  'CVC': 'civic',
+  'PAY': 'tenx',
+  'STORJ': 'storj',
+  'FCT': 'factom',
+  'MAID': 'maidsafecoin',
+  'GAME': 'gamecredits',
+  'SYS': 'syscoin',
+  'EMC': 'emercoin',
+  'NXT': 'nxt',
+  'EXP': 'expanse',
+  'CLOAK': 'cloakcoin',
+  'GRS': 'groestlcoin',
+  'VIA': 'viacoin',
+  'DMD': 'diamond',
+  'XCP': 'counterparty',
+  'BURST': 'burst',
+  'FLO': 'florincoin',
+  'VTC': 'vertcoin',
+  'RDD': 'reddcoin',
+  'POT': 'potcoin',
+  'BLK': 'blackcoin',
+  'NMC': 'namecoin',
+  'PPC': 'peercoin',
+  'FTC': 'feathercoin',
+  'AUR': 'auroracoin',
+  'GRC': 'gridcoin',
+  'DGC': 'digitalcoin',
+  'QRK': 'quark',
+  'MEC': 'megacoin',
+  'GLD': 'goldcoin',
+  'SRC': 'securecoin',
+  'UNO': 'unobtanium',
+  'FRC': 'freicoin',
+  'NVC': 'novacoin',
+  'TRC': 'terracoin',
+  'WDC': 'worldcoin',
+  'XPM': 'primecoin',
+  'ZET': 'zetacoin',
+  'TAG': 'tagcoin',
+  'ANC': 'anoncoin',
+  'ARG': 'argentum',
+  'BTCD': 'bitcoin-dark',
+  'CANN': 'cannabiscoin',
+  'CLAM': 'clams',
+  'DOGEC': 'dogecoin-dark',
+  'EFL': 'e-gulden',
+  'EMC2': 'einsteinium',
+  'FLAP': 'flappycoin',
+  'FRK': 'franko',
+  'GCR': 'global-currency-reserve',
+  'HUC': 'huntercoin',
+  'IOC': 'iocoin',
+  'KORE': 'korecoin',
+  'MAX': 'maxcoin',
+  'MINT': 'mintcoin',
+  'MONA': 'monacoin',
+  'MYR': 'myriadcoin',
+  'NAV': 'nav-coin',
+  'NLG': 'gulden',
+  'NSR': 'nushares',
+  'OK': 'okcash',
+  'PINK': 'pinkcoin',
+  'PIVX': 'pivx',
+  'POSW': 'posw-coin',
+  'PRC': 'prospercoin',
+  'QBC': 'quark-coin',
+  'RIC': 'riccoin',
+  'SLR': 'solarcoin',
+  'SPR': 'spreadcoin',
+  'START': 'startcoin',
+  'STRAT': 'stratis',
+  'SWIFT': 'swiftcash',
+  'SYNC': 'sync-fab',
+  'TRC': 'terracoin',
+  'VRC': 'vericoin',
+  'XBC': 'bitcoin-plus',
+  'XEM': 'nem',
+  'XMR': 'monero',
+  'XVG': 'verge',
+  'YBC': 'yacoin',
+  'ZCL': 'zclassic',
+  'ZEN': 'horizen',
+  'BTG': 'bitcoin-gold',
+  'BCH': 'bitcoin-cash',
+  'BSV': 'bitcoin-sv',
 };
 
 export const getCoingeckoId = (symbolOrId: string): string => {
@@ -44,7 +278,6 @@ export const getCoingeckoId = (symbolOrId: string): string => {
   // Otherwise, assume it's already a CoinGecko ID
   return normalizedInput;
 };
-
 
 export const fetchCryptoPrices = async (ids: string[]): Promise<Map<string, number>> => {
   if (ids.length === 0) return new Map();
@@ -65,51 +298,77 @@ export const fetchCryptoPrices = async (ids: string[]): Promise<Map<string, numb
   }
 };
 
-export const fetchSingleCryptoPrice = async (coingeckoId: string): Promise<number | null> => {
-  if (!coingeckoId) return null;
+export const fetchSingleCryptoPrice = async (symbolOrId: string): Promise<{ price: number | null; name: string | null; error: string | null }> => {
+  if (!symbolOrId) return { price: null, name: null, error: "Symbol or ID is required." };
+
+  const coingeckoId = getCoingeckoId(symbolOrId);
+
   try {
     const response = await axios.get<CryptoPriceResponse>(
       `https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`
     );
-    return response.data[coingeckoId]?.usd || null;
-  } catch (error) {
-    console.error(`Error fetching price for crypto ID ${coingeckoId}:`, error);
-    return null;
+    
+    if (response.data[coingeckoId] && response.data[coingeckoId].usd) {
+      // Attempt to get a more readable name from CoinGecko's coins list API
+      // This is a heavier call, so we'll only do it for single fetches if needed
+      let cryptoName: string | null = null;
+      try {
+        const coinListResponse = await axios.get(`https://api.coingecko.com/api/v3/coins/list`);
+        const coin = coinListResponse.data.find((c: any) => c.id === coingeckoId || c.symbol.toLowerCase() === symbolOrId.toLowerCase());
+        if (coin) {
+          cryptoName = coin.name;
+        }
+      } catch (listError) {
+        console.warn("Could not fetch crypto name from coin list:", listError);
+      }
+
+      return { price: response.data[coingeckoId].usd, name: cryptoName || coingeckoId, error: null };
+    } else {
+      return { price: null, name: null, error: "Invalid crypto symbol or price unavailable." };
+    }
+  } catch (error: any) {
+    console.error(`Error fetching price for crypto ${symbolOrId}:`, error);
+    return { price: null, name: null, error: "Failed to fetch crypto price. Please try again." };
   }
 };
 
-// Firebase Cloud Function endpoint for stock prices
-const FIREBASE_STOCK_FUNCTION_URL = "https://us-central1-YOUR_FIREBASE_PROJECT_ID.cloudfunctions.net/getStockPrice";
+export const fetchStockPrice = async (symbol: string): Promise<{ price: number | null; error: string | null }> => {
+  if (!symbol || !FINNHUB_API_KEY) return { price: null, error: "Symbol and API key are required." };
 
-export const fetchStockPrices = async (symbols: string[]): Promise<Map<string, number>> => {
-  if (symbols.length === 0) return new Map();
-  const prices = new Map<string, number>();
-  
-  // Fetch prices for each symbol individually using the Cloud Function
-  await Promise.all(symbols.map(async (symbol) => {
-    try {
-      const response = await axios.get(`${FIREBASE_STOCK_FUNCTION_URL}?symbol=${symbol.toUpperCase()}`);
-      if (response.data && response.data.price) {
-        prices.set(symbol.toUpperCase(), response.data.price);
-      }
-    } catch (error) {
-      console.error(`Error fetching stock price for ${symbol} via Cloud Function:`, error);
+  const upperSymbol = symbol.toUpperCase();
+  try {
+    const response = await axios.get<FinnhubQuoteResponse>(
+      `https://finnhub.io/api/v1/quote?symbol=${upperSymbol}&token=${FINNHUB_API_KEY}`
+    );
+    
+    // Finnhub returns c=0 for invalid tickers or market closed
+    if (response.data && response.data.c > 0) {
+      return { price: response.data.c, error: null };
+    } else {
+      return { price: null, error: "Invalid stock ticker or price unavailable." };
     }
-  }));
-  return prices;
+  } catch (error: any) {
+    console.error(`Error fetching stock price for ${upperSymbol}:`, error);
+    return { price: null, error: "Failed to fetch stock price. Please try again." };
+  }
 };
 
-export const fetchSingleStockPrice = async (symbol: string): Promise<number | null> => {
-  if (!symbol) return null;
+export const fetchCompanyProfile = async (symbol: string): Promise<{ name: string | null; error: string | null }> => {
+  if (!symbol || !FINNHUB_API_KEY) return { name: null, error: "Symbol and API key are required." };
+
+  const upperSymbol = symbol.toUpperCase();
   try {
-    const response = await axios.get(`${FIREBASE_STOCK_FUNCTION_URL}?symbol=${symbol.toUpperCase()}`);
-    if (response.data && response.data.price) {
-      return response.data.price;
+    const response = await axios.get<FinnhubCompanyProfileResponse>(
+      `https://finnhub.io/api/v1/stock/profile2?symbol=${upperSymbol}&token=${FINNHUB_API_KEY}`
+    );
+    
+    if (response.data && response.data.name) {
+      return { name: response.data.name, error: null };
+    } else {
+      return { name: null, error: "Company name not found for this ticker." };
     }
-    console.warn(`Cloud Function: No price data found for stock symbol ${symbol}.`);
-    return null;
-  } catch (error) {
-    console.error(`Error fetching single stock price for ${symbol} via Cloud Function:`, error);
-    return null;
+  } catch (error: any) {
+    console.error(`Error fetching company profile for ${upperSymbol}:`, error);
+    return { name: null, error: "Failed to fetch company profile." };
   }
 };
