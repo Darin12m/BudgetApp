@@ -1,59 +1,24 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access for authenticated users to their own data
+    // Allow authenticated users to manage their own documents in any collection
     match /{collection}/{document} {
-      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+      allow read, create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
     }
 
-    // Specific rules for collections if needed, otherwise the general rule above applies.
-    // For example, if you wanted to make a collection publicly readable:
-    // match /publicCollection/{document} {
-    //   allow read: if true;
-    //   allow write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-    // }
-
-    // Example for 'transactions' collection
-    match /transactions/{transactionId} {
-      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
-    }
-
-    // Example for 'categories' collection
-    match /categories/{categoryId} {
-      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
-    }
-
-    // Example for 'accounts' collection
-    match /accounts/{accountId} {
-      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
-    }
-
-    // Example for 'goals' collection
-    match /goals/{goalId} {
-      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
-    }
-
-    // Example for 'recurringTransactions' collection
-    match /recurringTransactions/{recurringTransactionId} {
-      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
-    }
-
-    // Example for 'investments' collection
+    // Specifically for the 'investments' collection, if you want more granular control
     match /investments/{investmentId} {
-      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+      allow read: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
     }
 
-    // Example for 'budgetSettings' collection
-    match /budgetSettings/{budgetSettingsId} {
-      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+    // For budgetSettings, allow only the owner to read/update their settings
+    match /budgetSettings/{settingsId} {
+      allow read, create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+      allow update: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow delete: if false; // Budget settings should generally not be deleted by users
     }
   }
 }
