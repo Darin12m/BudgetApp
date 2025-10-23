@@ -1,9 +1,59 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Generic rule for all user-owned collections
-    match /{collection}/{documentId} {
-      allow create, read, update, delete: if request.auth != null && request.auth.uid == (resource.data.ownerUid ?? request.resource.data.ownerUid);
+    // Allow read/write access for authenticated users to their own data
+    match /{collection}/{document} {
+      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    // Specific rules for collections if needed, otherwise the general rule above applies.
+    // For example, if you wanted to make a collection publicly readable:
+    // match /publicCollection/{document} {
+    //   allow read: if true;
+    //   allow write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+    // }
+
+    // Example for 'transactions' collection
+    match /transactions/{transactionId} {
+      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    // Example for 'categories' collection
+    match /categories/{categoryId} {
+      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    // Example for 'accounts' collection
+    match /accounts/{accountId} {
+      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    // Example for 'goals' collection
+    match /goals/{goalId} {
+      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    // Example for 'recurringTransactions' collection
+    match /recurringTransactions/{recurringTransactionId} {
+      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    // Example for 'investments' collection
+    match /investments/{investmentId} {
+      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    // Example for 'budgetSettings' collection
+    match /budgetSettings/{budgetSettingsId} {
+      allow read, write: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
     }
   }
 }
