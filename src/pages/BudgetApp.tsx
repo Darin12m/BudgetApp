@@ -1,8 +1,12 @@
 import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Download, Home, List, BarChart3, ChevronRight, Wallet } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; // Import useLocation
 import { useFinanceData } from '@/hooks/use-finance-data'; // Import the new hook
+import { formatCurrency } from '@/lib/utils'; // Import utility functions
+import RemainingBudgetCard from '@/components/RemainingBudgetCard'; // Import new component
+import QuickAddTransactionModal from '@/components/QuickAddTransactionModal'; // Import new component
+import { Button } from '@/components/ui/button'; // Import Button for floating action button
 
 // TypeScript Interfaces (moved to use-finance-data.tsx for centralized management)
 // Re-declaring them here for component props/local types if needed, but primarily
@@ -88,14 +92,6 @@ interface CategoryData {
 }
 
 // Utility Functions
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(Math.abs(value));
-};
-
 const getHealthStatus = (spent: number, budgeted: number): HealthStatus => {
   const percentage = (spent / budgeted) * 100;
   if (percentage >= 100) return { status: 'over', color: 'text-red-500', bg: 'bg-red-50' };
@@ -108,6 +104,7 @@ interface BudgetAppProps {
 }
 
 const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
+  const location = useLocation(); // Get current location for active nav item
   const {
     transactions,
     categories,
@@ -124,7 +121,17 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
 
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState<boolean>(false);
   const [selectedMonth, setSelectedMonth] = useState<string>('October 2025'); // This would ideally be dynamic based on current date
+
+  // Update activeView based on URL path
+  useEffect(() => {
+    if (location.pathname === '/budget-app') {
+      // Determine sub-view based on query params or default to dashboard
+      const params = new URLSearchParams(location.search);
+      setActiveView(params.get('view') || 'dashboard');
+    }
+  }, [location.pathname, location.search]);
 
   // Calculate total recurring expenses
   const totalRecurring = useMemo(() => 
@@ -195,6 +202,20 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     [categories]
   );
 
+  // Smart Summary Text
+  const smartSummary = useMemo(() => {
+    if (totalBudgeted === 0) return "Set up your budget to get insights!";
+    const spentPercentage = (totalSpent / totalBudgeted) * 100;
+    if (remainingBudget < 0) {
+      return `You are ${formatCurrency(Math.abs(remainingBudget))} over budget!`;
+    } else if (spentPercentage >= 80) {
+      return `You've spent ${Math.round(spentPercentage)}% of your budget. Be careful!`;
+    } else if (remainingBudget > 0 && daysLeft > 0) {
+      return `${formatCurrency(remainingBudget)} left for ${daysLeft} days. On track!`;
+    }
+    return "On track to stay under budget this month.";
+  }, [totalBudgeted, totalSpent, remainingBudget, daysLeft]);
+
   // Event handlers with useCallback
   const handleViewChange = useCallback((view: string) => {
     setActiveView(view);
@@ -208,6 +229,19 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const handleCloseSidebar = useCallback(() => {
     setSidebarOpen(false);
   }, []);
+
+  const handleQuickAddTransaction = useCallback(async (amount: number, note: string, date: string) => {
+    // For quick add, we'll default to a generic category and 'pending' status
+    // In a real app, you might have a default account or prompt for it.
+    await addDocument('transactions', {
+      date: date,
+      merchant: note || 'Quick Add',
+      amount: amount,
+      category: 'Uncategorized', // Or a default category
+      status: 'pending',
+      account: accounts.length > 0 ? accounts[0].name : 'Default Account', // Use first account or a default
+    });
+  }, [addDocument, accounts]);
 
   // Loading and Error Components
   const LoadingSpinner: React.FC = memo(() => (
@@ -247,7 +281,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     bgColor: string;
     trend?: { value: string; color: string };
   }> = memo(({ title, value, subtitle, icon: Icon, color, bgColor, trend }) => (
-    <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+    <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex items-center justify-between mb-2">
         <div className="flex-1">
           <p className="text-xs sm:text-sm text-gray-600 mb-1">{title}</p>
@@ -278,7 +312,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const TransactionCard: React.FC<{ transaction: Transaction; categories: Category[] }> = memo(({ transaction, categories }) => {
     const category = categories.find(c => c.name === transaction.category);
     return (
-      <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors active:bg-gray-100">
+      <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors active:bg-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center space-x-3 flex-1 min-w-0">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
             transaction.amount > 0 ? 'bg-green-100' : 'bg-gray-100'
@@ -304,7 +338,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     const health = getHealthStatus(category.spent, category.budgeted);
     
     return (
-      <div className="p-4 sm:p-6 hover:bg-gray-50 transition-colors active:bg-gray-100">
+      <div className="p-4 sm:p-6 hover:bg-gray-50 transition-colors active:bg-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             <span className="text-2xl flex-shrink-0">{category.emoji}</span>
@@ -338,38 +372,18 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   });
 
   const DashboardView: React.FC = () => (
-    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6">
-      {/* Mobile Hero Card */}
-      <div className="sm:hidden bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-        <p className="text-sm text-blue-100 mb-1">Total Net Worth</p>
-        <p className="text-4xl font-bold mb-2">{formatCurrency(netWorth)}</p>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-sm">+3.2% this month</span>
-          </div>
-          <div className="text-xs text-blue-100">
-            Updated {accounts.length > 0 ? accounts[0].lastUpdated : 'N/A'}
-          </div>
-        </div>
-      </div>
-
-      {/* Remaining Per Day Card - Mobile Priority */}
-      <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl sm:rounded-2xl p-5 text-white shadow-lg">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <p className="text-sm text-green-100 mb-1">Safe to Spend Per Day</p>
-            <p className="text-3xl sm:text-4xl font-bold">{formatCurrency(remainingPerDay)}</p>
-          </div>
-          <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-            <Calendar className="w-7 h-7" />
-          </div>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-green-100">{daysLeft} days left in October</span>
-          <span className="font-semibold">{formatCurrency(remainingBudget)} remaining</span>
-        </div>
-      </div>
+    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
+      {/* Single Remaining Budget Card */}
+      <RemainingBudgetCard
+        totalBudgeted={totalBudgeted}
+        totalSpent={totalSpent}
+        remainingBudget={remainingBudget}
+        remainingPerDay={remainingPerDay}
+        daysLeft={daysLeft}
+        rolloverEnabled={budgetSettings.rolloverEnabled}
+        previousMonthLeftover={budgetSettings.previousMonthLeftover}
+        smartSummary={smartSummary}
+      />
 
       {/* Top Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -410,7 +424,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Spending vs Budget */}
-        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Spending Trend</h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={spendingTrend}>
@@ -428,7 +442,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
 
         {/* Category Breakdown */}
-        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Spending by Category</h3>
           <div className="flex items-center justify-center">
             <ResponsiveContainer width="100%" height={200}>
@@ -454,7 +468,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       </div>
 
       {/* Net Worth Growth - Hidden on mobile by default */}
-      <div className="hidden sm:block bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+      <div className="hidden sm:block bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Net Worth Growth</h3>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={netWorthTrend}>
@@ -471,16 +485,16 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       </div>
 
       {/* Recurring Transactions Card */}
-      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-base sm:text-lg font-semibold text-gray-900">Upcoming Recurring Bills</h3>
             <p className="text-sm text-gray-500 mt-1">Total: {formatCurrency(totalRecurring)}/month</p>
           </div>
-          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
+          <Link to="/budget-app?view=recurring" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
             Manage
             <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
+          </Link>
         </div>
         <div className="space-y-2 sm:space-y-3">
           {recurringTransactions.slice(0, 5).map(txn => (
@@ -504,13 +518,13 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       </div>
 
       {/* Recent Transactions */}
-      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900">Recent Transactions</h3>
-          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
+          <Link to="/budget-app?view=transactions" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
             View All
             <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
+          </Link>
         </div>
         <div className="space-y-2 sm:space-y-3">
           {transactions.slice(0, 5).map(txn => (
@@ -522,7 +536,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   );
 
   const BudgetView: React.FC = () => (
-    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6">
+    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
       {/* Mobile-optimized header card */}
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl p-5 sm:p-6 text-white shadow-lg">
         <div className="flex items-center justify-between mb-3">
@@ -568,7 +582,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="p-4 sm:p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900">Budget Categories</h3>
@@ -590,7 +604,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   );
 
   const GoalsView: React.FC = () => (
-    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6">
+    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Savings Goals</h2>
         <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm active:bg-blue-800">
@@ -605,7 +619,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           const percentage = (goal.current / goal.target) * 100;
           
           return (
-            <div key={goal.id} className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-100">
+            <div key={goal.id} className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="flex items-center justify-between mb-4">
                 <Target className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: goal.color }} />
                 <span className="text-sm font-medium text-gray-600">{Math.round(percentage)}%</span>
@@ -642,7 +656,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       </div>
 
       {/* Mobile-optimized chart */}
-      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Goal Progress Over Time</h3>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={[
@@ -672,7 +686,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   );
 
   const TransactionsView: React.FC = () => (
-    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6">
+    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Transactions</h2>
         <div className="flex items-center space-x-2">
@@ -687,7 +701,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       </div>
 
       {/* Mobile-optimized transaction list */}
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="sm:hidden divide-y divide-gray-100">
           {transactions.map(txn => (
             <div key={txn.id} className="p-4 active:bg-gray-50 transition-colors">
@@ -763,6 +777,11 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     </div>
   );
 
+  // Monthly Reset Logic - Note: Full implementation requires server-side logic.
+  // For now, the budgetSettings.rolloverEnabled and previousMonthLeftover are displayed.
+  // A full "reset" would involve archiving current month's data and creating new budget entries.
+  // This is a complex backend task, often handled by Firebase Cloud Functions or similar.
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* iOS-style Sidebar - slides from left */}
@@ -793,14 +812,14 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {[
-              { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/budget-app' },
-              { id: 'transactions', label: 'Transactions', icon: List, path: '/budget-app' },
-              { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app' },
-              { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app' },
+              { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/budget-app?view=dashboard' },
+              { id: 'transactions', label: 'Transactions', icon: List, path: '/budget-app?view=transactions' },
+              { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app?view=budget' },
+              { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app?view=goals' },
               { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
             ].map(item => {
               const Icon = item.icon;
-              const isActive = window.location.pathname === item.path && (item.id === 'investments' || activeView === item.id);
+              const isActive = (item.path === location.pathname + location.search) || (item.id === 'investments' && location.pathname === '/investments');
               
               return (
                 <Link
@@ -884,22 +903,23 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
               {activeView === 'budget' && <BudgetView />}
               {activeView === 'goals' && <GoalsView />}
               {activeView === 'transactions' && <TransactionsView />}
+              {/* Add other views here if needed, e.g., RecurringTransactionsView */}
             </>
           )}
         </main>
 
         {/* iOS-style Bottom Navigation - Fixed at bottom on mobile */}
         <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 safe-bottom">
-          <div className="grid grid-cols-4 gap-1 px-2 py-2">
+          <div className="grid grid-cols-5 gap-1 px-2 py-2"> {/* Changed to 5 columns */}
             {[
-              { id: 'dashboard', label: 'Home', icon: Home, path: '/budget-app' },
-              { id: 'transactions', label: 'Activity', icon: List, path: '/budget-app' },
-              { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app' },
-              { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app' },
+              { id: 'dashboard', label: 'Home', icon: Home, path: '/budget-app?view=dashboard' },
+              { id: 'transactions', label: 'Activity', icon: List, path: '/budget-app?view=transactions' },
+              { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app?view=budget' },
+              { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app?view=goals' },
               { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
             ].map(item => {
               const Icon = item.icon;
-              const isActive = window.location.pathname === item.path && (item.id === 'investments' || activeView === item.id);
+              const isActive = (item.path === location.pathname + location.search) || (item.id === 'investments' && location.pathname === '/investments');
               return (
                 <Link
                   key={item.id}
@@ -986,6 +1006,20 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           style={{ WebkitBackdropFilter: 'blur(4px)' }}
         />
       )}
+
+      {/* Floating Quick Add Button */}
+      <Button
+        className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 rounded-full p-3 sm:p-4 shadow-lg bg-blue-600 hover:bg-blue-700 text-white z-30 animate-in fade-in zoom-in duration-300"
+        onClick={() => setIsQuickAddModalOpen(true)}
+      >
+        <Plus className="w-6 h-6 sm:w-7 sm:h-7" />
+      </Button>
+
+      <QuickAddTransactionModal
+        isOpen={isQuickAddModalOpen}
+        onClose={() => setIsQuickAddModalOpen(false)}
+        onSave={handleQuickAddTransaction}
+      />
     </div>
   );
 };

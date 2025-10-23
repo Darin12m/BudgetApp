@@ -11,21 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from 'date-fns';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 
+import { useInvestmentData, Investment } from '@/hooks/use-investment-data'; // Import the new hook and interface
+import { formatCurrency, calculateGainLoss } from '@/lib/utils'; // Import utility functions
+import InvestmentListItem from '@/components/InvestmentListItem'; // Import the new list item component
+
 // --- Interfaces ---
-interface Investment {
-  id: string;
-  name: string;
-  type: 'Stock' | 'Crypto';
-  quantity: number;
-  buyPrice: number;
-  currentPrice: number;
-  datePurchased: string; // YYYY-MM-DD
-  ownerUid: string;
-}
+// Investment interface is now imported from use-investment-data
 
 interface PortfolioSummary {
   totalInvested: number;
@@ -69,66 +62,31 @@ const MOCK_PERFORMANCE_DATA: PerformanceChartData[] = [
 
 const ALLOCATION_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
 
-// --- Utility Functions ---
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(value);
-};
-
-const calculateGainLoss = (investment: Investment) => {
-  const invested = investment.quantity * investment.buyPrice;
-  const currentValue = investment.quantity * investment.currentPrice;
-  const gainLoss = currentValue - invested;
-  const gainLossPercentage = invested === 0 ? 0 : (gainLoss / invested) * 100;
-  return { gainLoss, gainLossPercentage };
-};
-
 interface InvestmentsPageProps {
   userUid: string | null;
 }
 
 const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
-  const [investments, setInvestments] = useState<Investment[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    investments,
+    loading,
+    error,
+    addInvestment,
+    updateInvestment,
+    deleteInvestment,
+  } = useInvestmentData(userUid);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
   const [filterType, setFilterType] = useState<'All' | 'Stock' | 'Crypto'>('All');
   const [sortBy, setSortBy] = useState<'name' | 'gainLossPercentage' | 'totalValue'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // --- Real-time data fetching with Firebase onSnapshot ---
-  useEffect(() => {
-    if (!userUid) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    const q = query(collection(db, "investments"), where("ownerUid", "==", userUid));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedInvestments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Investment[];
-      setInvestments(fetchedInvestments);
-      setLoading(false);
-    }, (err) => {
-      console.error("Error fetching investments:", err);
-      setError("Failed to load investments. Please check your internet connection and Firebase rules.");
-      setLoading(false);
-      toast.error("Failed to load investments.");
-    });
-
-    return () => unsubscribe(); // Clean up the listener
-  }, [userUid]);
-
   // --- Computed Portfolio Summary ---
   const portfolioSummary: PortfolioSummary = useMemo(() => {
     let totalInvested = 0;
     let currentValue = 0;
+    let totalGainLoss = 0;
     let bestPerformer: Investment | null = null;
     let worstPerformer: Investment | null = null;
     let maxGain = -Infinity;
@@ -140,7 +98,8 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
       totalInvested += invested;
       currentValue += current;
 
-      const { gainLossPercentage } = calculateGainLoss(inv);
+      const { gainLoss, gainLossPercentage } = calculateGainLoss(inv);
+      totalGainLoss += gainLoss;
 
       if (gainLossPercentage > maxGain) {
         maxGain = gainLossPercentage;
@@ -152,7 +111,6 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
       }
     });
 
-    const totalGainLoss = currentValue - totalInvested;
     const totalGainLossPercentage = totalInvested === 0 ? 0 : (totalGainLoss / totalInvested) * 100;
 
     return {
@@ -219,7 +177,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
       .slice(0, 5);
   }, [investments]);
 
-  // --- Handlers (now operating on Firebase) ---
+  // --- Handlers ---
   const handleAddInvestment = useCallback(() => {
     setEditingInvestment(null);
     setIsModalOpen(true);
@@ -231,65 +189,30 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   }, []);
 
   const handleSaveInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid'>) => {
-    if (!userUid) {
-      toast.error("Authentication required to save investment.");
-      return;
+    if (editingInvestment) {
+      await updateInvestment(editingInvestment.id, newInvestment);
+    } else {
+      await addInvestment(newInvestment);
     }
-    try {
-      if (editingInvestment) {
-        await updateDoc(doc(db, "investments", editingInvestment.id), {
-          ...newInvestment,
-          updatedAt: serverTimestamp(),
-        });
-        toast.success("Investment updated successfully!");
-      } else {
-        await addDoc(collection(db, "investments"), {
-          ...newInvestment,
-          ownerUid: userUid,
-          createdAt: serverTimestamp(),
-        });
-        toast.success("Investment added successfully!");
-      }
-      setIsModalOpen(false);
-      setEditingInvestment(null);
-    } catch (e) {
-      console.error("Error saving investment:", e);
-      toast.error("Failed to save investment.");
-    }
-  }, [editingInvestment, userUid]);
+    setIsModalOpen(false);
+    setEditingInvestment(null);
+  }, [editingInvestment, addInvestment, updateInvestment]);
 
   const handleDeleteInvestment = useCallback(async (id: string) => {
-    if (!userUid) {
-      toast.error("Authentication required to delete investment.");
-      return;
-    }
-    if (confirm('Are you sure you want to delete this investment?')) {
-      try {
-        await deleteDoc(doc(db, "investments", id));
-        toast.success("Investment deleted successfully!");
-        setIsModalOpen(false);
-        setEditingInvestment(null);
-      } catch (e) {
-        console.error("Error deleting investment:", e);
-        toast.error("Failed to delete investment.");
-      }
-    }
-  }, [userUid]);
+    await deleteInvestment(id);
+    setIsModalOpen(false);
+    setEditingInvestment(null);
+  }, [deleteInvestment]);
 
   const handleRefreshPrices = useCallback(() => {
     // For a real app, this would call an external API to get updated prices.
-    // For now, we'll simulate a small random change.
-    const updatedInvestments = investments.map(inv => ({
-      ...inv,
-      currentPrice: inv.currentPrice * (1 + (Math.random() * 0.02 - 0.01)) // +/- 1%
-    }));
-    // Since onSnapshot is active, we don't directly set state here.
-    // Instead, we'd update the Firestore documents, and onSnapshot would
-    // automatically update the local state.
-    // For this simulation, we'll just update local state directly.
-    setInvestments(updatedInvestments);
+    // For now, we'll simulate a small random change and update Firestore.
+    investments.forEach(async (inv) => {
+      const newPrice = inv.currentPrice * (1 + (Math.random() * 0.02 - 0.01)); // +/- 1%
+      await updateInvestment(inv.id, { currentPrice: newPrice });
+    });
     toast.info("Simulated price refresh!");
-  }, [investments]);
+  }, [investments, updateInvestment]);
 
   const toggleSortOrder = useCallback(() => {
     setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
@@ -327,6 +250,9 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     return <LoadingSpinner />;
   }
 
+  const totalGainLossColor = portfolioSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600';
+  const totalGainLossIcon = portfolioSummary.totalGainLossPercentage >= 0 ? TrendingUp : TrendingDown;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 sm:p-6 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-24 sm:pb-6">
@@ -348,60 +274,19 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
           </div>
         </div>
 
-        {/* Portfolio Overview */}
-        <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-semibold">Portfolio Overview</CardTitle>
-            <Wallet className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Invested</p>
-                <p className="text-lg sm:text-xl font-bold">{formatCurrency(portfolioSummary.totalInvested)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Current Value</p>
-                <p className="text-lg sm:text-xl font-bold">{formatCurrency(portfolioSummary.currentValue)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Gain/Loss</p>
-                <p className={`text-lg sm:text-xl font-bold ${portfolioSummary.totalGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatCurrency(portfolioSummary.totalGainLoss)}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Gain/Loss %</p>
-                <p className={`text-lg sm:text-xl font-bold ${portfolioSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {portfolioSummary.totalGainLossPercentage.toFixed(2)}%
-                </p>
-              </div>
+        {/* Portfolio Overview - Top Line Summary */}
+        <Card className="shadow-sm border border-gray-100 dark:border-gray-800 bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-blue-100">Total Portfolio Value</p>
+              <Wallet className="h-5 w-5 text-blue-100" />
             </div>
-            <div className="h-[150px] sm:h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={MOCK_PERFORMANCE_DATA}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" stroke="hsl(var(--foreground))" style={{ fontSize: '10px' }} />
-                  <YAxis stroke="hsl(var(--foreground))" style={{ fontSize: '10px' }} tickFormatter={(value) => formatCurrency(value)} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
-                    formatter={(value) => formatCurrency(Number(value))}
-                  />
-                  <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 text-sm">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <span className="text-gray-600 dark:text-gray-400">Best Performer:</span>
-                <span className="font-semibold">{portfolioSummary.bestPerformer?.name || 'N/A'}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <TrendingDown className="h-4 w-4 text-red-600" />
-                <span className="text-gray-600 dark:text-gray-400">Worst Performer:</span>
-                <span className="font-semibold">{portfolioSummary.worstPerformer?.name || 'N/A'}</span>
-              </div>
+            <p className="text-4xl font-bold mb-1">{formatCurrency(portfolioSummary.currentValue)}</p>
+            <div className="flex items-center space-x-2">
+              {totalGainLossIcon && <totalGainLossIcon className={`w-4 h-4 ${totalGainLossColor}`} />}
+              <span className={`text-sm ${totalGainLossColor}`}>
+                {portfolioSummary.totalGainLossPercentage.toFixed(2)}% this month
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -439,76 +324,15 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Desktop Table View */}
-            <div className="hidden sm:block overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Asset Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Buy Price</TableHead>
-                    <TableHead>Current Price</TableHead>
-                    <TableHead>Total Value</TableHead>
-                    <TableHead>Gain/Loss (%)</TableHead>
-                    <TableHead>Purchased</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAndSortedInvestments.map(inv => {
-                    const { gainLossPercentage } = calculateGainLoss(inv);
-                    const totalValue = inv.quantity * inv.currentPrice;
-                    return (
-                      <TableRow key={inv.id}>
-                        <TableCell className="font-medium">{inv.name}</TableCell>
-                        <TableCell>{inv.type}</TableCell>
-                        <TableCell>{inv.quantity}</TableCell>
-                        <TableCell>{formatCurrency(inv.buyPrice)}</TableCell>
-                        <TableCell>{formatCurrency(inv.currentPrice)}</TableCell>
-                        <TableCell>{formatCurrency(totalValue)}</TableCell>
-                        <TableCell className={gainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {gainLossPercentage.toFixed(2)}%
-                        </TableCell>
-                        <TableCell>{inv.datePurchased}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => handleEditInvestment(inv)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Mobile Card View */}
-            <div className="sm:hidden space-y-4">
-              {filteredAndSortedInvestments.map(inv => {
-                const { gainLoss, gainLossPercentage } = calculateGainLoss(inv);
-                const totalValue = inv.quantity * inv.currentPrice;
-                return (
-                  <Card key={inv.id} className="p-4 shadow-sm border border-gray-100 dark:border-gray-800">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-lg">{inv.name} <span className="text-sm text-gray-500">({inv.type})</span></h3>
-                      <Button variant="ghost" size="icon" onClick={() => handleEditInvestment(inv)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div><span className="text-gray-600 dark:text-gray-400">Qty:</span> {inv.quantity}</div>
-                      <div><span className="text-gray-600 dark:text-gray-400">Buy Price:</span> {formatCurrency(inv.buyPrice)}</div>
-                      <div><span className="text-gray-600 dark:text-gray-400">Current Price:</span> {formatCurrency(inv.currentPrice)}</div>
-                      <div><span className="text-gray-600 dark:text-gray-400">Total Value:</span> {formatCurrency(totalValue)}</div>
-                      <div><span className="text-gray-600 dark:text-gray-400">Purchased:</span> {inv.datePurchased}</div>
-                      <div className={gainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600'}>
-                        <span className="text-gray-600 dark:text-gray-400">Gain/Loss:</span> {gainLossPercentage.toFixed(2)}%
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
+            {/* Clean List View */}
+            <div className="space-y-3">
+              {filteredAndSortedInvestments.length > 0 ? (
+                filteredAndSortedInvestments.map(inv => (
+                  <InvestmentListItem key={inv.id} investment={inv} onEdit={handleEditInvestment} />
+                ))
+              ) : (
+                <p className="text-center text-gray-500 py-4">No investments found. Add one to get started!</p>
+              )}
             </div>
           </CardContent>
         </Card>
