@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Download, Home, List, BarChart3, ChevronRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Download, Home, List, BarChart3, ChevronRight, Wallet } from 'lucide-react'; // Added Wallet icon
+import { Link } from 'react-router-dom'; // Import Link for navigation
 
 // Firebase imports
 import { initializeApp } from 'firebase/app';
@@ -1024,28 +1025,33 @@ const FinanceFlow: React.FC = () => {
           
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {[
-              { id: 'dashboard', label: 'Dashboard', icon: Home },
-              { id: 'transactions', label: 'Transactions', icon: List },
-              { id: 'budget', label: 'Budget', icon: DollarSign },
-              { id: 'goals', label: 'Goals', icon: Target },
+              { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/budget-app' },
+              { id: 'transactions', label: 'Transactions', icon: List, path: '/budget-app' },
+              { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app' },
+              { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app' },
+              { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' }, // New navigation item
             ].map(item => {
               const Icon = item.icon;
+              // Determine if the current path matches the item's path for active state
+              const isActive = window.location.pathname === item.path && (item.id === 'investments' || activeView === item.id);
+              
               return (
-                <button
+                <Link
                   key={item.id}
+                  to={item.path}
                   onClick={() => handleViewChange(item.id)}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
-                    activeView === item.id
+                    isActive
                       ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm'
                       : 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
-                  {activeView === item.id && (
+                  {isActive && (
                     <div className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
                   )}
-                </button>
+                </Link>
               );
             })}
           </nav>
@@ -1119,16 +1125,18 @@ const FinanceFlow: React.FC = () => {
         <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 safe-bottom">
           <div className="grid grid-cols-4 gap-1 px-2 py-2">
             {[
-              { id: 'dashboard', label: 'Home', icon: Home },
-              { id: 'transactions', label: 'Activity', icon: List },
-              { id: 'budget', label: 'Budget', icon: DollarSign },
-              { id: 'goals', label: 'Goals', icon: Target },
+              { id: 'dashboard', label: 'Home', icon: Home, path: '/budget-app' },
+              { id: 'transactions', label: 'Activity', icon: List, path: '/budget-app' },
+              { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app' },
+              { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app' },
+              { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' }, // New navigation item
             ].map(item => {
               const Icon = item.icon;
-              const isActive = activeView === item.id;
+              const isActive = window.location.pathname === item.path && (item.id === 'investments' || activeView === item.id);
               return (
-                <button
+                <Link
                   key={item.id}
+                  to={item.path}
                   onClick={() => handleViewChange(item.id)}
                   className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all active:scale-95 ${
                     isActive ? 'text-blue-600' : 'text-gray-500'
@@ -1141,7 +1149,7 @@ const FinanceFlow: React.FC = () => {
                   {isActive && (
                     <div className="absolute bottom-0 w-8 h-1 bg-blue-600 rounded-t-full"></div>
                   )}
-                </button>
+                </Link>
               );
             })}
           </div>
