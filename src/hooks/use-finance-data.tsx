@@ -97,8 +97,8 @@ export const useFinanceData = (userUid: string | null) => {
         setState(data as any[]);
         setLoading(false);
       }, (err) => {
-        console.error(`Error fetching ${collectionName}:`, err);
-        setError(`Failed to load ${collectionName}. Please check your internet connection and Firebase rules.`);
+        console.error(`Error fetching ${collectionName}:`, err.code, err.message); // Enhanced error logging
+        setError(`Failed to load ${collectionName}. Error: ${err.message}`); // More specific error message
         setLoading(false);
         toast.error(`Failed to load ${collectionName}.`);
       });
@@ -139,8 +139,8 @@ export const useFinanceData = (userUid: string | null) => {
         }
       }
     }, (err) => {
-      console.error("Error fetching budget settings:", err);
-      toast.error("Failed to load budget settings.");
+      console.error("Error fetching budget settings:", err.code, err.message); // Enhanced error logging
+      toast.error(`Failed to load budget settings. Error: ${err.message}`); // More specific error message
     });
     unsubscribes.push(unsubscribeBudgetSettings);
 
