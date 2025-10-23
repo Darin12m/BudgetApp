@@ -2,38 +2,50 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth'; // Import createUserWithEmailAndPassword
 import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Mail, Lock } from 'lucide-react'; // Removed Google
+import { Loader2, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isRegisterMode, setIsRegisterMode] = useState(false); // New state for register mode
   const navigate = useNavigate();
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleSubmitAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log(`${isRegisterMode ? 'Register' : 'Login'} clicked`); // Add console.log
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success('Logged in successfully!');
+      if (isRegisterMode) {
+        await createUserWithEmailAndPassword(auth, email, password);
+        toast.success('Account created successfully! You are now logged in.');
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+        toast.success('Logged in successfully!');
+      }
       navigate('/'); // Redirect to dashboard or home page
     } catch (error: any) {
-      console.error('Email login failed:', error);
-      let errorMessage = 'Login failed. Please check your credentials.';
+      console.error(`${isRegisterMode ? 'Registration' : 'Login'} failed:`, error);
+      let errorMessage = `${isRegisterMode ? 'Registration' : 'Login'} failed.`;
       if (error.code === 'auth/invalid-email') {
         errorMessage = 'Invalid email address.';
       } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         errorMessage = 'Invalid email or password.';
+      } else if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already in use. Try logging in.';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password should be at least 6 characters.';
       } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = 'Too many failed login attempts. Please try again later.';
+        errorMessage = 'Too many failed attempts. Please try again later.';
       }
       toast.error(errorMessage);
     } finally {
@@ -43,6 +55,7 @@ const LoginPage: React.FC = () => {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
+    console.log('Google login clicked'); // Add console.log
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -70,11 +83,11 @@ const LoginPage: React.FC = () => {
             FinanceFlow
           </CardTitle>
           <CardDescription className="mt-2 text-muted-foreground">
-            Log in to manage your finances.
+            {isRegisterMode ? 'Create your account to get started.' : 'Log in to manage your finances.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleEmailLogin} className="space-y-4">
+          <form onSubmit={handleSubmitAuth} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -107,7 +120,7 @@ const LoginPage: React.FC = () => {
             </div>
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Log In
+              {isRegisterMode ? 'Sign Up' : 'Log In'}
             </Button>
           </form>
 
@@ -124,12 +137,24 @@ const LoginPage: React.FC = () => {
             disabled={loading}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {/* Removed Google icon */}
             Sign in with Google
           </Button>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Don't have an account? <a href="#" className="text-primary hover:underline">Sign Up</a>
+            {isRegisterMode ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsRegisterMode(prev => !prev);
+                // Clear email and password fields when toggling mode
+                setEmail('');
+                setPassword('');
+              }}
+              className="text-primary hover:underline"
+            >
+              {isRegisterMode ? 'Log In' : 'Sign Up'}
+            </a>
           </p>
         </CardContent>
       </Card>
