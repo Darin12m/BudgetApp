@@ -2,10 +2,11 @@ import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Download, Home, List, BarChart3, ChevronRight, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useFinanceData } from '@/hooks/use-finance-data'; // Import the new hook
 
-// Firebase imports removed
-
-// TypeScript Interfaces
+// TypeScript Interfaces (moved to use-finance-data.tsx for centralized management)
+// Re-declaring them here for component props/local types if needed, but primarily
+// the hook will manage the data types.
 interface Transaction {
   id: string;
   date: string;
@@ -59,20 +60,7 @@ interface RecurringTransaction {
 interface BudgetSettings {
   rolloverEnabled: boolean;
   previousMonthLeftover: number;
-}
-
-interface Settings {
-  rolloverEnabled: boolean;
-  autoSync: boolean;
-  darkMode: boolean;
-  notifications: {
-    largeTransactions: boolean;
-    budgetAlerts: boolean;
-    billReminders: boolean;
-    weeklyReports: boolean;
-  };
-  currency: string;
-  startOfWeek: string;
+  ownerUid: string;
 }
 
 interface HealthStatus {
@@ -99,43 +87,6 @@ interface CategoryData {
   [key: string]: any;
 }
 
-// --- Mock Data ---
-const MOCK_TRANSACTIONS: Transaction[] = [
-  { id: 't1', date: '2025-10-18', merchant: 'Starbucks', amount: -5.50, category: 'Coffee', status: 'cleared', account: 'Checking', ownerUid: 'mock' },
-  { id: 't2', date: '2025-10-17', merchant: 'Whole Foods', amount: -75.23, category: 'Groceries', status: 'cleared', account: 'Credit Card', ownerUid: 'mock' },
-  { id: 't3', date: '2025-10-16', merchant: 'Salary', amount: 2500.00, category: 'Income', status: 'cleared', account: 'Checking', ownerUid: 'mock' },
-  { id: 't4', date: '2025-10-15', merchant: 'Netflix', amount: -15.99, category: 'Entertainment', status: 'pending', account: 'Credit Card', ownerUid: 'mock' },
-  { id: 't5', date: '2025-10-14', merchant: 'Gas Station', amount: -40.00, category: 'Transportation', status: 'cleared', account: 'Checking', ownerUid: 'mock' },
-];
-
-const MOCK_CATEGORIES: Category[] = [
-  { id: 'c1', name: 'Groceries', budgeted: 500, spent: 350, color: '#3b82f6', emoji: '🍎', ownerUid: 'mock' },
-  { id: 'c2', name: 'Rent', budgeted: 1200, spent: 1200, color: '#ef4444', emoji: '🏠', ownerUid: 'mock' },
-  { id: 'c3', name: 'Utilities', budgeted: 150, spent: 100, color: '#f59e0b', emoji: '💡', ownerUid: 'mock' },
-  { id: 'c4', name: 'Entertainment', budgeted: 200, spent: 180, color: '#8b5cf6', emoji: '🎬', ownerUid: 'mock' },
-  { id: 'c5', name: 'Coffee', budgeted: 50, spent: 30, color: '#10b981', emoji: '☕', ownerUid: 'mock' },
-  { id: 'c6', name: 'Transportation', budgeted: 100, spent: 40, color: '#06b6d4', emoji: '🚗', ownerUid: 'mock' },
-];
-
-const MOCK_ACCOUNTS: Account[] = [
-  { id: 'a1', name: 'Checking', balance: 3202.78, type: 'checking', lastUpdated: '2025-10-19', ownerUid: 'mock' },
-  { id: 'a2', name: 'Savings', balance: 36000.00, type: 'savings', lastUpdated: '2025-10-19', ownerUid: 'mock' },
-  { id: 'a3', name: 'Credit Card', balance: -500.00, type: 'credit', lastUpdated: '2025-10-19', ownerUid: 'mock' },
-];
-
-const MOCK_GOALS: Goal[] = [
-  { id: 'g1', name: 'Emergency Fund', target: 10000, current: 6500, color: '#10b981', ownerUid: 'mock' },
-  { id: 'g2', name: 'Vacation', target: 2000, current: 1200, color: '#f59e0b', ownerUid: 'mock' },
-  { id: 'g3', name: 'New Laptop', target: 1800, current: 1650, color: '#3b82f6', ownerUid: 'mock' },
-];
-
-const MOCK_RECURRING_TRANSACTIONS: RecurringTransaction[] = [
-  { id: 'rt1', name: 'Rent', amount: -1200, category: 'Rent', frequency: 'Monthly', nextDate: '2025-11-01', emoji: '🏠', ownerUid: 'mock' },
-  { id: 'rt2', name: 'Netflix', amount: -15.99, category: 'Entertainment', frequency: 'Monthly', nextDate: '2025-10-25', emoji: '🎬', ownerUid: 'mock' },
-  { id: 'rt3', name: 'Spotify', amount: -10.99, category: 'Entertainment', frequency: 'Monthly', nextDate: '2025-10-28', emoji: '🎵', ownerUid: 'mock' },
-  { id: 'rt4', name: 'Gym Membership', amount: -30, category: 'Health', frequency: 'Monthly', nextDate: '2025-11-05', emoji: '💪', ownerUid: 'mock' },
-];
-
 // Utility Functions
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-US', {
@@ -153,52 +104,33 @@ const getHealthStatus = (spent: number, budgeted: number): HealthStatus => {
 };
 
 interface BudgetAppProps {
-  // userUid prop removed
+  userUid: string | null;
 }
 
-const FinanceFlow: React.FC<BudgetAppProps> = () => {
+const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
+  const {
+    transactions,
+    categories,
+    accounts,
+    goals,
+    recurringTransactions,
+    budgetSettings,
+    loading,
+    error,
+    addDocument,
+    updateDocument,
+    deleteDocument,
+  } = useFinanceData(userUid);
+
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  const [selectedMonth, setSelectedMonth] = useState<string>('October 2025');
-  const [showNotifications, setShowNotifications] = useState<boolean>(false);
-  
-  // Settings state
-  const [settings, setSettings] = useState<Settings>({
-    rolloverEnabled: true,
-    autoSync: true,
-    darkMode: false,
-    notifications: {
-      largeTransactions: true,
-      budgetAlerts: true,
-      billReminders: true,
-      weeklyReports: false,
-    },
-    currency: 'USD',
-    startOfWeek: 'Sunday',
-  });
-  
-  // Using mock data directly
-  const transactions = MOCK_TRANSACTIONS;
-  const categories = MOCK_CATEGORIES;
-  const goals = MOCK_GOALS;
-  const accounts = MOCK_ACCOUNTS;
-  const recurringTransactions = MOCK_RECURRING_TRANSACTIONS;
-
-  // Loading and error states are simplified as we're using mock data
-  const loading = false;
-  const error = null;
+  const [selectedMonth, setSelectedMonth] = useState<string>('October 2025'); // This would ideally be dynamic based on current date
 
   // Calculate total recurring expenses
   const totalRecurring = useMemo(() => 
     recurringTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0), 
     [recurringTransactions]
   );
-
-  // Budget rollover settings (these would ideally come from Firebase as well)
-  const [budgetSettings] = useState<BudgetSettings>({
-    rolloverEnabled: true,
-    previousMonthLeftover: 342.89
-  });
 
   // Calculate net worth
   const netWorth = useMemo(() => 
@@ -214,7 +146,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = () => {
     { month: 'Jul', spent: 3100, budget: 3200 },
     { month: 'Aug', spent: 2900, budget: 3200 },
     { month: 'Sep', spent: 2750, budget: 3000 },
-    { month: 'Oct', spent: 1257.59, budget: 3000 },
+    { month: 'Oct', spent: 1257.59, budget: 3000 }, // This should be calculated from actual transactions
   ], []);
 
   // Net worth trend (mocked for now, would be derived from accounts history)
@@ -225,7 +157,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = () => {
     { month: 'Jul', value: 37800 },
     { month: 'Aug', value: 38500 },
     { month: 'Sep', value: 38900 },
-    { month: 'Oct', value: 39202.78 },
+    { month: 'Oct', value: 39202.78 }, // This should be calculated from actual accounts
   ], []);
 
   const totalBudgeted = useMemo(() => 
@@ -246,8 +178,8 @@ const FinanceFlow: React.FC<BudgetAppProps> = () => {
   );
 
   // Calculate remaining per day (days left in October)
-  const today = new Date('2025-10-19'); // This should be dynamic
-  const endOfMonth = new Date('2025-10-31'); // This should be dynamic
+  const today = new Date(); // Use current date
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of current month
   const daysLeft = Math.ceil((endOfMonth.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   const remainingPerDay = useMemo(() => 
     remainingBudget / daysLeft, 

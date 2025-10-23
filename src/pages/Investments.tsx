@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from 'date-fns';
-
-// Firebase imports removed
+import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { toast } from 'sonner';
 
 // --- Interfaces ---
 interface Investment {
@@ -52,16 +53,7 @@ interface TopPerformerData {
   color: string;
 }
 
-// --- Mock Data ---
-const MOCK_INVESTMENTS: Investment[] = [
-  { id: 'mock-1', name: 'AAPL', type: 'Stock', quantity: 10, buyPrice: 150, currentPrice: 175, datePurchased: '2023-01-15', ownerUid: 'mock' },
-  { id: 'mock-2', name: 'GOOGL', type: 'Stock', quantity: 5, buyPrice: 100, currentPrice: 110, datePurchased: '2023-03-20', ownerUid: 'mock' },
-  { id: 'mock-3', name: 'MSFT', type: 'Stock', quantity: 8, buyPrice: 250, currentPrice: 240, datePurchased: '2023-02-10', ownerUid: 'mock' },
-  { id: 'mock-4', name: 'BTC', type: 'Crypto', quantity: 0.5, buyPrice: 30000, currentPrice: 35000, datePurchased: '2023-05-01', ownerUid: 'mock' },
-  { id: 'mock-5', name: 'ETH', type: 'Crypto', quantity: 2, buyPrice: 1800, currentPrice: 1700, datePurchased: '2023-06-10', ownerUid: 'mock' },
-  { id: 'mock-6', name: 'AMZN', type: 'Stock', quantity: 3, buyPrice: 120, currentPrice: 130, datePurchased: '2023-04-05', ownerUid: 'mock' },
-];
-
+// --- Mock Data (for charts that don't directly use investment data) ---
 const MOCK_PERFORMANCE_DATA: PerformanceChartData[] = [
   { date: 'Jan', value: 10000 },
   { date: 'Feb', value: 10500 },
@@ -90,26 +82,48 @@ const calculateGainLoss = (investment: Investment) => {
   const invested = investment.quantity * investment.buyPrice;
   const currentValue = investment.quantity * investment.currentPrice;
   const gainLoss = currentValue - invested;
-  const gainLossPercentage = (gainLoss / invested) * 100;
+  const gainLossPercentage = invested === 0 ? 0 : (gainLoss / invested) * 100;
   return { gainLoss, gainLossPercentage };
 };
 
 interface InvestmentsPageProps {
-  // userUid prop removed
+  userUid: string | null;
 }
 
-const InvestmentsPage: React.FC<InvestmentsPageProps> = () => {
-  const [investments, setInvestments] = useState<Investment[]>(MOCK_INVESTMENTS); // Initialize with mock data
-  const [loading, setLoading] = useState<boolean>(false); // No loading as we use mock data
-  const [error, setError] = useState<string | null>(null); // No error as we use mock data
+const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
+  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
   const [filterType, setFilterType] = useState<'All' | 'Stock' | 'Crypto'>('All');
   const [sortBy, setSortBy] = useState<'name' | 'gainLossPercentage' | 'totalValue'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // --- No real-time data fetching with Firebase onSnapshot ---
-  // useEffect removed as Firebase is no longer used for data fetching.
+  // --- Real-time data fetching with Firebase onSnapshot ---
+  useEffect(() => {
+    if (!userUid) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const q = query(collection(db, "investments"), where("ownerUid", "==", userUid));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedInvestments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Investment[];
+      setInvestments(fetchedInvestments);
+      setLoading(false);
+    }, (err) => {
+      console.error("Error fetching investments:", err);
+      setError("Failed to load investments. Please check your internet connection and Firebase rules.");
+      setLoading(false);
+      toast.error("Failed to load investments.");
+    });
+
+    return () => unsubscribe(); // Clean up the listener
+  }, [userUid]);
 
   // --- Computed Portfolio Summary ---
   const portfolioSummary: PortfolioSummary = useMemo(() => {
@@ -205,7 +219,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = () => {
       .slice(0, 5);
   }, [investments]);
 
-  // --- Handlers (now operating on local state/mock data) ---
+  // --- Handlers (now operating on Firebase) ---
   const handleAddInvestment = useCallback(() => {
     setEditingInvestment(null);
     setIsModalOpen(true);
@@ -217,34 +231,65 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = () => {
   }, []);
 
   const handleSaveInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid'>) => {
-    // For mock data, we'll simulate saving by updating local state
-    if (editingInvestment) {
-      setInvestments(prev => prev.map(inv => inv.id === editingInvestment.id ? { ...inv, ...newInvestment, id: editingInvestment.id, ownerUid: 'mock' } : inv));
-    } else {
-      // Generate a simple mock ID
-      const newId = `mock-${investments.length + 1}`;
-      setInvestments(prev => [...prev, { ...newInvestment, id: newId, ownerUid: 'mock' }]);
+    if (!userUid) {
+      toast.error("Authentication required to save investment.");
+      return;
     }
-    setIsModalOpen(false);
-    setEditingInvestment(null);
-  }, [editingInvestment, investments.length]);
-
-  const handleDeleteInvestment = useCallback(async (id: string) => {
-    if (confirm('Are you sure you want to delete this investment?')) {
-      setInvestments(prev => prev.filter(inv => inv.id !== id));
+    try {
+      if (editingInvestment) {
+        await updateDoc(doc(db, "investments", editingInvestment.id), {
+          ...newInvestment,
+          updatedAt: serverTimestamp(),
+        });
+        toast.success("Investment updated successfully!");
+      } else {
+        await addDoc(collection(db, "investments"), {
+          ...newInvestment,
+          ownerUid: userUid,
+          createdAt: serverTimestamp(),
+        });
+        toast.success("Investment added successfully!");
+      }
       setIsModalOpen(false);
       setEditingInvestment(null);
+    } catch (e) {
+      console.error("Error saving investment:", e);
+      toast.error("Failed to save investment.");
     }
-  }, []);
+  }, [editingInvestment, userUid]);
+
+  const handleDeleteInvestment = useCallback(async (id: string) => {
+    if (!userUid) {
+      toast.error("Authentication required to delete investment.");
+      return;
+    }
+    if (confirm('Are you sure you want to delete this investment?')) {
+      try {
+        await deleteDoc(doc(db, "investments", id));
+        toast.success("Investment deleted successfully!");
+        setIsModalOpen(false);
+        setEditingInvestment(null);
+      } catch (e) {
+        console.error("Error deleting investment:", e);
+        toast.error("Failed to delete investment.");
+      }
+    }
+  }, [userUid]);
 
   const handleRefreshPrices = useCallback(() => {
-    // Simulate price refresh for mock data
-    setInvestments(prev => prev.map(inv => ({
+    // For a real app, this would call an external API to get updated prices.
+    // For now, we'll simulate a small random change.
+    const updatedInvestments = investments.map(inv => ({
       ...inv,
-      currentPrice: inv.currentPrice * (1 + (Math.random() * 0.1 - 0.05)) // +/- 5%
-    })));
-    console.log("Prices refreshed!");
-  }, []);
+      currentPrice: inv.currentPrice * (1 + (Math.random() * 0.02 - 0.01)) // +/- 1%
+    }));
+    // Since onSnapshot is active, we don't directly set state here.
+    // Instead, we'd update the Firestore documents, and onSnapshot would
+    // automatically update the local state.
+    // For this simulation, we'll just update local state directly.
+    setInvestments(updatedInvestments);
+    toast.info("Simulated price refresh!");
+  }, [investments]);
 
   const toggleSortOrder = useCallback(() => {
     setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
