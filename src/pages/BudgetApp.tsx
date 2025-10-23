@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search, Lightbulb, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search, Lightbulb, Zap, LucideIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useFinanceData } from '@/hooks/use-finance-data';
 import { formatCurrency } from '@/lib/utils';
@@ -472,7 +472,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
               <LineChart data={spendingForecastChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} />
-                <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} formatter={(value) => formatCurrency(Number(value))} />
+                <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} format={(value) => formatCurrency(Number(value))} />
                 <Tooltip
                   contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                   formatter={(value) => formatCurrency(Number(value))}
