@@ -235,6 +235,15 @@ const InvestmentsPage: React.FC = () => {
     setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
   }, []);
 
+  // --- Automatic Refresh Effect ---
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      handleRefreshPrices();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(refreshInterval); // Clean up the interval on component unmount
+  }, [handleRefreshPrices]);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 sm:p-6 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-24 sm:pb-6">
