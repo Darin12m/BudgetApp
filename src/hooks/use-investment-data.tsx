@@ -165,19 +165,27 @@ export const useInvestmentData = (userUid: string | null) => {
       return;
     }
 
-    const payload = {
+    const payload: any = { // Use 'any' to allow dynamic deletion of properties
       ...data,
-      ownerUid: userUid, // This line ensures ownerUid is set
+      ownerUid: userUid,
       createdAt: serverTimestamp(),
     };
-    console.log("Payload being sent:", payload);
+
+    // Remove any undefined fields from the payload
+    Object.keys(payload).forEach(key => {
+      if (payload[key] === undefined) {
+        delete payload[key];
+      }
+    });
+
+    console.log("Cleaned payload being sent:", payload);
 
     try {
       await addDoc(collection(db, "investments"), payload);
       toast.success("Investment added successfully!");
-    } catch (e: any) { // Explicitly type 'e' as 'any' for error.code
-      console.error("Error adding investment:", e.code, e.message); // Log error.code
-      toast.error(`Failed to add investment: ${e.message}`); // Display specific error message
+    } catch (e: any) {
+      console.error("Error adding investment:", e.code, e.message);
+      toast.error(`Failed to add investment: ${e.message}`);
     }
   }, [userUid]);
 
