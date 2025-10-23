@@ -14,7 +14,7 @@ export const formatCurrency = (value: number): string => {
 };
 
 // Re-exporting Investment interface from use-investment-data for type consistency
-import { Investment } from '@/hooks/use-investment-data';
+import { Investment } from '@/hooks/use-investment-data'; // Updated import path
 
 export const calculateGainLoss = (investment: Investment) => {
   const invested = investment.quantity * investment.buyPrice;

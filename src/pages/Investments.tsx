@@ -1,32 +1,28 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { DollarSign, TrendingUp, TrendingDown, Plus, Edit, Trash2, Filter, SortAsc, RefreshCcw, Wallet, BarChart3, X, Save, CalendarDays, ChevronRight, AlertCircle, LucideIcon } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { DollarSign, TrendingUp, TrendingDown, Plus, Edit, Trash2, Filter, SortAsc, Wallet, Bitcoin, LucideIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; // Keep Table imports for InvestmentForm, but not for main display
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
-import { useInvestmentData, Investment } from '@/hooks/use-investment-data'; // Import the new hook and interface
-import { formatCurrency, calculateGainLoss } from '@/lib/utils'; // Import utility functions
-import InvestmentListItem from '@/components/InvestmentListItem'; // Import the new list item component
+import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
+import { formatCurrency, calculateGainLoss } from '@/lib/utils';
+import InvestmentListItem from '@/components/InvestmentListItem';
 
 // --- Interfaces ---
-// Investment interface is now imported from use-investment-data
-
 interface PortfolioSummary {
   totalInvested: number;
   currentValue: number;
   totalGainLoss: number;
   totalGainLossPercentage: number;
-  bestPerformer: Investment | null;
-  worstPerformer: Investment | null;
 }
 
 interface AllocationData {
@@ -34,31 +30,6 @@ interface AllocationData {
   value: number;
   color: string;
 }
-
-interface PerformanceChartData {
-  date: string;
-  value: number;
-}
-
-interface TopPerformerData {
-  name: string;
-  gainPercentage: number;
-  color: string;
-}
-
-// --- Mock Data (for charts that don't directly use investment data) ---
-const MOCK_PERFORMANCE_DATA: PerformanceChartData[] = [
-  { date: 'Jan', value: 10000 },
-  { date: 'Feb', value: 10500 },
-  { date: 'Mar', value: 11200 },
-  { date: 'Apr', value: 10800 },
-  { date: 'May', value: 11500 },
-  { date: 'Jun', value: 12000 },
-  { date: 'Jul', value: 12800 },
-  { date: 'Aug', value: 13500 },
-  { date: 'Sep', value: 13200 },
-  { date: 'Oct', value: 14000 },
-];
 
 const ALLOCATION_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
 
@@ -74,41 +45,27 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     addInvestment,
     updateInvestment,
     deleteInvestment,
+    priceChange, // Get price change status
   } = useInvestmentData(userUid);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
-  const [filterType, setFilterType] = useState<'All' | 'Stock' | 'Crypto'>('All');
+  const [activeTab, setActiveTab] = useState<'all' | 'stocks' | 'crypto'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'gainLossPercentage' | 'totalValue'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // --- Computed Portfolio Summary ---
-  const portfolioSummary: PortfolioSummary = useMemo(() => {
+  // --- Computed Portfolio Summary (Overall) ---
+  const overallPortfolioSummary: PortfolioSummary = useMemo(() => {
     let totalInvested = 0;
     let currentValue = 0;
     let totalGainLoss = 0;
-    let bestPerformer: Investment | null = null;
-    let worstPerformer: Investment | null = null;
-    let maxGain = -Infinity;
-    let minGain = Infinity;
 
     investments.forEach(inv => {
       const invested = inv.quantity * inv.buyPrice;
       const current = inv.quantity * inv.currentPrice;
       totalInvested += invested;
       currentValue += current;
-
-      const { gainLoss, gainLossPercentage } = calculateGainLoss(inv);
-      totalGainLoss += gainLoss;
-
-      if (gainLossPercentage > maxGain) {
-        maxGain = gainLossPercentage;
-        bestPerformer = inv;
-      }
-      if (gainLossPercentage < minGain) {
-        minGain = gainLossPercentage;
-        worstPerformer = inv;
-      }
+      totalGainLoss += (current - invested);
     });
 
     const totalGainLossPercentage = totalInvested === 0 ? 0 : (totalGainLoss / totalInvested) * 100;
@@ -118,17 +75,38 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
       currentValue,
       totalGainLoss,
       totalGainLossPercentage,
-      bestPerformer,
-      worstPerformer,
     };
   }, [investments]);
 
-  // --- Filtered and Sorted Investments ---
-  const filteredAndSortedInvestments = useMemo(() => {
-    let filtered = investments;
-    if (filterType !== 'All') {
-      filtered = investments.filter(inv => inv.type === filterType);
-    }
+  // --- Filtered Investments for Tabs ---
+  const stockInvestments = useMemo(() => investments.filter(inv => inv.type === 'Stock'), [investments]);
+  const cryptoInvestments = useMemo(() => investments.filter(inv => inv.type === 'Crypto'), [investments]);
+
+  // --- Portfolio Summary (Per Section) ---
+  const getSectionSummary = useCallback((sectionInvestments: Investment[]): PortfolioSummary => {
+    let totalInvested = 0;
+    let currentValue = 0;
+    let totalGainLoss = 0;
+
+    sectionInvestments.forEach(inv => {
+      const invested = inv.quantity * inv.buyPrice;
+      const current = inv.quantity * inv.currentPrice;
+      totalInvested += invested;
+      currentValue += current;
+      totalGainLoss += (current - invested);
+    });
+
+    const totalGainLossPercentage = totalInvested === 0 ? 0 : (totalGainLoss / totalInvested) * 100;
+    return { totalInvested, currentValue, totalGainLoss, totalGainLossPercentage };
+  }, []);
+
+  const stockSummary = useMemo(() => getSectionSummary(stockInvestments), [stockInvestments, getSectionSummary]);
+  const cryptoSummary = useMemo(() => getSectionSummary(cryptoInvestments), [cryptoInvestments, getSectionSummary]);
+
+  // --- Filtered and Sorted Investments for Display ---
+  const getSortedInvestments = useCallback((invList: Investment[]) => {
+    let filtered = invList;
+    // Filter by type is handled by the tabs, so no need for filterType here.
 
     return filtered.sort((a, b) => {
       let valA: any;
@@ -149,33 +127,37 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
       if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [investments, filterType, sortBy, sortOrder]);
+  }, [sortBy, sortOrder]);
+
+  const sortedStockInvestments = useMemo(() => getSortedInvestments(stockInvestments), [stockInvestments, getSortedInvestments]);
+  const sortedCryptoInvestments = useMemo(() => getSortedInvestments(cryptoInvestments), [cryptoInvestments, getSortedInvestments]);
 
   // --- Chart Data ---
-  const allocationData: AllocationData[] = useMemo(() => {
-    const stockValue = investments
-      .filter(inv => inv.type === 'Stock')
-      .reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice), 0);
-    const cryptoValue = investments
-      .filter(inv => inv.type === 'Crypto')
-      .reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice), 0);
+  const overallAllocationData: AllocationData[] = useMemo(() => {
+    const stockValue = stockInvestments.reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice), 0);
+    const cryptoValue = cryptoInvestments.reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice), 0);
 
     const data = [];
     if (stockValue > 0) data.push({ name: 'Stocks', value: stockValue, color: ALLOCATION_COLORS[0] });
     if (cryptoValue > 0) data.push({ name: 'Crypto', value: cryptoValue, color: ALLOCATION_COLORS[1] });
     return data;
-  }, [investments]);
+  }, [stockInvestments, cryptoInvestments]);
 
-  const topPerformersData: TopPerformerData[] = useMemo(() => {
-    return investments
-      .map(inv => ({
-        name: inv.name,
-        gainPercentage: calculateGainLoss(inv).gainLossPercentage,
-        color: calculateGainLoss(inv).gainLossPercentage >= 0 ? '#10b981' : '#ef4444',
-      }))
-      .sort((a, b) => b.gainPercentage - a.gainPercentage)
-      .slice(0, 5);
-  }, [investments]);
+  const stockAllocationData: AllocationData[] = useMemo(() => {
+    return stockInvestments.map((inv, index) => ({
+      name: inv.name,
+      value: inv.quantity * inv.currentPrice,
+      color: ALLOCATION_COLORS[index % ALLOCATION_COLORS.length],
+    })).filter(item => item.value > 0);
+  }, [stockInvestments]);
+
+  const cryptoAllocationData: AllocationData[] = useMemo(() => {
+    return cryptoInvestments.map((inv, index) => ({
+      name: inv.name,
+      value: inv.quantity * inv.currentPrice,
+      color: ALLOCATION_COLORS[index % ALLOCATION_COLORS.length],
+    })).filter(item => item.value > 0);
+  }, [cryptoInvestments]);
 
   // --- Handlers ---
   const handleAddInvestment = useCallback(() => {
@@ -188,7 +170,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     setIsModalOpen(true);
   }, []);
 
-  const handleSaveInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid'>) => {
+  const handleSaveInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
     if (editingInvestment) {
       await updateInvestment(editingInvestment.id, newInvestment);
     } else {
@@ -204,28 +186,9 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     setEditingInvestment(null);
   }, [deleteInvestment]);
 
-  const handleRefreshPrices = useCallback(() => {
-    // For a real app, this would call an external API to get updated prices.
-    // For now, we'll simulate a small random change and update Firestore.
-    investments.forEach(async (inv) => {
-      const newPrice = inv.currentPrice * (1 + (Math.random() * 0.02 - 0.01)); // +/- 1%
-      await updateInvestment(inv.id, { currentPrice: newPrice });
-    });
-    toast.info("Simulated price refresh!");
-  }, [investments, updateInvestment]);
-
   const toggleSortOrder = useCallback(() => {
     setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
   }, []);
-
-  // --- Automatic Refresh Effect ---
-  useEffect(() => {
-    const refreshInterval = setInterval(() => {
-      handleRefreshPrices();
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(refreshInterval); // Clean up the interval on component unmount
-  }, [handleRefreshPrices]);
 
   const LoadingSpinner: React.FC = () => (
     <div className="flex items-center justify-center p-8">
@@ -250,8 +213,8 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     return <LoadingSpinner />;
   }
 
-  const totalGainLossColor = portfolioSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600';
-  const TotalGainLossIcon: LucideIcon = portfolioSummary.totalGainLossPercentage >= 0 ? TrendingUp : TrendingDown; // Assign to capitalized variable with explicit type
+  const overallGainLossColor = overallPortfolioSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600';
+  const OverallGainLossIcon: LucideIcon = overallPortfolioSummary.totalGainLossPercentage >= 0 ? TrendingUp : TrendingDown;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 sm:p-6 animate-in fade-in duration-500">
@@ -261,142 +224,274 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-bold">Investments</h1>
-          <div className="flex items-center space-x-2">
-            {/* Removed Refresh Prices button as per simplification */}
-            <Button onClick={handleAddInvestment} className="flex items-center space-x-2">
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add Investment</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
-          </div>
+          <Button onClick={handleAddInvestment} className="flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Add Investment</span>
+            <span className="sm:hidden">Add</span>
+          </Button>
         </div>
 
-        {/* Portfolio Overview - Top Line Summary */}
+        {/* Overall Portfolio Overview */}
         <Card className="shadow-sm border border-gray-100 dark:border-gray-800 bg-gradient-to-br from-blue-500 to-purple-600 text-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-blue-100">Total Portfolio Value</p>
               <Wallet className="h-5 w-5 text-blue-100" />
             </div>
-            <p className="text-4xl font-bold mb-1">{formatCurrency(portfolioSummary.currentValue)}</p>
+            <p className="text-4xl font-bold mb-1">{formatCurrency(overallPortfolioSummary.currentValue)}</p>
             <div className="flex items-center space-x-2">
-              {TotalGainLossIcon && <TotalGainLossIcon className={`w-4 h-4 ${totalGainLossColor}`} />}
-              <span className={`text-sm ${totalGainLossColor}`}>
-                {portfolioSummary.totalGainLossPercentage.toFixed(2)}% this month
+              {OverallGainLossIcon && <OverallGainLossIcon className={`w-4 h-4 ${overallGainLossColor}`} />}
+              <span className={`text-sm ${overallGainLossColor}`}>
+                {overallPortfolioSummary.totalGainLossPercentage.toFixed(2)}% this month
               </span>
             </div>
           </CardContent>
         </Card>
 
-        {/* My Holdings */}
-        <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-semibold">My Holdings</CardTitle>
-            <div className="flex items-center space-x-2">
-              <Select value={filterType} onValueChange={(value: 'All' | 'Stock' | 'Crypto') => setFilterType(value)}>
-                <SelectTrigger className="w-[120px] h-9 text-xs">
-                  <Filter className="h-3 w-3 mr-2" />
-                  <SelectValue placeholder="Filter" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All</SelectItem>
-                  <SelectItem value="Stock">Stocks</SelectItem>
-                  <SelectItem value="Crypto">Crypto</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortBy} onValueChange={(value: 'name' | 'gainLossPercentage' | 'totalValue') => setSortBy(value)}>
-                <SelectTrigger className="w-[150px] h-9 text-xs">
-                  <SortAsc className="h-3 w-3 mr-2" />
-                  <SelectValue placeholder="Sort By" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="gainLossPercentage">Gain/Loss %</SelectItem>
-                  <SelectItem value="totalValue">Total Value</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="icon" onClick={toggleSortOrder} className="h-9 w-9">
-                {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Clean List View (unified for all screen sizes) */}
-            <div className="space-y-3">
-              {filteredAndSortedInvestments.length > 0 ? (
-                filteredAndSortedInvestments.map(inv => (
-                  <InvestmentListItem key={inv.id} investment={inv} onEdit={handleEditInvestment} />
-                ))
-              ) : (
-                <p className="text-center text-gray-500 py-4">No investments found. Add one to get started!</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Tabs for Stocks and Crypto */}
+        <Tabs value={activeTab} onValueChange={(value: 'all' | 'stocks' | 'crypto') => setActiveTab(value)} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="all">All Holdings</TabsTrigger>
+            <TabsTrigger value="stocks">Stocks</TabsTrigger>
+            <TabsTrigger value="crypto">Crypto</TabsTrigger>
+          </TabsList>
 
-        {/* Analytics & Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-          <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Portfolio Allocation</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[250px] flex items-center justify-center">
-              {allocationData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={allocationData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      fill="#8884d8"
-                      dataKey="value"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {allocationData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
-                    <Legend wrapperStyle={{ fontSize: '12px' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400">No data to display.</p>
-              )}
-            </CardContent>
-          </Card>
+          <TabsContent value="all" className="mt-6 space-y-6">
+            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold">Overall Allocation</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[250px] flex items-center justify-center">
+                {overallAllocationData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={overallAllocationData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        fill="#8884d8"
+                        dataKey="value"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {overallAllocationData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">No data to display.</p>
+                )}
+              </CardContent>
+            </Card>
 
-          <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Top 5 Performers (% Gain)</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[250px]">
-              {topPerformersData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={topPerformersData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="name" stroke="hsl(var(--foreground))" style={{ fontSize: '10px' }} />
-                    <YAxis stroke="hsl(var(--foreground))" style={{ fontSize: '10px' }} tickFormatter={(value) => `${value}%`} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
-                      formatter={(value) => `${Number(value).toFixed(2)}%`}
-                    />
-                    <Bar dataKey="gainPercentage" fill="#8884d8">
-                      {topPerformersData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400">No data to display.</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold">All Holdings</CardTitle>
+                <div className="flex items-center space-x-2">
+                  <Select value={sortBy} onValueChange={(value: 'name' | 'gainLossPercentage' | 'totalValue') => setSortBy(value)}>
+                    <SelectTrigger className="w-[150px] h-9 text-xs">
+                      <SortAsc className="h-3 w-3 mr-2" />
+                      <SelectValue placeholder="Sort By" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="gainLossPercentage">Gain/Loss %</SelectItem>
+                      <SelectItem value="totalValue">Total Value</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon" onClick={toggleSortOrder} className="h-9 w-9">
+                    {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {getSortedInvestments(investments).length > 0 ? (
+                    getSortedInvestments(investments).map(inv => (
+                      <InvestmentListItem key={inv.id} investment={inv} onEdit={handleEditInvestment} priceChangeStatus={priceChange.get(inv.id) || 'none'} />
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">No investments found. Add one to get started!</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="stocks" className="mt-6 space-y-6">
+            <Card className="shadow-sm border border-gray-100 dark:border-gray-800 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm text-blue-100">Stock Portfolio Value</p>
+                  <DollarSign className="h-5 w-5 text-blue-100" />
+                </div>
+                <p className="text-4xl font-bold mb-1">{formatCurrency(stockSummary.currentValue)}</p>
+                <div className="flex items-center space-x-2">
+                  {stockSummary.totalGainLossPercentage >= 0 ? <TrendingUp className={`w-4 h-4 text-green-600`} /> : <TrendingDown className={`w-4 h-4 text-red-600`} />}
+                  <span className={`text-sm ${stockSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {stockSummary.totalGainLossPercentage.toFixed(2)}% this month
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold">Stock Allocation</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[250px] flex items-center justify-center">
+                {stockAllocationData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={stockAllocationData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        fill="#8884d8"
+                        dataKey="value"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {stockAllocationData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">No stock data to display.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold">Stock Holdings</CardTitle>
+                <div className="flex items-center space-x-2">
+                  <Select value={sortBy} onValueChange={(value: 'name' | 'gainLossPercentage' | 'totalValue') => setSortBy(value)}>
+                    <SelectTrigger className="w-[150px] h-9 text-xs">
+                      <SortAsc className="h-3 w-3 mr-2" />
+                      <SelectValue placeholder="Sort By" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="gainLossPercentage">Gain/Loss %</SelectItem>
+                      <SelectItem value="totalValue">Total Value</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon" onClick={toggleSortOrder} className="h-9 w-9">
+                    {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {sortedStockInvestments.length > 0 ? (
+                    sortedStockInvestments.map(inv => (
+                      <InvestmentListItem key={inv.id} investment={inv} onEdit={handleEditInvestment} priceChangeStatus={priceChange.get(inv.id) || 'none'} />
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">No stock investments found. Add one to get started!</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="crypto" className="mt-6 space-y-6">
+            <Card className="shadow-sm border border-gray-100 dark:border-gray-800 bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm text-amber-100">Crypto Portfolio Value</p>
+                  <Bitcoin className="h-5 w-5 text-amber-100" />
+                </div>
+                <p className="text-4xl font-bold mb-1">{formatCurrency(cryptoSummary.currentValue)}</p>
+                <div className="flex items-center space-x-2">
+                  {cryptoSummary.totalGainLossPercentage >= 0 ? <TrendingUp className={`w-4 h-4 text-green-600`} /> : <TrendingDown className={`w-4 h-4 text-red-600`} />}
+                  <span className={`text-sm ${cryptoSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {cryptoSummary.totalGainLossPercentage.toFixed(2)}% this month
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold">Crypto Allocation</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[250px] flex items-center justify-center">
+                {cryptoAllocationData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={cryptoAllocationData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        fill="#8884d8"
+                        dataKey="value"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {cryptoAllocationData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">No crypto data to display.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold">Crypto Holdings</CardTitle>
+                <div className="flex items-center space-x-2">
+                  <Select value={sortBy} onValueChange={(value: 'name' | 'gainLossPercentage' | 'totalValue') => setSortBy(value)}>
+                    <SelectTrigger className="w-[150px] h-9 text-xs">
+                      <SortAsc className="h-3 w-3 mr-2" />
+                      <SelectValue placeholder="Sort By" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="gainLossPercentage">Gain/Loss %</SelectItem>
+                      <SelectItem value="totalValue">Total Value</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon" onClick={toggleSortOrder} className="h-9 w-9">
+                    {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {sortedCryptoInvestments.length > 0 ? (
+                    sortedCryptoInvestments.map(inv => (
+                      <InvestmentListItem key={inv.id} investment={inv} onEdit={handleEditInvestment} priceChangeStatus={priceChange.get(inv.id) || 'none'} />
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">No crypto investments found. Add one to get started!</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Add/Edit Investment Modal */}
@@ -428,7 +523,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 // --- Investment Form Component for Modal ---
 interface InvestmentFormProps {
   investment: Investment | null;
-  onSave: (investment: Omit<Investment, 'id' | 'ownerUid'>) => void;
+  onSave: (investment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
 }
@@ -440,6 +535,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
   const [buyPrice, setBuyPrice] = useState(investment?.buyPrice.toString() || '');
   const [currentPrice, setCurrentPrice] = useState(investment?.currentPrice.toString() || '');
   const [datePurchased, setDatePurchased] = useState(investment?.datePurchased || format(new Date(), 'yyyy-MM-dd'));
+  const [symbol, setSymbol] = useState(investment?.symbol || ''); // New state for stock symbol
+  const [coingeckoId, setCoingeckoId] = useState(investment?.coingeckoId || ''); // New state for crypto ID
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const validateForm = () => {
@@ -449,6 +546,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
     if (!buyPrice || parseFloat(buyPrice) <= 0) newErrors.buyPrice = 'Buy Price must be a positive number.';
     if (!currentPrice || parseFloat(currentPrice) <= 0) newErrors.currentPrice = 'Current Price must be a positive number.';
     if (!datePurchased) newErrors.datePurchased = 'Date Purchased is required.';
+    if (type === 'Stock' && !symbol.trim()) newErrors.symbol = 'Stock Ticker Symbol is required.';
+    if (type === 'Crypto' && !coingeckoId.trim()) newErrors.coingeckoId = 'CoinGecko ID is required.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -466,6 +565,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       buyPrice: parseFloat(buyPrice),
       currentPrice: parseFloat(currentPrice),
       datePurchased,
+      symbol: type === 'Stock' ? symbol : undefined,
+      coingeckoId: type === 'Crypto' ? coingeckoId : undefined,
     });
     // onClose is called by onSave after successful operation
   };
@@ -502,6 +603,31 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           </SelectContent>
         </Select>
       </div>
+
+      {type === 'Stock' && (
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="symbol" className="text-right">
+            Ticker Symbol
+          </Label>
+          <div className="col-span-3">
+            <Input id="symbol" value={symbol} onChange={(e) => { setSymbol(e.target.value); setErrors(prev => ({ ...prev, symbol: '' })); }} placeholder="e.g., AAPL" />
+            {errors.symbol && <p className="text-red-500 text-xs mt-1">{errors.symbol}</p>}
+          </div>
+        </div>
+      )}
+
+      {type === 'Crypto' && (
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="coingeckoId" className="text-right">
+            CoinGecko ID
+          </Label>
+          <div className="col-span-3">
+            <Input id="coingeckoId" value={coingeckoId} onChange={(e) => { setCoingeckoId(e.target.value); setErrors(prev => ({ ...prev, coingeckoId: '' })); }} placeholder="e.g., bitcoin" />
+            {errors.coingeckoId && <p className="text-red-500 text-xs mt-1">{errors.coingeckoId}</p>}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="quantity" className="text-right">
           Quantity
@@ -534,7 +660,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Date Purchased
         </Label>
         <div className="col-span-3">
-          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, date: '' })); }} />
+          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} />
           {errors.datePurchased && <p className="text-red-500 text-xs mt-1">{errors.datePurchased}</p>}
         </div>
       </div>

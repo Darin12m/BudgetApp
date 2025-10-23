@@ -85,10 +85,20 @@ export default {
             height: "0",
           },
         },
+        "pulse-green": {
+          "0%, 100%": { backgroundColor: "transparent" },
+          "50%": { backgroundColor: "rgba(16, 185, 129, 0.2)" }, // green-500 with opacity
+        },
+        "pulse-red": {
+          "0%, 100%": { backgroundColor: "transparent" },
+          "50%": { backgroundColor: "rgba(239, 68, 68, 0.2)" }, // red-500 with opacity
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-green": "pulse-green 1s ease-in-out",
+        "pulse-red": "pulse-red 1s ease-in-out",
       },
     },
   },
