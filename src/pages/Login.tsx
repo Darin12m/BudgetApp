@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Mail, Lock, Google } from 'lucide-react';
+import { Loader2, Mail, Lock } from 'lucide-react'; // Removed Google
 import { toast } from 'sonner';
 
 const LoginPage: React.FC = () => {
@@ -124,7 +124,7 @@ const LoginPage: React.FC = () => {
             disabled={loading}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {!loading && <Google className="h-5 w-5 mr-2" />}
+            {/* Removed Google icon */}
             Sign in with Google
           </Button>
 
