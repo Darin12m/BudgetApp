@@ -7,9 +7,9 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import BudgetApp from "./pages/BudgetApp";
 import InvestmentsPage from "./pages/Investments";
-import { useEffect, useState } from "react"; // Import useEffect and useState
-import { auth } from '@/lib/firebase'; // Import auth from firebase
-import { signInAnonymously, onAuthStateChanged, User } from "firebase/auth"; // Import auth functions
+import { useEffect, useState } from "react";
+import { auth } from '@/lib/firebase';
+import { signInAnonymously, onAuthStateChanged, User } from "firebase/auth";
 
 const queryClient = new QueryClient();
 
@@ -58,8 +58,8 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/budget-app" element={<BudgetApp userUid={userUid} />} /> {/* Pass userUid */}
-            <Route path="/investments" element={<InvestmentsPage userUid={userUid} />} /> {/* Pass userUid */}
+            <Route path="/budget-app" element={<BudgetApp userUid={userUid} />} />
+            <Route path="/investments" element={<InvestmentsPage userUid={userUid} />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
