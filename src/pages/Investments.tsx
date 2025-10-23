@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { DollarSign, TrendingUp, TrendingDown, Plus, Edit, Trash2, Filter, SortAsc, RefreshCcw, Wallet, BarChart3, X, Save, CalendarDays, ChevronRight } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Plus, Edit, Trash2, Filter, SortAsc, RefreshCcw, Wallet, BarChart3, X, Save, CalendarDays, ChevronRight, AlertCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -12,14 +12,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from 'date-fns';
 
+// Firebase imports
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'firebase/firestore';
+
 // --- Interfaces ---
 interface Investment {
-  id: string;
+  id: string; // Firebase document ID
   name: string;
   type: 'Stock' | 'Crypto';
   quantity: number;
   buyPrice: number;
-  currentPrice: number; // Mocked for now, will be from API
+  currentPrice: number;
   datePurchased: string; // YYYY-MM-DD
 }
 
@@ -49,14 +53,14 @@ interface TopPerformerData {
   color: string;
 }
 
-// --- Mock Data ---
+// --- Mock Data (as fallback if Firebase is empty) ---
 const MOCK_INVESTMENTS: Investment[] = [
-  { id: '1', name: 'AAPL', type: 'Stock', quantity: 10, buyPrice: 150, currentPrice: 175, datePurchased: '2023-01-15' },
-  { id: '2', name: 'GOOGL', type: 'Stock', quantity: 5, buyPrice: 100, currentPrice: 110, datePurchased: '2023-03-20' },
-  { id: '3', name: 'MSFT', type: 'Stock', quantity: 8, buyPrice: 250, currentPrice: 240, datePurchased: '2023-02-10' },
-  { id: '4', name: 'BTC', type: 'Crypto', quantity: 0.5, buyPrice: 30000, currentPrice: 35000, datePurchased: '2023-05-01' },
-  { id: '5', name: 'ETH', type: 'Crypto', quantity: 2, buyPrice: 1800, currentPrice: 1700, datePurchased: '2023-06-10' },
-  { id: '6', name: 'AMZN', type: 'Stock', quantity: 3, buyPrice: 120, currentPrice: 130, datePurchased: '2023-04-05' },
+  { id: 'mock-1', name: 'AAPL', type: 'Stock', quantity: 10, buyPrice: 150, currentPrice: 175, datePurchased: '2023-01-15' },
+  { id: 'mock-2', name: 'GOOGL', type: 'Stock', quantity: 5, buyPrice: 100, currentPrice: 110, datePurchased: '2023-03-20' },
+  { id: 'mock-3', name: 'MSFT', type: 'Stock', quantity: 8, buyPrice: 250, currentPrice: 240, datePurchased: '2023-02-10' },
+  { id: 'mock-4', name: 'BTC', type: 'Crypto', quantity: 0.5, buyPrice: 30000, currentPrice: 35000, datePurchased: '2023-05-01' },
+  { id: 'mock-5', name: 'ETH', type: 'Crypto', quantity: 2, buyPrice: 1800, currentPrice: 1700, datePurchased: '2023-06-10' },
+  { id: 'mock-6', name: 'AMZN', type: 'Stock', quantity: 3, buyPrice: 120, currentPrice: 130, datePurchased: '2023-04-05' },
 ];
 
 const MOCK_PERFORMANCE_DATA: PerformanceChartData[] = [
@@ -91,13 +95,65 @@ const calculateGainLoss = (investment: Investment) => {
   return { gainLoss, gainLossPercentage };
 };
 
+// --- Firebase Service Functions for Investments ---
+const investmentsCollection = collection(db, 'investments');
+
+const fetchInvestments = async (): Promise<Investment[]> => {
+  const querySnapshot = await getDocs(query(investmentsCollection, orderBy('name')));
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Investment));
+};
+
+const addInvestment = async (investment: Omit<Investment, 'id'>): Promise<string> => {
+  const docRef = await addDoc(investmentsCollection, investment);
+  return docRef.id;
+};
+
+const updateInvestment = async (id: string, updates: Partial<Investment>): Promise<void> => {
+  await updateDoc(doc(investmentsCollection, id), updates);
+};
+
+const deleteInvestment = async (id: string): Promise<void> => {
+  await deleteDoc(doc(investmentsCollection, id));
+};
+
 const InvestmentsPage: React.FC = () => {
-  const [investments, setInvestments] = useState<Investment[]>(MOCK_INVESTMENTS);
+  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
   const [filterType, setFilterType] = useState<'All' | 'Stock' | 'Crypto'>('All');
   const [sortBy, setSortBy] = useState<'name' | 'gainLossPercentage' | 'totalValue'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // --- Real-time data fetching with Firebase onSnapshot ---
+  useEffect(() => {
+    const unsubscribe = onSnapshot(query(investmentsCollection, orderBy('name')), (snapshot) => {
+      const fetchedInvestments: Investment[] = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Investment));
+
+      if (fetchedInvestments.length === 0) {
+        // If Firebase collection is empty, use mock data as fallback
+        setInvestments(MOCK_INVESTMENTS);
+      } else {
+        setInvestments(fetchedInvestments);
+      }
+      setLoading(false);
+      setError(null);
+    }, (err) => {
+      console.error("Error fetching investments:", err);
+      setError("Failed to load investments. Please check your Firebase connection.");
+      setLoading(false);
+      // Fallback to mock data on error if no data was loaded
+      if (investments.length === 0) {
+        setInvestments(MOCK_INVESTMENTS);
+      }
+    });
+
+    return () => unsubscribe(); // Clean up the listener on component unmount
+  }, []); // Empty dependency array means this runs once on mount
 
   // --- Computed Portfolio Summary ---
   const portfolioSummary: PortfolioSummary = useMemo(() => {
@@ -204,20 +260,32 @@ const InvestmentsPage: React.FC = () => {
     setIsModalOpen(true);
   }, []);
 
-  const handleSaveInvestment = useCallback((newInvestment: Omit<Investment, 'id'>) => {
-    if (editingInvestment) {
-      setInvestments(prev => prev.map(inv => inv.id === editingInvestment.id ? { ...newInvestment, id: editingInvestment.id } : inv));
-    } else {
-      setInvestments(prev => [...prev, { ...newInvestment, id: Date.now().toString() }]);
+  const handleSaveInvestment = useCallback(async (newInvestment: Omit<Investment, 'id'>) => {
+    try {
+      if (editingInvestment) {
+        await updateInvestment(editingInvestment.id, newInvestment);
+      } else {
+        await addInvestment(newInvestment);
+      }
+      setIsModalOpen(false);
+      setEditingInvestment(null);
+    } catch (err) {
+      console.error("Error saving investment:", err);
+      setError("Failed to save investment. Please try again.");
     }
-    setIsModalOpen(false);
-    setEditingInvestment(null);
   }, [editingInvestment]);
 
-  const handleDeleteInvestment = useCallback((id: string) => {
-    setInvestments(prev => prev.filter(inv => inv.id !== id));
-    setIsModalOpen(false);
-    setEditingInvestment(null);
+  const handleDeleteInvestment = useCallback(async (id: string) => {
+    try {
+      if (confirm('Are you sure you want to delete this investment?')) {
+        await deleteInvestment(id);
+        setIsModalOpen(false);
+        setEditingInvestment(null);
+      }
+    } catch (err) {
+      console.error("Error deleting investment:", err);
+      setError("Failed to delete investment. Please try again.");
+    }
   }, []);
 
   const handleRefreshPrices = useCallback(() => {
@@ -244,9 +312,34 @@ const InvestmentsPage: React.FC = () => {
     return () => clearInterval(refreshInterval); // Clean up the interval on component unmount
   }, [handleRefreshPrices]);
 
+  const LoadingSpinner: React.FC = () => (
+    <div className="flex items-center justify-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <span className="ml-2 text-gray-600">Loading investments...</span>
+    </div>
+  );
+
+  const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-4 m-4">
+      <div className="flex items-center">
+        <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
+        <div>
+          <h3 className="text-sm font-medium text-red-800">Error</h3>
+          <p className="text-sm text-red-600 mt-1">{message}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 sm:p-6 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-24 sm:pb-6">
+        {error && <ErrorMessage message={error} />}
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-bold">Investments</h1>
@@ -550,13 +643,13 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       currentPrice: parseFloat(currentPrice),
       datePurchased,
     });
-    onClose();
+    // onClose is called by onSave after successful operation
   };
 
   const handleDeleteClick = () => {
-    if (investment?.id && confirm('Are you sure you want to delete this investment?')) {
+    if (investment?.id) {
       onDelete(investment.id);
-      onClose();
+      // onClose is called by onDelete after successful operation
     }
   };
 
