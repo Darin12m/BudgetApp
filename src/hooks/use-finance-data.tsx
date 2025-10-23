@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'; // Added useRef
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
@@ -129,6 +129,7 @@ export const useFinanceData = (userUid: string | null) => {
             totalBudgeted: 0,
             microInvestingEnabled: true,
             microInvestingPercentage: 30,
+            createdAt: serverTimestamp(), // Add createdAt for default settings
           }).then(() => {
             // No need to set state here, onSnapshot will pick it up
           }).catch(err => {
@@ -152,7 +153,7 @@ export const useFinanceData = (userUid: string | null) => {
 
   const addDocument = useCallback(async (collectionName: string, data: any) => {
     if (!userUid) {
-      toast.error("Authentication required to add data.");
+      toast.error("You must be logged in to save data.");
       return;
     }
     try {
