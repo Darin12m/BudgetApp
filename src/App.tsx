@@ -2,41 +2,50 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import BudgetApp from "./pages/BudgetApp";
 import InvestmentsPage from "./pages/Investments";
-import SettingsPage from "./pages/Settings"; // Import the new SettingsPage
+import SettingsPage from "./pages/Settings";
+import LoginPage from "./pages/Login"; // Import the new Login page
 import { useEffect, useState } from "react";
-import { auth } from '@/lib/firebase'; // Import auth from the new firebase.ts
-import { signInAnonymously, onAuthStateChanged, User } from "firebase/auth";
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, User } from "firebase/auth";
 
 const queryClient = new QueryClient();
 
+// ProtectedRoute component to guard authenticated routes
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  userUid: string | null;
+  isAuthenticated: boolean;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, userUid, isAuthenticated }) => {
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
+
 const App = () => {
   const [userUid, setUserUid] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in.
+      if (user && !user.isAnonymous) {
+        // User is signed in and is NOT anonymous
         setUserUid(user.uid);
-        setAuthLoading(false);
+        setIsAuthenticated(true);
       } else {
-        // No user is signed in, sign in anonymously.
-        signInAnonymously(auth)
-          .then((credential) => {
-            setUserUid(credential.user.uid);
-            setAuthLoading(false);
-          })
-          .catch((error) => {
-            console.error("Anonymous sign-in failed:", error);
-            setAuthLoading(false);
-            // Handle error, maybe show a message to the user
-          });
+        // No user is signed in, or it's an anonymous user
+        setUserUid(null);
+        setIsAuthenticated(false);
       }
+      setAuthLoading(false);
     });
 
     return () => unsubscribe(); // Clean up the listener
@@ -58,10 +67,39 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index userUid={userUid} />} />
-            <Route path="/budget-app" element={<BudgetApp userUid={userUid} />} />
-            <Route path="/investments" element={<InvestmentsPage userUid={userUid} />} />
-            <Route path="/settings" element={<SettingsPage userUid={userUid} />} /> {/* New Settings Route */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                  <Index userUid={userUid} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/budget-app"
+              element={
+                <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                  <BudgetApp userUid={userUid} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/investments"
+              element={
+                <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                  <InvestmentsPage userUid={userUid} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                  <SettingsPage userUid={userUid} />
+                </ProtectedRoute>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
