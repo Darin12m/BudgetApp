@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { Investment } from '@/hooks/use-investment-data';
 import { fetchSingleCryptoPrice, fetchSingleStockPrice, getCoingeckoId } from '@/lib/api'; // Import API functions
 import LivePriceDisplay from './LivePriceDisplay'; // New component
+import { toast } from 'sonner'; // Import toast from sonner
 
 interface InvestmentFormProps {
   investment: Investment | null;

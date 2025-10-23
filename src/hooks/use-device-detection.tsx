@@ -21,7 +21,7 @@ export function useDeviceDetection(): DeviceDetection {
 
   useEffect(() => {
     const userAgent = navigator.userAgent;
-    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent); // Removed !window.MSStream
     const isAndroid = /Android/.test(userAgent);
 
     const handleResize = () => {
