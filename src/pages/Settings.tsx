@@ -134,9 +134,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                 value={monthlyBudgetInput}
                 onChange={(e) => setMonthlyBudgetInput(e.target.value)}
                 placeholder="e.g., 3000.00"
-                className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0"
+                className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
               />
-              <Button onClick={handleSaveMonthlyBudget} className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue dark:hover:bg-blue/80">
+              <Button onClick={handleSaveMonthlyBudget} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90">
                 Save Budget
               </Button>
             </div>

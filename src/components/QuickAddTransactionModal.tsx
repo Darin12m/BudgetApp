@@ -74,7 +74,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
                 value={amount}
                 onChange={(e) => { setAmount(e.target.value); setErrors(prev => ({ ...prev, amount: '' })); }}
                 placeholder="e.g., -25.50 for expense, 100 for income"
-                className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0"
+                className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
               />
               {errors.amount && <p className="text-destructive text-xs mt-1">{errors.amount}</p>}
             </div>
@@ -87,7 +87,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
               id="note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="col-span-3 bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0"
+              className="col-span-3 bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
               placeholder="e.g., Coffee with friends"
             />
           </div>
@@ -101,7 +101,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
                 type="date"
                 value={date}
                 onChange={(e) => { setDate(e.target.value); setErrors(prev => ({ ...prev, date: '' })); }}
-                className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0"
+                className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
               />
               {errors.date && <p className="text-destructive text-xs mt-1">{errors.date}</p>}
             </div>
@@ -110,7 +110,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
               <X className="h-4 w-4 mr-2" /> Cancel
             </Button>
-            <Button type="submit" className="flex-1 sm:flex-none bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.02] active:scale-98">
+            <Button type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98">
               <Save className="h-4 w-4 mr-2" /> Save Transaction
             </Button>
           </DialogFooter>

@@ -72,7 +72,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Asset Name
         </Label>
         <div className="col-span-3">
-          <Input id="name" value={name} onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          <Input id="name" value={name} onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
           {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
         </div>
       </div>
@@ -81,7 +81,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Type
         </Label>
         <Select value={type} onValueChange={(value: 'Stock' | 'Crypto') => setType(value)}>
-          <SelectTrigger className="col-span-3 bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
+          <SelectTrigger className="col-span-3 bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
           <SelectContent>
@@ -97,7 +97,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
             Ticker Symbol
           </Label>
           <div className="col-span-3">
-            <Input id="symbol" value={symbol} onChange={(e) => { setSymbol(e.target.value); setErrors(prev => ({ ...prev, symbol: '' })); }} placeholder="e.g., AAPL" className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+            <Input id="symbol" value={symbol} onChange={(e) => { setSymbol(e.target.value); setErrors(prev => ({ ...prev, symbol: '' })); }} placeholder="e.g., AAPL" className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
             {errors.symbol && <p className="text-destructive text-xs mt-1">{errors.symbol}</p>}
           </div>
         </div>
@@ -109,7 +109,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
             CoinGecko ID
           </Label>
           <div className="col-span-3">
-            <Input id="coingeckoId" value={coingeckoId} onChange={(e) => { setCoingeckoId(e.target.value); setErrors(prev => ({ ...prev, coingeckoId: '' })); }} placeholder="e.g., bitcoin" className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+            <Input id="coingeckoId" value={coingeckoId} onChange={(e) => { setCoingeckoId(e.target.value); setErrors(prev => ({ ...prev, coingeckoId: '' })); }} placeholder="e.g., bitcoin" className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
             {errors.coingeckoId && <p className="text-destructive text-xs mt-1">{errors.coingeckoId}</p>}
           </div>
         </div>
@@ -120,7 +120,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Quantity
         </Label>
         <div className="col-span-3">
-          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
           {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity}</p>}
         </div>
       </div>
@@ -129,7 +129,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Buy Price
         </Label>
         <div className="col-span-3">
-          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
           {errors.buyPrice && <p className="text-destructive text-xs mt-1">{errors.buyPrice}</p>}
         </div>
       </div>
@@ -138,7 +138,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Current Price
         </Label>
         <div className="col-span-3">
-          <Input id="currentPrice" type="number" step="0.01" value={currentPrice} onChange={(e) => { setCurrentPrice(e.target.value); setErrors(prev => ({ ...prev, currentPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          <Input id="currentPrice" type="number" step="0.01" value={currentPrice} onChange={(e) => { setCurrentPrice(e.target.value); setErrors(prev => ({ ...prev, currentPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
           {errors.currentPrice && <p className="text-destructive text-xs mt-1">{errors.currentPrice}</p>}
         </div>
       </div>
@@ -147,7 +147,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Date Purchased
         </Label>
         <div className="col-span-3">
-          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
           {errors.datePurchased && <p className="text-destructive text-xs mt-1">{errors.datePurchased}</p>}
         </div>
       </div>
@@ -161,7 +161,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
             Cancel
           </Button>
-          <Button type="submit" className="flex-1 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.02] active:scale-98">
+          <Button type="submit" className="flex-1 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98">
             <Save className="h-4 w-4 mr-2" /> Save
           </Button>
         </div>

@@ -26,7 +26,7 @@ const BottomNavBar: React.FC = () => {
               key={item.id}
               to={item.path}
               className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all active:scale-95 ${
-                isActive ? 'text-blue-600 dark:text-blue' : 'text-muted-foreground'
+                isActive ? 'text-primary dark:text-primary' : 'text-muted-foreground'
               }`}
             >
               <Icon className={`w-6 h-6 mb-1 ${isActive ? 'stroke-2' : 'stroke-1.5'}`} />
@@ -34,7 +34,7 @@ const BottomNavBar: React.FC = () => {
                 {item.label}
               </span>
               {isActive && (
-                <div className="absolute bottom-0 w-8 h-1 bg-blue-600 dark:bg-blue rounded-t-full"></div>
+                <div className="absolute bottom-0 w-8 h-1 bg-primary dark:bg-primary rounded-t-full"></div>
               )}
             </Link>
           );

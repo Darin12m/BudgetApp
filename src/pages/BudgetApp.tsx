@@ -230,7 +230,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
 
   const LoadingSpinner: React.FC = memo(() => (
     <div className="flex items-center justify-center p-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       <span className="ml-2 text-muted-foreground">Loading...</span>
     </div>
   ));
@@ -467,7 +467,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             <h3 className="text-base sm:text-lg font-semibold text-foreground">Upcoming Recurring Bills</h3>
             <p className="text-sm text-muted-foreground mt-1">Total: {formatCurrency(totalRecurring)}/month</p>
           </div>
-          <Link to="/budget-app?view=recurring" className="text-sm text-blue-600 dark:text-blue hover:text-blue-700 dark:hover:text-blue/80 font-medium flex items-center">
+          <Link to="/budget-app?view=recurring" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:text-primary/90 font-medium flex items-center">
             Manage
             <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
@@ -496,7 +496,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base sm:text-lg font-semibold text-foreground">Recent Transactions</h3>
-          <Link to="/budget-app?view=transactions" className="text-sm text-blue-600 dark:text-blue hover:text-blue-700 dark:hover:text-blue/80 font-medium flex items-center">
+          <Link to="/budget-app?view=transactions" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:text-primary/90 font-medium flex items-center">
             View All
             <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
@@ -512,7 +512,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
 
   const BudgetView: React.FC = () => (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
-      <div className="bg-gradient-to-r from-blue-500 to-lilac rounded-xl sm:rounded-2xl p-5 sm:p-6 text-white card-shadow">
+      <div className="bg-gradient-to-r from-blue to-lilac rounded-xl sm:rounded-2xl p-5 sm:p-6 text-white card-shadow">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl sm:text-2xl font-bold">October Budget</h2>
           {budgetSettings.rolloverEnabled && (
@@ -560,7 +560,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         <div className="p-4 sm:p-6 border-b border-border">
           <div className="flex items-center justify-between">
             <h3 className="text-base sm:text-lg font-semibold text-foreground">Budget Categories</h3>
-            <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-blue-600 dark:bg-blue text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue/80 transition-colors text-sm active:bg-blue-800">
+            <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80">
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Category</span>
               <span className="sm:hidden">Add</span>
@@ -578,7 +578,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
               <PiggyBank className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg font-semibold">No categories set up yet!</p>
               <p className="text-sm mt-2">Start by adding your first budget category to track your spending.</p>
-              <Button className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+              <Button className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
                 Add First Category
               </Button>
             </div>
@@ -592,7 +592,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-bold text-foreground">Savings Goals</h2>
-        <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-blue-600 dark:bg-blue text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue/80 transition-colors text-sm active:bg-blue-800">
+        <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80">
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">New Goal</span>
           <span className="sm:hidden">New</span>
@@ -644,7 +644,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-lg font-semibold text-foreground">No savings goals set up yet!</p>
             <p className="text-sm mt-2 text-muted-foreground">Start saving for your dreams by creating a new goal.</p>
-            <Button className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+            <Button className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
               Create First Goal
             </Button>
           </div>
@@ -701,7 +701,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
         <div className="flex items-center justify-between">
           <h2 className="text-xl sm:text-2xl font-bold text-foreground">Transactions</h2>
-          <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex items-center space-x-2 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.02] active:scale-98">
+          <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex items-center space-x-2 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98">
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Expense</span>
             <span className="sm:hidden">Add</span>
@@ -714,13 +714,13 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search transactions..."
-                className="w-full pl-9 bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0"
+                className="w-full pl-9 bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
                 value={transactionSearchTerm}
                 onChange={(e) => setTransactionSearchTerm(e.target.value)}
               />
             </div>
             <Select value={transactionFilterPeriod} onValueChange={(value: 'all' | 'thisMonth') => setTransactionFilterPeriod(value)}>
-              <SelectTrigger className="w-full sm:w-[150px] bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
+              <SelectTrigger className="w-full sm:w-[150px] bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
                 <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                 <SelectValue placeholder="Filter Period" />
               </SelectTrigger>
@@ -766,7 +766,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                 <List className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-lg font-semibold text-foreground">No transactions found.</p>
                 <p className="text-sm mt-2">It looks like you haven't added any transactions yet. Use the "Add Expense" button to get started!</p>
-                <Button onClick={() => setIsQuickAddModalOpen(true)} className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+                <Button onClick={() => setIsQuickAddModalOpen(true)} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
                   Add First Expense
                 </Button>
               </div>
@@ -785,7 +785,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         <div className="flex flex-col h-full">
           <div className="p-5 sm:p-6 border-b border-border">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-lilac bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-lilac bg-clip-text text-transparent">
                 FinanceFlow
               </h1>
               <button onClick={handleCloseSidebar} className="p-2 hover:bg-muted/50 rounded-lg active:bg-muted">
@@ -794,7 +794,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             </div>
 
             <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-xl">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-lilac rounded-full flex items-center justify-center text-white font-semibold">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold">
                 JD
               </div>
               <div>
@@ -822,14 +822,14 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   onClick={() => handleViewChange(item.id)}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                     isActive
-                      ? 'bg-blue-50 dark:bg-blue/10 text-blue-600 dark:text-blue font-semibold shadow-sm'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary font-semibold shadow-sm'
                       : 'text-muted-foreground hover:bg-muted/50 active:bg-muted'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
                   {isActive && (
-                    <div className="ml-auto w-1.5 h-1.5 bg-blue-600 dark:bg-blue rounded-full"></div>
+                    <div className="ml-auto w-1.5 h-1.5 bg-primary dark:bg-primary rounded-full"></div>
                   )}
                 </Link>
               );
@@ -848,7 +848,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
               </button>
             </div>
 
-            <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 dark:from-blue/10 to-lilac/50 dark:to-lilac/10 rounded-xl">
+            <div className="mt-4 p-4 bg-gradient-to-br from-primary/5 dark:from-primary/10 to-lilac/50 dark:to-lilac/10 rounded-xl">
               <p className="text-sm font-semibold text-foreground mb-1">💡 Pro Tip</p>
               <p className="text-xs text-muted-foreground">Review your transactions daily to stay on top of your spending!</p>
             </div>
@@ -877,7 +877,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm font-medium text-foreground">{selectedMonth}</span>
               </div>
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 JD
               </div>
             </div>
@@ -908,7 +908,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       )}
 
       <Button
-        className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 rounded-full p-3 sm:p-4 shadow-lg bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white z-30 animate-in fade-in zoom-in duration-300 transition-transform hover:scale-[1.05] active:scale-95"
+        className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 rounded-full p-3 sm:p-4 shadow-lg bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground z-30 animate-in fade-in zoom-in duration-300 transition-transform hover:scale-[1.05] active:scale-95"
         onClick={() => setIsQuickAddModalOpen(true)}
       >
         <Plus className="w-6 h-6 sm:w-7 sm:h-7" />

@@ -157,7 +157,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
         {isLoading && (
           <div className="flex items-center justify-center p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             <span className="ml-2 text-muted-foreground">Loading data...</span>
           </div>
         )}
@@ -183,7 +183,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
             />
 
             {/* Total Investment Portfolio Card */}
-            <Card className="card-shadow border-none bg-gradient-to-br from-blue-500 to-lilac text-white animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <Card className="card-shadow border-none bg-gradient-to-br from-blue to-lilac text-white animate-in fade-in slide-in-from-bottom-2 duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-blue-100">Total Investment Portfolio</p>
@@ -201,11 +201,11 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
             {/* Quick Action Buttons */}
             <div className="grid grid-cols-3 gap-4">
-              <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-blue-600 hover:bg-blue-700 dark:bg-blue dark:hover:bg-blue/80 text-white rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
+              <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
                 <Plus className="w-5 h-5 mb-1" />
                 <span className="text-xs font-medium">Add Expense</span>
               </Button>
-              <Button onClick={() => setIsAddInvestmentModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald dark:hover:bg-emerald/80 text-white rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
+              <Button onClick={() => setIsAddInvestmentModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-emerald hover:bg-emerald/90 dark:bg-emerald dark:hover:bg-emerald/90 text-white rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
                 <DollarSign className="w-5 h-5 mb-1" />
                 <span className="text-xs font-medium">Add Investment</span>
               </Button>
@@ -238,7 +238,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                       <div key={inv.id} className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted">
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            inv.type === 'Stock' ? 'bg-blue-100 text-blue-600 dark:bg-blue/20 dark:text-blue' : 'bg-amber-100 text-amber-600 dark:bg-yellow-500/20 dark:text-yellow-400'
+                            inv.type === 'Stock' ? 'bg-blue/10 text-blue dark:bg-blue/20 dark:text-blue' : 'bg-lilac/10 text-lilac dark:bg-lilac/20 dark:text-lilac'
                           }`}>
                             {inv.type === 'Stock' ? <DollarSign className="w-4 h-4" /> : <Wallet className="w-4 h-4" />}
                           </div>

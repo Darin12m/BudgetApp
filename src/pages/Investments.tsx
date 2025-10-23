@@ -191,7 +191,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 
   const LoadingSpinner: React.FC = () => (
     <div className="flex items-center justify-center p-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       <span className="ml-2 text-muted-foreground">Loading investments...</span>
     </div>
   );
@@ -223,7 +223,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-bold">Investments</h1>
-          <Button onClick={handleAddInvestment} className="flex items-center space-x-2 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.02] active:scale-98">
+          <Button onClick={handleAddInvestment} className="flex items-center space-x-2 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98">
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Investment</span>
             <span className="sm:hidden">Add</span>
@@ -231,7 +231,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
         </div>
 
         {/* Overall Portfolio Overview */}
-        <Card className="card-shadow border-none bg-gradient-to-br from-blue-500 to-lilac text-white">
+        <Card className="card-shadow border-none bg-gradient-to-br from-blue to-lilac text-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-blue-100">Total Portfolio Value</p>
@@ -294,7 +294,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                 <CardTitle className="text-lg font-semibold">All Holdings</CardTitle>
                 <div className="flex items-center space-x-2">
                   <Select value={sortBy} onValueChange={(value: 'name' | 'gainLossPercentage' | 'totalValue') => setSortBy(value)}>
-                    <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
+                    <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
                       <SortAsc className="h-3 w-3 mr-2 text-muted-foreground" />
                       <SelectValue placeholder="Sort By" />
                     </SelectTrigger>
@@ -320,7 +320,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                       <Wallet className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-lg font-semibold text-foreground">No investments found.</p>
                       <p className="text-sm mt-2">Add your first stock or crypto holding to track your portfolio.</p>
-                      <Button onClick={handleAddInvestment} className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+                      <Button onClick={handleAddInvestment} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
                         Add First Investment
                       </Button>
                     </div>
@@ -331,7 +331,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
           </TabsContent>
 
           <TabsContent value="stocks" className="mt-6 space-y-6">
-            <Card className="card-shadow border-none bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <Card className="card-shadow border-none bg-gradient-to-br from-blue to-blue-600 text-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-blue-100">Stock Portfolio Value</p>
@@ -385,7 +385,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                 <CardTitle className="text-lg font-semibold">Stock Holdings</CardTitle>
                 <div className="flex items-center space-x-2">
                   <Select value={sortBy} onValueChange={(value: 'name' | 'gainLossPercentage' | 'totalValue') => setSortBy(value)}>
-                    <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
+                    <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
                       <SortAsc className="h-3 w-3 mr-2 text-muted-foreground" />
                       <SelectValue placeholder="Sort By" />
                     </SelectTrigger>
@@ -411,7 +411,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                       <DollarSign className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-lg font-semibold text-foreground">No stock investments found.</p>
                       <p className="text-sm mt-2">Add your first stock holding to track its live performance.</p>
-                      <Button onClick={handleAddInvestment} className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+                      <Button onClick={handleAddInvestment} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
                         Add First Stock
                       </Button>
                     </div>
@@ -422,7 +422,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
           </TabsContent>
 
           <TabsContent value="crypto" className="mt-6 space-y-6">
-            <Card className="card-shadow border-none bg-gradient-to-br from-emerald to-blue-600 text-white">
+            <Card className="card-shadow border-none bg-gradient-to-br from-emerald to-blue text-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-emerald-100">Crypto Portfolio Value</p>
@@ -476,7 +476,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                 <CardTitle className="text-lg font-semibold">Crypto Holdings</CardTitle>
                 <div className="flex items-center space-x-2">
                   <Select value={sortBy} onValueChange={(value: 'name' | 'gainLossPercentage' | 'totalValue') => setSortBy(value)}>
-                    <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
+                    <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
                       <SortAsc className="h-3 w-3 mr-2 text-muted-foreground" />
                       <SelectValue placeholder="Sort By" />
                     </SelectTrigger>
@@ -502,7 +502,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                       <Bitcoin className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-lg font-semibold text-foreground">No crypto investments found.</p>
                       <p className="text-sm mt-2">Add your first crypto holding to track its live performance.</p>
-                      <Button onClick={handleAddInvestment} className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+                      <Button onClick={handleAddInvestment} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
                         Add First Crypto
                       </Button>
                     </div>
@@ -531,7 +531,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 
       {/* Fixed Add Button for Mobile */}
       <Button
-        className="fixed bottom-20 right-4 sm:hidden rounded-full p-3 shadow-lg bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.05] active:scale-95"
+        className="fixed bottom-20 right-4 sm:hidden rounded-full p-3 shadow-lg bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.05] active:scale-95"
         onClick={handleAddInvestment}
       >
         <Plus className="w-6 h-6" />
@@ -603,7 +603,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Asset Name
         </Label>
         <div className="col-span-3">
-          <Input id="name" value={name} onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          <Input id="name" value={name} onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
           {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
         </div>
       </div>
@@ -612,7 +612,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Type
         </Label>
         <Select value={type} onValueChange={(value: 'Stock' | 'Crypto') => setType(value)}>
-          <SelectTrigger className="col-span-3 bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
+          <SelectTrigger className="col-span-3 bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
           <SelectContent>
@@ -628,7 +628,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
             Ticker Symbol
           </Label>
           <div className="col-span-3">
-            <Input id="symbol" value={symbol} onChange={(e) => { setSymbol(e.target.value); setErrors(prev => ({ ...prev, symbol: '' })); }} placeholder="e.g., AAPL" className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+            <Input id="symbol" value={symbol} onChange={(e) => { setSymbol(e.target.value); setErrors(prev => ({ ...prev, symbol: '' })); }} placeholder="e.g., AAPL" className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
             {errors.symbol && <p className="text-destructive text-xs mt-1">{errors.symbol}</p>}
           </div>
         </div>
@@ -640,7 +640,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
             CoinGecko ID
           </Label>
           <div className="col-span-3">
-            <Input id="coingeckoId" value={coingeckoId} onChange={(e) => { setCoingeckoId(e.target.value); setErrors(prev => ({ ...prev, coingeckoId: '' })); }} placeholder="e.g., bitcoin" className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+            <Input id="coingeckoId" value={coingeckoId} onChange={(e) => { setCoingeckoId(e.target.value); setErrors(prev => ({ ...prev, coingeckoId: '' })); }} placeholder="e.g., bitcoin" className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
             {errors.coingeckoId && <p className="text-destructive text-xs mt-1">{errors.coingeckoId}</p>}
           </div>
         </div>
@@ -651,7 +651,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Quantity
         </Label>
         <div className="col-span-3">
-          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
           {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity}</p>}
         </div>
       </div>
@@ -660,7 +660,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Buy Price
         </Label>
         <div className="col-span-3">
-          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
           {errors.buyPrice && <p className="text-destructive text-xs mt-1">{errors.buyPrice}</p>}
         </div>
       </div>
@@ -669,7 +669,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Current Price
         </Label>
         <div className="col-span-3">
-          <Input id="currentPrice" type="number" step="0.01" value={currentPrice} onChange={(e) => { setCurrentPrice(e.target.value); setErrors(prev => ({ ...prev, currentPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          <Input id="currentPrice" type="number" step="0.01" value={currentPrice} onChange={(e) => { setCurrentPrice(e.target.value); setErrors(prev => ({ ...prev, currentPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
           {errors.currentPrice && <p className="text-destructive text-xs mt-1">{errors.currentPrice}</p>}
         </div>
       </div>
@@ -678,7 +678,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Date Purchased
         </Label>
         <div className="col-span-3">
-          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
           {errors.datePurchased && <p className="text-destructive text-xs mt-1">{errors.datePurchased}</p>}
         </div>
       </div>
@@ -692,7 +692,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
             Cancel
           </Button>
-          <Button type="submit" className="flex-1 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.02] active:scale-98">
+          <Button type="submit" className="flex-1 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98">
             <Save className="h-4 w-4 mr-2" /> Save
           </Button>
         </div>
