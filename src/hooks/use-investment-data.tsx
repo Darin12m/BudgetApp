@@ -27,7 +27,7 @@ export const useInvestmentData = (userUid: string | null) => {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [livePrices, setLivePrices] = useState<Map<string, number>>(new Map());
+  const [livePrices, setLivePrices] = new Map<string, number>();
   const [priceChange, setPriceChange] = useState<Map<string, 'up' | 'down' | 'none'>>(new Map());
 
   // Ref to store the latest investments to avoid stale closures in setInterval
@@ -98,6 +98,14 @@ export const useInvestmentData = (userUid: string | null) => {
             updatedPrice = cryptoPrices.get(inv.coingeckoId)!;
             priceSource = 'CoinGecko';
           }
+          // If crypto ID is not found, try to resolve from symbol map
+          if (!cryptoPrices.has(inv.coingeckoId) && inv.coingeckoId) {
+            const resolvedId = inv.coingeckoId; // Assuming coingeckoId is already the ID or symbol
+            if (cryptoPrices.has(resolvedId)) {
+              updatedPrice = cryptoPrices.get(resolvedId)!;
+              priceSource = 'CoinGecko';
+            }
+          }
         }
 
         if (identifier) {
@@ -158,8 +166,8 @@ export const useInvestmentData = (userUid: string | null) => {
         createdAt: serverTimestamp(),
       });
       toast.success("Investment added successfully!");
-    } catch (e) {
-      console.error("Error adding investment:", e);
+    } catch (e: any) { // Explicitly type 'e' as 'any' for error.code
+      console.error("Error adding investment:", e.code, e.message); // Log error.code
       toast.error("Failed to add investment.");
     }
   }, [userUid]);
