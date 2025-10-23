@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import axios from "axios";
-import * as cors from "cors";
+import axios from "axios"; // Corrected import for axios
+import cors from "cors"; // Corrected import for cors
 
 admin.initializeApp();
 
