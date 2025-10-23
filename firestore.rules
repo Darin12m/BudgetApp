@@ -1,15 +1,46 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // General rule for user-owned collections
-    match /{collection}/{documentId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.ownerUid;
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
-      // Explicitly allow create for any collection if ownerUid matches
+    // Rule for 'transactions' collection
+    match /transactions/{documentId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
     }
 
-    // You can add more specific rules for certain collections if needed,
-    // but the general rule above should now cover creation correctly.
+    // Rule for 'categories' collection
+    match /categories/{documentId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+    }
+
+    // Rule for 'accounts' collection
+    match /accounts/{documentId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+    }
+
+    // Rule for 'goals' collection
+    match /goals/{documentId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+    }
+
+    // Rule for 'recurringTransactions' collection
+    match /recurringTransactions/{documentId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+    }
+
+    // Rule for 'budgetSettings' collection
+    match /budgetSettings/{documentId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+    }
+
+    // Rule for 'investments' collection
+    match /investments/{documentId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+    }
   }
 }
