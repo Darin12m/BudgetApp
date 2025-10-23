@@ -1,28 +1,16 @@
 import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Download, Home, List, BarChart3, ChevronRight, Wallet } from 'lucide-react'; // Added Wallet icon
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Download, Home, List, BarChart3, ChevronRight, Wallet } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Firebase imports
-import { db, auth } from '@/lib/firebase'; // Import db and auth from centralized firebase.ts
+import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
-/*
-FIREBASE INTEGRATION REQUIREMENTS:
-1. Install Firebase: npm install firebase (already handled)
-2. Create Firebase project and get config (already handled)
-3. Uncomment Firebase imports and service functions (already handled)
-4. Replace mock data with actual Firebase calls
-5. Add Firebase collections: transactions, categories, goals, accounts, recurringTransactions
-6. Implement CRUD operations for each data type
-7. Add real-time listeners for live updates
-8. Add authentication for user-specific data
-*/
-
 // TypeScript Interfaces
 interface Transaction {
-  id: number;
+  id: string; // Changed to string for Firebase document ID
   date: string;
   merchant: string;
   amount: number;
@@ -32,6 +20,7 @@ interface Transaction {
 }
 
 interface Category {
+  id: string; // Added for Firebase document ID
   name: string;
   budgeted: number;
   spent: number;
@@ -40,6 +29,7 @@ interface Category {
 }
 
 interface Account {
+  id: string; // Added for Firebase document ID
   name: string;
   balance: number;
   type: 'checking' | 'savings' | 'credit' | 'investment';
@@ -47,6 +37,7 @@ interface Account {
 }
 
 interface Goal {
+  id: string; // Added for Firebase document ID
   name: string;
   target: number;
   current: number;
@@ -54,7 +45,7 @@ interface Goal {
 }
 
 interface RecurringTransaction {
-  id: number;
+  id: string; // Changed to string for Firebase document ID
   name: string;
   amount: number;
   category: string;
@@ -106,175 +97,126 @@ interface CategoryData {
   [key: string]: any;
 }
 
-// Firebase Service Functions
-const fetchTransactions = async (): Promise<Transaction[]> => {
-  const querySnapshot = await getDocs(collection(db, 'transactions'));
-  return querySnapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() } as Transaction));
+// Firebase Service Functions (CRUD operations)
+const transactionsCollection = collection(db, 'transactions');
+const categoriesCollection = collection(db, 'categories');
+const accountsCollection = collection(db, 'accounts');
+const goalsCollection = collection(db, 'goals');
+const recurringTransactionsCollection = collection(db, 'recurringTransactions');
+
+const addTransaction = async (transaction: Omit<Transaction, 'id'>): Promise<string> => {
+  const docRef = await addDoc(transactionsCollection, transaction);
+  return docRef.id;
+};
+const updateTransaction = async (id: string, updates: Partial<Transaction>): Promise<void> => {
+  await updateDoc(doc(transactionsCollection, id), updates);
+};
+const deleteTransaction = async (id: string): Promise<void> => {
+  await deleteDoc(doc(transactionsCollection, id));
 };
 
-const fetchCategories = async (): Promise<Category[]> => {
-  const querySnapshot = await getDocs(collection(db, 'categories'));
-  return querySnapshot.docs.map(doc => ({ ...doc.data() } as Category));
+const addCategory = async (category: Omit<Category, 'id'>): Promise<string> => {
+  const docRef = await addDoc(categoriesCollection, category);
+  return docRef.id;
+};
+const updateCategory = async (id: string, updates: Partial<Category>): Promise<void> => {
+  await updateDoc(doc(categoriesCollection, id), updates);
+};
+const deleteCategory = async (id: string): Promise<void> => {
+  await deleteDoc(doc(categoriesCollection, id));
 };
 
-const fetchAccounts = async (): Promise<Account[]> => {
-  const querySnapshot = await getDocs(collection(db, 'accounts'));
-  return querySnapshot.docs.map(doc => ({ ...doc.data() } as Account));
+const addAccount = async (account: Omit<Account, 'id'>): Promise<string> => {
+  const docRef = await addDoc(accountsCollection, account);
+  return docRef.id;
+};
+const updateAccount = async (id: string, updates: Partial<Account>): Promise<void> => {
+  await updateDoc(doc(accountsCollection, id), updates);
+};
+const deleteAccount = async (id: string): Promise<void> => {
+  await deleteDoc(doc(accountsCollection, id));
 };
 
-const fetchGoals = async (): Promise<Goal[]> => {
-  const querySnapshot = await getDocs(collection(db, 'goals'));
-  return querySnapshot.docs.map(doc => ({ ...doc.data() } as Goal));
+const addGoal = async (goal: Omit<Goal, 'id'>): Promise<string> => {
+  const docRef = await addDoc(goalsCollection, goal);
+  return docRef.id;
+};
+const updateGoal = async (id: string, updates: Partial<Goal>): Promise<void> => {
+  await updateDoc(doc(goalsCollection, id), updates);
+};
+const deleteGoal = async (id: string): Promise<void> => {
+  await deleteDoc(doc(goalsCollection, id));
 };
 
-const fetchRecurringTransactions = async (): Promise<RecurringTransaction[]> => {
-  const querySnapshot = await getDocs(collection(db, 'recurringTransactions'));
-  return querySnapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() } as RecurringTransaction));
+const addRecurringTransaction = async (recurringTransaction: Omit<RecurringTransaction, 'id'>): Promise<string> => {
+  const docRef = await addDoc(recurringTransactionsCollection, recurringTransaction);
+  return docRef.id;
+};
+const updateRecurringTransaction = async (id: string, updates: Partial<RecurringTransaction>): Promise<void> => {
+  await updateDoc(doc(recurringTransactionsCollection, id), updates);
+};
+const deleteRecurringTransaction = async (id: string): Promise<void> => {
+  await deleteDoc(doc(recurringTransactionsCollection, id));
 };
 
-// CRUD Operations
-const addTransaction = async (transaction: Omit<Transaction, 'id'>): Promise<void> => {
-  await addDoc(collection(db, 'transactions'), transaction);
-};
-
-const updateTransaction = async (id: number, updates: Partial<Transaction>): Promise<void> => {
-  await updateDoc(doc(db, 'transactions', id.toString()), updates);
-};
-
-const deleteTransaction = async (id: number): Promise<void> => {
-  await deleteDoc(doc(db, 'transactions', id.toString()));
-};
-
-const addCategory = async (category: Category): Promise<void> => {
-  await addDoc(collection(db, 'categories'), category);
-};
-
-const updateCategory = async (name: string, updates: Partial<Category>): Promise<void> => {
-  const categoryQuery = query(collection(db, 'categories'));
-  const querySnapshot = await getDocs(categoryQuery);
-  const categoryDoc = querySnapshot.docs.find(doc => doc.data().name === name);
-  if (categoryDoc) {
-    await updateDoc(categoryDoc.ref, updates);
-  }
-};
-
-const addGoal = async (goal: Goal): Promise<void> => {
-  await addDoc(collection(db, 'goals'), goal);
-};
-
-const updateGoal = async (name: string, updates: Partial<Goal>): Promise<void> => {
-  const goalQuery = query(collection(db, 'goals'));
-  const querySnapshot = await getDocs(goalQuery);
-  const goalDoc = querySnapshot.docs.find(doc => doc.data().name === name);
-  if (goalDoc) {
-    await updateDoc(goalDoc.ref, updates);
-  }
-};
 
 // Custom Hooks
 const useFinanceData = () => {
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
-  // State for Firebase data
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
 
-  // Load data from Firebase
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        // Try to load from Firebase first
-        const [transactionsData, categoriesData, goalsData, accountsData, recurringData] = await Promise.all([
-          fetchTransactions(),
-          fetchCategories(),
-          fetchGoals(),
-          fetchAccounts(),
-          fetchRecurringTransactions()
-        ]);
-        
-        // If Firebase data is empty, use mock data as fallback
-        if (transactionsData.length === 0) {
-          const mockTransactions: Transaction[] = [
-            { id: 1, date: '2025-10-18', merchant: 'Whole Foods', amount: -87.32, category: 'Groceries', status: 'pending', account: 'Chase Checking' },
-            { id: 2, date: '2025-10-17', merchant: 'Shell Gas Station', amount: -45.00, category: 'Transportation', status: 'cleared', account: 'Chase Checking' },
-            { id: 3, date: '2025-10-17', merchant: 'Netflix', amount: -15.99, category: 'Entertainment', status: 'cleared', account: 'Amex Credit' },
-            { id: 4, date: '2025-10-16', merchant: 'Salary Deposit', amount: 3500.00, category: 'Income', status: 'cleared', account: 'Chase Checking' },
-            { id: 5, date: '2025-10-15', merchant: 'Amazon', amount: -124.50, category: 'Shopping', status: 'cleared', account: 'Amex Credit' },
-            { id: 6, date: '2025-10-14', merchant: 'Starbucks', amount: -6.75, category: 'Dining', status: 'cleared', account: 'Chase Checking' },
-            { id: 7, date: '2025-10-13', merchant: 'Electric Company', amount: -89.00, category: 'Utilities', status: 'cleared', account: 'Chase Checking' },
-            { id: 8, date: '2025-10-12', merchant: 'Target', amount: -156.23, category: 'Shopping', status: 'cleared', account: 'Chase Checking' },
-          ];
-          setTransactions(mockTransactions);
-        } else {
-          setTransactions(transactionsData);
-        }
+    const unsubscribes: (() => void)[] = [];
+    let initialLoadCount = 0;
+    const totalCollections = 5;
 
-        if (categoriesData.length === 0) {
-          const mockCategories: Category[] = [
-            { name: 'Groceries', budgeted: 500, spent: 287.32, color: '#10b981', emoji: '🛒' },
-            { name: 'Dining', budgeted: 300, spent: 156.75, color: '#f59e0b', emoji: '🍽️' },
-            { name: 'Transportation', budgeted: 200, spent: 145.00, color: '#3b82f6', emoji: '🚗' },
-            { name: 'Entertainment', budgeted: 150, spent: 98.99, color: '#8b5cf6', emoji: '🎬' },
-            { name: 'Shopping', budgeted: 400, spent: 380.73, color: '#ec4899', emoji: '🛍️' },
-            { name: 'Utilities', budgeted: 250, spent: 189.00, color: '#06b6d4', emoji: '⚡' },
-            { name: 'Healthcare', budgeted: 200, spent: 0, color: '#ef4444', emoji: '🏥' },
-          ];
-          setCategories(mockCategories);
-        } else {
-          setCategories(categoriesData);
-        }
-
-        if (goalsData.length === 0) {
-          const mockGoals: Goal[] = [
-            { name: 'Emergency Fund', target: 10000, current: 6500, color: '#10b981' },
-            { name: 'Vacation', target: 3000, current: 1200, color: '#f59e0b' },
-            { name: 'New Laptop', target: 2000, current: 1650, color: '#3b82f6' },
-          ];
-          setGoals(mockGoals);
-        } else {
-          setGoals(goalsData);
-        }
-
-        if (accountsData.length === 0) {
-          const mockAccounts: Account[] = [
-            { name: 'Chase Checking', balance: 4523.67, type: 'checking', lastUpdated: '2 mins ago', },
-            { name: 'Savings Account', balance: 12456.89, type: 'savings', lastUpdated: '5 mins ago' },
-            { name: 'Amex Credit', balance: -1234.56, type: 'credit', lastUpdated: '1 min ago' },
-            { name: 'Investment Account', balance: 23456.78, type: 'investment', lastUpdated: '10 mins ago' },
-          ];
-          setAccounts(mockAccounts);
-        } else {
-          setAccounts(accountsData);
-        }
-
-        if (recurringData.length === 0) {
-          const mockRecurring: RecurringTransaction[] = [
-            { id: 1, name: 'Netflix', amount: -15.99, category: 'Entertainment', frequency: 'Monthly', nextDate: '2025-10-24', emoji: '🎬' },
-            { id: 2, name: 'Spotify', amount: -9.99, category: 'Entertainment', frequency: 'Monthly', nextDate: '2025-10-28', emoji: '🎵' },
-            { id: 3, name: 'Rent', amount: -1500.00, category: 'Housing', frequency: 'Monthly', nextDate: '2025-11-01', emoji: '🏠' },
-            { id: 4, name: 'Electric Bill', amount: -89.00, category: 'Utilities', frequency: 'Monthly', nextDate: '2025-10-30', emoji: '⚡' },
-            { id: 5, name: 'Gym Membership', amount: -49.99, category: 'Health', frequency: 'Monthly', nextDate: '2025-10-26', emoji: '💪' },
-            { id: 6, name: 'Car Insurance', amount: -125.00, category: 'Transportation', frequency: 'Monthly', nextDate: '2025-11-05', emoji: '🚗' },
-          ];
-          setRecurringTransactions(mockRecurring);
-        } else {
-          setRecurringTransactions(recurringData);
-        }
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('Firebase error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load data from Firebase');
+    const handleSnapshot = <T extends { id?: string }>(
+      snapshot: any, 
+      setter: React.Dispatch<React.SetStateAction<T[]>>, 
+      collectionName: string
+    ) => {
+      const data = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as T[];
+      setter(data);
+      initialLoadCount++;
+      if (initialLoadCount === totalCollections) {
         setLoading(false);
       }
     };
 
-    loadData();
+    const handleError = (err: any, collectionName: string) => {
+      console.error(`Firebase error for ${collectionName}:`, err);
+      setError(`Failed to load ${collectionName}. Please check your Firebase connection.`);
+      setLoading(false);
+    };
+
+    unsubscribes.push(onSnapshot(query(transactionsCollection, orderBy('date', 'desc')), 
+      (snapshot) => handleSnapshot<Transaction>(snapshot, setTransactions, 'transactions'),
+      (err) => handleError(err, 'transactions')
+    ));
+    unsubscribes.push(onSnapshot(query(categoriesCollection, orderBy('name')), 
+      (snapshot) => handleSnapshot<Category>(snapshot, setCategories, 'categories'),
+      (err) => handleError(err, 'categories')
+    ));
+    unsubscribes.push(onSnapshot(query(accountsCollection, orderBy('name')), 
+      (snapshot) => handleSnapshot<Account>(snapshot, setAccounts, 'accounts'),
+      (err) => handleError(err, 'accounts')
+    ));
+    unsubscribes.push(onSnapshot(query(goalsCollection, orderBy('name')), 
+      (snapshot) => handleSnapshot<Goal>(snapshot, setGoals, 'goals'),
+      (err) => handleError(err, 'goals')
+    ));
+    unsubscribes.push(onSnapshot(query(recurringTransactionsCollection, orderBy('name')), 
+      (snapshot) => handleSnapshot<RecurringTransaction>(snapshot, setRecurringTransactions, 'recurringTransactions'),
+      (err) => handleError(err, 'recurringTransactions')
+    ));
+
+    return () => unsubscribes.forEach(unsub => unsub());
   }, []);
 
   return {
@@ -285,14 +227,22 @@ const useFinanceData = () => {
     recurringTransactions,
     loading,
     error,
-    // Add CRUD functions
+    // CRUD functions
     addTransaction,
     updateTransaction,
     deleteTransaction,
     addCategory,
     updateCategory,
+    deleteCategory,
+    addAccount,
+    updateAccount,
+    deleteAccount,
     addGoal,
     updateGoal,
+    deleteGoal,
+    addRecurringTransaction,
+    updateRecurringTransaction,
+    deleteRecurringTransaction,
   };
 };
 
@@ -315,7 +265,7 @@ const getHealthStatus = (spent: number, budgeted: number): HealthStatus => {
 const FinanceFlow: React.FC = () => {
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  const [selectedMonth, setSelectedMonth] = useState<string>('October 2025');
+  const [selectedMonth, setSelectedMonth] = useState<string>('October 2025'); // This should be dynamic
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   
   // Settings state
@@ -334,7 +284,15 @@ const FinanceFlow: React.FC = () => {
   });
   
   // Use custom hook for data
-  const { transactions, categories, goals, accounts, recurringTransactions, loading, error } = useFinanceData();
+  const { 
+    transactions, categories, goals, accounts, recurringTransactions, 
+    loading, error,
+    addTransaction, updateTransaction, deleteTransaction,
+    addCategory, updateCategory, deleteCategory,
+    addAccount, updateAccount, deleteAccount,
+    addGoal, updateGoal, deleteGoal,
+    addRecurringTransaction, updateRecurringTransaction, deleteRecurringTransaction,
+  } = useFinanceData();
 
   // Calculate total recurring expenses
   const totalRecurring = useMemo(() => 
@@ -342,7 +300,7 @@ const FinanceFlow: React.FC = () => {
     [recurringTransactions]
   );
 
-  // Budget rollover settings
+  // Budget rollover settings (these would ideally come from Firebase as well)
   const [budgetSettings] = useState<BudgetSettings>({
     rolloverEnabled: true,
     previousMonthLeftover: 342.89
@@ -354,7 +312,7 @@ const FinanceFlow: React.FC = () => {
     [accounts]
   );
 
-  // Monthly spending trend data
+  // Monthly spending trend data (mocked for now, would be derived from transactions)
   const spendingTrend: ChartData[] = useMemo(() => [
     { month: 'Apr', spent: 2800, budget: 3000 },
     { month: 'May', spent: 2950, budget: 3000 },
@@ -365,7 +323,7 @@ const FinanceFlow: React.FC = () => {
     { month: 'Oct', spent: 1257.59, budget: 3000 },
   ], []);
 
-  // Net worth trend
+  // Net worth trend (mocked for now, would be derived from accounts history)
   const netWorthTrend: NetWorthData[] = useMemo(() => [
     { month: 'Apr', value: 35000 },
     { month: 'May', value: 36200 },
@@ -394,8 +352,8 @@ const FinanceFlow: React.FC = () => {
   );
 
   // Calculate remaining per day (days left in October)
-  const today = new Date('2025-10-19');
-  const endOfMonth = new Date('2025-10-31');
+  const today = new Date('2025-10-19'); // This should be dynamic
+  const endOfMonth = new Date('2025-10-31'); // This should be dynamic
   const daysLeft = Math.ceil((endOfMonth.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   const remainingPerDay = useMemo(() => 
     remainingBudget / daysLeft, 
@@ -798,7 +756,7 @@ const FinanceFlow: React.FC = () => {
         
         <div className="divide-y divide-gray-100">
           {categories.map((cat) => (
-            <CategoryCard key={cat.name} category={cat} />
+            <CategoryCard key={cat.id} category={cat} />
           ))}
         </div>
       </div>
@@ -821,7 +779,7 @@ const FinanceFlow: React.FC = () => {
           const percentage = (goal.current / goal.target) * 100;
           
           return (
-            <div key={goal.name} className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-100">
+            <div key={goal.id} className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
                 <Target className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: goal.color }} />
                 <span className="text-sm font-medium text-gray-600">{Math.round(percentage)}%</span>
@@ -1013,10 +971,9 @@ const FinanceFlow: React.FC = () => {
               { id: 'transactions', label: 'Transactions', icon: List, path: '/budget-app' },
               { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app' },
               { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app' },
-              { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' }, // New navigation item
+              { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
             ].map(item => {
               const Icon = item.icon;
-              // Determine if the current path matches the item's path for active state
               const isActive = window.location.pathname === item.path && (item.id === 'investments' || activeView === item.id);
               
               return (
@@ -1113,7 +1070,7 @@ const FinanceFlow: React.FC = () => {
               { id: 'transactions', label: 'Activity', icon: List, path: '/budget-app' },
               { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app' },
               { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app' },
-              { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' }, // New navigation item
+              { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
             ].map(item => {
               const Icon = item.icon;
               const isActive = window.location.pathname === item.path && (item.id === 'investments' || activeView === item.id);
