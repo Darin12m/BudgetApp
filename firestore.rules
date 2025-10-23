@@ -1,24 +1,52 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow authenticated users to manage their own documents in any collection
+    // Generic rule for all collections to ensure ownerUid matches authenticated user
     match /{collection}/{document} {
-      allow read, create: if request.auth != null;
+      allow read: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
     }
 
-    // Specifically for the 'investments' collection, if you want more granular control
+    // Specific rule for 'investments' collection (can be more restrictive if needed)
     match /investments/{investmentId} {
       allow read: if request.auth != null && request.auth.uid == resource.data.ownerUid;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
     }
 
-    // For budgetSettings, allow only the owner to read/update their settings
+    // Specific rule for 'budgetSettings' collection
     match /budgetSettings/{settingsId} {
       allow read, create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
       allow update: if request.auth != null && request.auth.uid == resource.data.ownerUid;
       allow delete: if false; // Budget settings should generally not be deleted by users
+    }
+
+    // Add similar specific rules for other collections like 'transactions', 'categories', 'accounts', 'goals', 'recurringTransactions'
+    match /transactions/{transactionId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+    }
+    match /categories/{categoryId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+    }
+    match /accounts/{accountId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+    }
+    match /goals/{goalId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+    }
+    match /recurringTransactions/{recurringTransactionId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.ownerUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerUid;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
     }
   }
 }
