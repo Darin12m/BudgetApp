@@ -57,9 +57,9 @@ export default {
         lilac: "hsl(var(--lilac))",
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "var(--radius)", // Now 16px
+        md: "calc(var(--radius) - 4px)", // 12px
+        sm: "calc(var(--radius) - 8px)", // 8px
       },
       keyframes: {
         "accordion-down": {

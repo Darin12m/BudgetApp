@@ -24,7 +24,7 @@ const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(-
 const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   const {
     transactions,
-    categories, // Added categories to calculate budget values
+    categories,
     budgetSettings,
     addDocument,
     loading: financeLoading,

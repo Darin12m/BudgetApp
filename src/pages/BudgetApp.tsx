@@ -61,8 +61,6 @@ interface RecurringTransaction {
   ownerUid: string;
 }
 
-// Removed local BudgetSettings interface, now relying on the one from use-finance-data.tsx
-
 interface HealthStatus {
   status: 'over' | 'warning' | 'good';
   color: string;

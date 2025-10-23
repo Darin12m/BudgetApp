@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* White */
+    --background: 210 20% 98%; /* Soft neutral background, equivalent to #f9fafb */
     --foreground: 222.2 84% 4.9%; /* Near-black for text */
 
     --card: 0 0% 100%; /* White */
@@ -32,7 +32,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 0.75rem; /* Slightly more rounded corners */
+    --radius: 1rem; /* 16px rounded corners */
 
     /* Custom accent colors for gradients and highlights */
     --emerald: 150 80% 40%; /* A vibrant green */
@@ -88,9 +88,25 @@
 
 /* Custom shadow for cards */
 .card-shadow {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+.card-shadow:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .dark .card-shadow {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.dark .card-shadow:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Safe area for bottom navigation */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
