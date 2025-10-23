@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { DollarSign, TrendingUp, TrendingDown, Plus, Edit, Trash2, Filter, SortAsc, RefreshCcw, Wallet, BarChart3, X, Save, CalendarDays, ChevronRight, AlertCircle } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Plus, Edit, Trash2, Filter, SortAsc, RefreshCcw, Wallet, BarChart3, X, Save, CalendarDays, ChevronRight, AlertCircle, LucideIcon } from 'lucide-react'; // Import LucideIcon
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -251,7 +251,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   }
 
   const totalGainLossColor = portfolioSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600';
-  const totalGainLossIcon = portfolioSummary.totalGainLossPercentage >= 0 ? TrendingUp : TrendingDown;
+  const TotalGainLossIcon: LucideIcon = portfolioSummary.totalGainLossPercentage >= 0 ? TrendingUp : TrendingDown; // Assign to capitalized variable with explicit type
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 sm:p-6 animate-in fade-in duration-500">
@@ -283,7 +283,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
             </div>
             <p className="text-4xl font-bold mb-1">{formatCurrency(portfolioSummary.currentValue)}</p>
             <div className="flex items-center space-x-2">
-              {totalGainLossIcon && <totalGainLossIcon className={`w-4 h-4 ${totalGainLossColor}`} />}
+              {TotalGainLossIcon && <TotalGainLossIcon className={`w-4 h-4 ${totalGainLossColor}`} />}
               <span className={`text-sm ${totalGainLossColor}`}>
                 {portfolioSummary.totalGainLossPercentage.toFixed(2)}% this month
               </span>
@@ -537,7 +537,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Date Purchased
         </Label>
         <div className="col-span-3">
-          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} />
+          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, date: '' })); }} />
           {errors.datePurchased && <p className="text-red-500 text-xs mt-1">{errors.datePurchased}</p>}
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { PiggyBank, TrendingUp, TrendingDown } from 'lucide-react';
+import { PiggyBank, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react'; // Import LucideIcon
 import { formatCurrency } from '@/lib/utils';
 
 interface RemainingBudgetCardProps {
@@ -36,7 +36,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
 
   const isOverBudget = remainingBudget < 0;
   const summaryColor = isOverBudget ? 'text-red-500' : 'text-green-600';
-  const summaryIcon = isOverBudget ? TrendingDown : TrendingUp;
+  const SummaryIcon: LucideIcon = isOverBudget ? TrendingDown : TrendingUp; // Assign to capitalized variable with explicit type
 
   return (
     <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl p-6 text-white shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
@@ -98,7 +98,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
 
       <div className="flex items-center justify-between text-sm bg-white/10 rounded-lg p-3">
         <div className="flex items-center space-x-2">
-          {summaryIcon && <summaryIcon className={`w-4 h-4 ${summaryColor}`} />}
+          {SummaryIcon && <SummaryIcon className={`w-4 h-4 ${summaryColor}`} />}
           <span className={`font-medium ${summaryColor}`}>{smartSummary}</span>
         </div>
         <span className="text-blue-100">{formatCurrency(remainingPerDay)}/day</span>

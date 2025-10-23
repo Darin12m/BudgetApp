@@ -55,6 +55,7 @@ interface RecurringTransaction {
 }
 
 interface BudgetSettings {
+  id: string; // Added 'id' property
   rolloverEnabled: boolean;
   previousMonthLeftover: number;
   ownerUid: string;
@@ -66,7 +67,7 @@ export const useFinanceData = (userUid: string | null) => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
-  const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '' });
+  const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ id: '', rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
