@@ -28,8 +28,8 @@ export const useInvestmentData = (userUid: string | null) => {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [livePrices, setLivePrices] = new Map();
-  const [priceChange, setPriceChange] = new Map();
+  const [livePrices, setLivePrices] = useState<Map<string, number>>(new Map()); // Fixed: Use useState
+  const [priceChange, setPriceChange] = useState<Map<string, 'up' | 'down' | 'none'>>(new Map()); // Fixed: Use useState
 
   // Ref to store the latest investments to avoid stale closures in setInterval
   const latestInvestments = useRef<Investment[]>([]);
