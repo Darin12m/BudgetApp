@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { PiggyBank, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react'; // Import LucideIcon
+import { PiggyBank, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 interface RemainingBudgetCardProps {
@@ -30,16 +30,16 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   const remainingPercentage = 100 - spentPercentage;
 
   const data = [
-    { name: 'Spent', value: totalSpent, color: '#3b82f6' }, // Blue
-    { name: 'Remaining', value: remainingBudget > 0 ? remainingBudget : 0, color: '#10b981' }, // Green
+    { name: 'Spent', value: totalSpent, color: 'hsl(var(--blue))' },
+    { name: 'Remaining', value: remainingBudget > 0 ? remainingBudget : 0, color: 'hsl(var(--emerald))' },
   ];
 
   const isOverBudget = remainingBudget < 0;
-  const summaryColor = isOverBudget ? 'text-red-500' : 'text-green-600';
-  const SummaryIcon: LucideIcon = isOverBudget ? TrendingDown : TrendingUp; // Assign to capitalized variable with explicit type
+  const summaryColor = isOverBudget ? 'text-destructive' : 'text-emerald';
+  const SummaryIcon: LucideIcon = isOverBudget ? TrendingDown : TrendingUp;
 
   return (
-    <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl p-6 text-white shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
+    <div className="bg-gradient-to-br from-blue-500 to-lilac rounded-xl sm:rounded-2xl p-6 text-white card-shadow animate-in fade-in slide-in-from-top-2 duration-300">
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-sm text-blue-100 mb-1">Your Monthly Budget</p>
@@ -65,7 +65,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value, name) => [`${formatCurrency(Number(value))}`, name]} />
+              <Tooltip formatter={(value, name) => [`${formatCurrency(Number(value))}`, name]} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} />
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center">

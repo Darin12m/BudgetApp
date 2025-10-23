@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from 'react'; // Added useEffect
+import React, { useState, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,12 +50,12 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
     }
 
     onSave(parseFloat(amount), note, date);
-    onClose(); // Close modal after saving
+    onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+      <DialogContent className="sm:max-w-[425px] bg-card text-foreground card-shadow">
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <Plus className="w-5 h-5 mr-2" /> Quick Add Transaction
@@ -74,8 +74,9 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
                 value={amount}
                 onChange={(e) => { setAmount(e.target.value); setErrors(prev => ({ ...prev, amount: '' })); }}
                 placeholder="e.g., -25.50 for expense, 100 for income"
+                className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0"
               />
-              {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount}</p>}
+              {errors.amount && <p className="text-destructive text-xs mt-1">{errors.amount}</p>}
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -86,7 +87,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
               id="note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="col-span-3"
+              className="col-span-3 bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0"
               placeholder="e.g., Coffee with friends"
             />
           </div>
@@ -100,15 +101,16 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
                 type="date"
                 value={date}
                 onChange={(e) => { setDate(e.target.value); setErrors(prev => ({ ...prev, date: '' })); }}
+                className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0"
               />
-              {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
+              {errors.date && <p className="text-destructive text-xs mt-1">{errors.date}</p>}
             </div>
           </div>
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
               <X className="h-4 w-4 mr-2" /> Cancel
             </Button>
-            <Button type="submit" className="flex-1 sm:flex-none">
+            <Button type="submit" className="flex-1 sm:flex-none bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.02] active:scale-98">
               <Save className="h-4 w-4 mr-2" /> Save Transaction
             </Button>
           </DialogFooter>

@@ -1,16 +1,16 @@
 import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Download, Home, List, BarChart3, ChevronRight, Wallet } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom'; // Import useLocation
-import { useFinanceData } from '@/hooks/use-finance-data'; // Import the new hook
-import { formatCurrency } from '@/lib/utils'; // Import utility functions
-import RemainingBudgetCard from '@/components/RemainingBudgetCard'; // Import new component
-import QuickAddTransactionModal from '@/components/QuickAddTransactionModal'; // Import new component
-import { Button } from '@/components/ui/button'; // Import Button for floating action button
+import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { useFinanceData } from '@/hooks/use-finance-data';
+import { formatCurrency } from '@/lib/utils';
+import RemainingBudgetCard from '@/components/RemainingBudgetCard';
+import QuickAddTransactionModal from '@/components/QuickAddTransactionModal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // TypeScript Interfaces (moved to use-finance-data.tsx for centralized management)
-// Re-declaring them here for component props/local types if needed, but primarily
-// the hook will manage the data types.
 interface Transaction {
   id: string;
   date: string;
@@ -65,6 +65,7 @@ interface BudgetSettings {
   rolloverEnabled: boolean;
   previousMonthLeftover: number;
   ownerUid: string;
+  totalBudgeted?: number; // Added totalBudgeted here for consistency
 }
 
 interface HealthStatus {
@@ -94,9 +95,9 @@ interface CategoryData {
 // Utility Functions
 const getHealthStatus = (spent: number, budgeted: number): HealthStatus => {
   const percentage = (spent / budgeted) * 100;
-  if (percentage >= 100) return { status: 'over', color: 'text-red-500', bg: 'bg-red-50' };
-  if (percentage >= 80) return { status: 'warning', color: 'text-amber-500', bg: 'bg-amber-50' };
-  return { status: 'good', color: 'text-green-500', bg: 'bg-green-50' };
+  if (percentage >= 100) return { status: 'over', color: 'text-destructive', bg: 'bg-red-50 dark:bg-red-900/20' };
+  if (percentage >= 80) return { status: 'warning', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' };
+  return { status: 'good', color: 'text-emerald', bg: 'bg-emerald-50 dark:bg-emerald-900/20' };
 };
 
 interface BudgetAppProps {
@@ -104,7 +105,7 @@ interface BudgetAppProps {
 }
 
 const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
-  const location = useLocation(); // Get current location for active nav item
+  const location = useLocation();
   const {
     transactions,
     categories,
@@ -123,29 +124,26 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState<boolean>(false);
   const [selectedMonth, setSelectedMonth] = useState<string>('October 2025'); // This would ideally be dynamic based on current date
+  const [transactionSearchTerm, setTransactionSearchTerm] = useState<string>('');
+  const [transactionFilterPeriod, setTransactionFilterPeriod] = useState<'all' | 'thisMonth'>('thisMonth');
 
-  // Update activeView based on URL path
   useEffect(() => {
     if (location.pathname === '/budget-app') {
-      // Determine sub-view based on query params or default to dashboard
       const params = new URLSearchParams(location.search);
       setActiveView(params.get('view') || 'dashboard');
     }
   }, [location.pathname, location.search]);
 
-  // Calculate total recurring expenses
-  const totalRecurring = useMemo(() => 
-    recurringTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0), 
+  const totalRecurring = useMemo(() =>
+    recurringTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0),
     [recurringTransactions]
   );
 
-  // Calculate net worth
-  const netWorth = useMemo(() => 
-    accounts.reduce((sum, acc) => sum + acc.balance, 0), 
+  const netWorth = useMemo(() =>
+    accounts.reduce((sum, acc) => sum + acc.balance, 0),
     [accounts]
   );
 
-  // Monthly spending trend data (mocked for now, would be derived from transactions)
   const spendingTrend: ChartData[] = useMemo(() => [
     { month: 'Apr', spent: 2800, budget: 3000 },
     { month: 'May', spent: 2950, budget: 3000 },
@@ -153,10 +151,9 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     { month: 'Jul', spent: 3100, budget: 3200 },
     { month: 'Aug', spent: 2900, budget: 3200 },
     { month: 'Sep', spent: 2750, budget: 3000 },
-    { month: 'Oct', spent: 1257.59, budget: 3000 }, // This should be calculated from actual transactions
+    { month: 'Oct', spent: 1257.59, budget: 3000 },
   ], []);
 
-  // Net worth trend (mocked for now, would be derived from accounts history)
   const netWorthTrend: NetWorthData[] = useMemo(() => [
     { month: 'Apr', value: 35000 },
     { month: 'May', value: 36200 },
@@ -164,45 +161,43 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     { month: 'Jul', value: 37800 },
     { month: 'Aug', value: 38500 },
     { month: 'Sep', value: 38900 },
-    { month: 'Oct', value: 39202.78 }, // This should be calculated from actual accounts
+    { month: 'Oct', value: 39202.78 },
   ], []);
 
-  const totalBudgeted = useMemo(() => 
-    categories.reduce((sum, cat) => sum + cat.budgeted, 0), 
+  const totalBudgeted = useMemo(() =>
+    (budgetSettings?.totalBudgeted || 0) + categories.reduce((sum, cat) => sum + cat.budgeted, 0),
+    [categories, budgetSettings?.totalBudgeted]
+  );
+
+  const totalSpent = useMemo(() =>
+    categories.reduce((sum, cat) => sum + cat.spent, 0),
     [categories]
   );
-  
-  const totalSpent = useMemo(() => 
-    categories.reduce((sum, cat) => sum + cat.spent, 0), 
-    [categories]
-  );
-  
-  const remainingBudget = useMemo(() => 
-    budgetSettings.rolloverEnabled 
-      ? totalBudgeted - totalSpent + budgetSettings.previousMonthLeftover 
+
+  const remainingBudget = useMemo(() =>
+    budgetSettings.rolloverEnabled
+      ? totalBudgeted - totalSpent + budgetSettings.previousMonthLeftover
       : totalBudgeted - totalSpent,
     [totalBudgeted, totalSpent, budgetSettings]
   );
 
-  // Calculate remaining per day (days left in October)
-  const today = new Date(); // Use current date
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of current month
+  const today = new Date();
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
   const daysLeft = Math.ceil((endOfMonth.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  const remainingPerDay = useMemo(() => 
-    remainingBudget / daysLeft, 
+  const remainingPerDay = useMemo(() =>
+    remainingBudget / daysLeft,
     [remainingBudget, daysLeft]
   );
 
-  const categoryData: CategoryData[] = useMemo(() => 
+  const categoryData: CategoryData[] = useMemo(() =>
     categories.map(cat => ({
       name: cat.name,
       value: cat.spent,
       color: cat.color,
-    })), 
+    })),
     [categories]
   );
 
-  // Smart Summary Text
   const smartSummary = useMemo(() => {
     if (totalBudgeted === 0) return "Set up your budget to get insights!";
     const spentPercentage = (totalSpent / totalBudgeted) * 100;
@@ -216,7 +211,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     return "On track to stay under budget this month.";
   }, [totalBudgeted, totalSpent, remainingBudget, daysLeft]);
 
-  // Event handlers with useCallback
   const handleViewChange = useCallback((view: string) => {
     setActiveView(view);
     setSidebarOpen(false);
@@ -231,37 +225,34 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   }, []);
 
   const handleQuickAddTransaction = useCallback(async (amount: number, note: string, date: string) => {
-    // For quick add, we'll default to a generic category and 'pending' status
-    // In a real app, you might have a default account or prompt for it.
     await addDocument('transactions', {
       date: date,
       merchant: note || 'Quick Add',
       amount: amount,
-      category: 'Uncategorized', // Or a default category
+      category: 'Uncategorized',
       status: 'pending',
-      account: accounts.length > 0 ? accounts[0].name : 'Default Account', // Use first account or a default
+      account: accounts.length > 0 ? accounts[0].name : 'Default Account',
     });
   }, [addDocument, accounts]);
 
-  // Loading and Error Components
   const LoadingSpinner: React.FC = memo(() => (
     <div className="flex items-center justify-center p-8">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span className="ml-2 text-gray-600">Loading...</span>
+      <span className="ml-2 text-muted-foreground">Loading...</span>
     </div>
   ));
 
   const ErrorMessage: React.FC<{ error: string; onRetry?: () => void }> = memo(({ error, onRetry }) => (
-    <div className="bg-red-50 border border-red-200 rounded-lg p-4 m-4">
+    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 m-4">
       <div className="flex items-center">
-        <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
+        <AlertCircle className="w-5 h-5 text-destructive mr-2" />
         <div>
-          <h3 className="text-sm font-medium text-red-800">Error loading data</h3>
-          <p className="text-sm text-red-600 mt-1">{error}</p>
+          <h3 className="text-sm font-medium text-destructive">Error loading data</h3>
+          <p className="text-sm text-destructive mt-1">{error}</p>
           {onRetry && (
-            <button 
+            <button
               onClick={onRetry}
-              className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+              className="mt-2 text-sm text-destructive hover:text-destructive/80 underline"
             >
               Try again
             </button>
@@ -271,7 +262,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     </div>
   ));
 
-  // Smaller Components
   const StatsCard: React.FC<{
     title: string;
     value: string;
@@ -281,12 +271,12 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     bgColor: string;
     trend?: { value: string; color: string };
   }> = memo(({ title, value, subtitle, icon: Icon, color, bgColor, trend }) => (
-    <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex items-center justify-between mb-2">
         <div className="flex-1">
-          <p className="text-xs sm:text-sm text-gray-600 mb-1">{title}</p>
-          <p className="text-lg sm:text-2xl font-bold text-gray-900">{value}</p>
-          {subtitle && <p className="text-xs text-gray-600 mt-1 truncate">{subtitle}</p>}
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">{title}</p>
+          <p className="text-lg sm:text-2xl font-bold text-foreground">{value}</p>
+          {subtitle && <p className="text-xs text-muted-foreground mt-1 truncate">{subtitle}</p>}
           {trend && (
             <p className={`text-xs ${trend.color} mt-1 flex items-center`}>
               <TrendingUp className="w-3 h-3 mr-1" />
@@ -301,8 +291,8 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
       </div>
       {trend && (
-        <div className="text-xs text-gray-500 flex items-center mt-2">
-          <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+        <div className="text-xs text-muted-foreground flex items-center mt-2">
+          <div className="w-2 h-2 bg-emerald rounded-full mr-2 animate-pulse"></div>
           Auto-updated {accounts.length > 0 ? accounts[0].lastUpdated : 'N/A'}
         </div>
       )}
@@ -312,20 +302,20 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const TransactionCard: React.FC<{ transaction: Transaction; categories: Category[] }> = memo(({ transaction, categories }) => {
     const category = categories.find(c => c.name === transaction.category);
     return (
-      <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors active:bg-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center space-x-3 flex-1 min-w-0">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-            transaction.amount > 0 ? 'bg-green-100' : 'bg-gray-100'
+            transaction.amount > 0 ? 'bg-emerald/10 text-emerald' : 'bg-muted/50 text-foreground'
           }`}>
             <span className="text-lg">{transaction.amount > 0 ? '💰' : category?.emoji || '💳'}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-gray-900 text-sm truncate">{transaction.merchant}</p>
-            <p className="text-xs text-gray-500 truncate">{transaction.category}</p>
+            <p className="font-medium text-foreground text-sm truncate">{transaction.merchant}</p>
+            <p className="text-xs text-muted-foreground truncate">{category?.name || 'Uncategorized'}</p>
           </div>
         </div>
         <div className="text-right ml-2 flex-shrink-0">
-          <p className={`font-semibold text-sm ${transaction.amount > 0 ? 'text-green-600' : 'text-gray-900'}`}>
+          <p className={`font-semibold text-sm ${transaction.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>
             {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
           </p>
         </div>
@@ -336,15 +326,15 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const CategoryCard: React.FC<{ category: Category }> = memo(({ category }) => {
     const percentage = (category.spent / category.budgeted) * 100;
     const health = getHealthStatus(category.spent, category.budgeted);
-    
+
     return (
-      <div className="p-4 sm:p-6 hover:bg-gray-50 transition-colors active:bg-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="p-4 sm:p-6 hover:bg-muted/50 transition-colors active:bg-muted animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             <span className="text-2xl flex-shrink-0">{category.emoji}</span>
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{category.name}</h4>
-              <p className="text-xs sm:text-sm text-gray-600">
+              <h4 className="font-semibold text-foreground text-sm sm:text-base truncate">{category.name}</h4>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {formatCurrency(category.spent)} of {formatCurrency(category.budgeted)}
               </p>
             </div>
@@ -353,14 +343,14 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             <p className={`font-semibold text-sm sm:text-base ${health.color}`}>
               {formatCurrency(category.budgeted - category.spent)}
             </p>
-            <p className="text-xs sm:text-sm text-gray-500">{Math.round(percentage)}%</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{Math.round(percentage)}%</p>
           </div>
         </div>
         <div className="relative">
-          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-            <div 
+          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+            <div
               className="h-full transition-all duration-500"
-              style={{ 
+              style={{
                 width: `${Math.min(percentage, 100)}%`,
                 backgroundColor: category.color
               }}
@@ -373,7 +363,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
 
   const DashboardView: React.FC = () => (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
-      {/* Single Remaining Budget Card */}
       <RemainingBudgetCard
         totalBudgeted={totalBudgeted}
         totalSpent={totalSpent}
@@ -385,65 +374,61 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         smartSummary={smartSummary}
       />
 
-      {/* Top Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatsCard
           title="Net Worth"
           value={formatCurrency(netWorth)}
           icon={TrendingUp}
-          color="#10b981"
-          bgColor="#dcfce7"
-          trend={{ value: "+3.2%", color: "text-green-600" }}
+          color="hsl(var(--emerald))"
+          bgColor="hsl(var(--emerald)/10%)"
+          trend={{ value: "+3.2%", color: "text-emerald" }}
         />
         <StatsCard
           title="Spent"
           value={formatCurrency(totalSpent)}
           subtitle={`of ${formatCurrency(totalBudgeted)}`}
           icon={DollarSign}
-          color="#3b82f6"
-          bgColor="#dbeafe"
+          color="hsl(var(--blue))"
+          bgColor="hsl(var(--blue)/10%)"
         />
         <StatsCard
           title="Remaining"
           value={formatCurrency(remainingBudget)}
           subtitle={`${Math.round((remainingBudget / totalBudgeted) * 100)}%`}
           icon={PiggyBank}
-          color="#10b981"
-          bgColor="#dcfce7"
+          color="hsl(var(--emerald))"
+          bgColor="hsl(var(--emerald)/10%)"
         />
         <StatsCard
           title="Accounts"
           value={accounts.length.toString()}
           subtitle="Connected"
           icon={CreditCard}
-          color="#8b5cf6"
-          bgColor="#f3e8ff"
+          color="hsl(var(--lilac))"
+          bgColor="hsl(var(--lilac)/10%)"
         />
       </div>
 
-      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Spending vs Budget */}
-        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Spending Trend</h3>
+        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Spending Trend</h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={spendingTrend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" stroke="#9ca3af" style={{ fontSize: '12px' }} />
-              <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+              <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                 formatter={(value) => formatCurrency(Number(value))}
               />
-              <Line type="monotone" dataKey="spent" stroke="#3b82f6" strokeWidth={2} name="Spent" dot={false} />
-              <Line type="monotone" dataKey="budget" stroke="#10b981" strokeWidth={2} strokeDasharray="5 5" name="Budget" dot={false} />
+              <Line type="monotone" dataKey="spent" stroke="hsl(var(--blue))" strokeWidth={2} name="Spent" dot={false} />
+              <Line type="monotone" dataKey="budget" stroke="hsl(var(--emerald))" strokeWidth={2} strokeDasharray="5 5" name="Budget" dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Category Breakdown */}
-        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Spending by Category</h3>
+        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Spending by Category</h3>
           <div className="flex items-center justify-center">
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
@@ -467,61 +452,58 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
       </div>
 
-      {/* Net Worth Growth - Hidden on mobile by default */}
-      <div className="hidden sm:block bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Net Worth Growth</h3>
+      <div className="hidden sm:block bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Net Worth Growth</h3>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={netWorthTrend}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="month" stroke="#9ca3af" style={{ fontSize: '12px' }} />
-            <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
-            <Tooltip 
-              contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+            <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+            <Tooltip
+              contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
               formatter={(value) => formatCurrency(Number(value))}
             />
-            <Bar dataKey="value" fill="#10b981" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="value" fill="hsl(var(--emerald))" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Recurring Transactions Card */}
-      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Upcoming Recurring Bills</h3>
-            <p className="text-sm text-gray-500 mt-1">Total: {formatCurrency(totalRecurring)}/month</p>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">Upcoming Recurring Bills</h3>
+            <p className="text-sm text-muted-foreground mt-1">Total: {formatCurrency(totalRecurring)}/month</p>
           </div>
-          <Link to="/budget-app?view=recurring" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
+          <Link to="/budget-app?view=recurring" className="text-sm text-blue-600 dark:text-blue hover:text-blue-700 dark:hover:text-blue/80 font-medium flex items-center">
             Manage
             <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
         </div>
         <div className="space-y-2 sm:space-y-3">
           {recurringTransactions.slice(0, 5).map(txn => (
-            <div key={txn.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors active:bg-gray-100">
+            <div key={txn.id} className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted">
               <div className="flex items-center space-x-3 flex-1 min-w-0">
-                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-lilac/10 rounded-full flex items-center justify-center flex-shrink-0 text-lilac">
                   <span className="text-lg">{txn.emoji}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 text-sm truncate">{txn.name}</p>
-                  <p className="text-xs text-gray-500">{txn.frequency} • Due {txn.nextDate}</p>
+                  <p className="font-medium text-foreground text-sm truncate">{txn.name}</p>
+                  <p className="text-xs text-muted-foreground">{txn.frequency} • Due {txn.nextDate}</p>
                 </div>
               </div>
               <div className="text-right ml-2 flex-shrink-0">
-                <p className="font-semibold text-sm text-gray-900">{formatCurrency(txn.amount)}</p>
-                <span className="text-xs text-purple-600 font-medium">Auto-pay</span>
+                <p className="font-semibold text-sm text-foreground">{formatCurrency(txn.amount)}</p>
+                <span className="text-xs text-lilac font-medium">Auto-pay</span>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Recent Transactions */}
-      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Recent Transactions</h3>
-          <Link to="/budget-app?view=transactions" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground">Recent Transactions</h3>
+          <Link to="/budget-app?view=transactions" className="text-sm text-blue-600 dark:text-blue hover:text-blue-700 dark:hover:text-blue/80 font-medium flex items-center">
             View All
             <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
@@ -537,8 +519,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
 
   const BudgetView: React.FC = () => (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
-      {/* Simplified Budget Header Card */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl p-5 sm:p-6 text-white shadow-lg">
+      <div className="bg-gradient-to-r from-blue-500 to-lilac rounded-xl sm:rounded-2xl p-5 sm:p-6 text-white card-shadow">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl sm:text-2xl font-bold">October Budget</h2>
           {budgetSettings.rolloverEnabled && (
@@ -571,7 +552,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           </div>
         )}
         <div className="bg-white/20 rounded-full h-2 overflow-hidden">
-          <div 
+          <div
             className="bg-white h-full transition-all duration-500"
             style={{ width: `${(totalSpent / totalBudgeted) * 100}%` }}
           />
@@ -582,22 +563,33 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <div className="p-4 sm:p-6 border-b border-gray-100">
+      <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="p-4 sm:p-6 border-b border-border">
           <div className="flex items-center justify-between">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Budget Categories</h3>
-            <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm active:bg-blue-800">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">Budget Categories</h3>
+            <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-blue-600 dark:bg-blue text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue/80 transition-colors text-sm active:bg-blue-800">
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Category</span>
               <span className="sm:hidden">Add</span>
             </button>
           </div>
         </div>
-        
-        <div className="divide-y divide-gray-100">
-          {categories.map((cat) => (
-            <CategoryCard key={cat.id} category={cat} />
-          ))}
+
+        <div className="divide-y divide-border">
+          {categories.length > 0 ? (
+            categories.map((cat) => (
+              <CategoryCard key={cat.id} category={cat} />
+            ))
+          ) : (
+            <div className="p-6 text-center text-muted-foreground">
+              <PiggyBank className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-lg font-semibold">No categories set up yet!</p>
+              <p className="text-sm mt-2">Start by adding your first budget category to track your spending.</p>
+              <Button className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+                Add First Category
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -606,8 +598,8 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const GoalsView: React.FC = () => (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Savings Goals</h2>
-        <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm active:bg-blue-800">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">Savings Goals</h2>
+        <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-blue-600 dark:bg-blue text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue/80 transition-colors text-sm active:bg-blue-800">
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">New Goal</span>
           <span className="sm:hidden">New</span>
@@ -615,49 +607,59 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {goals.map((goal) => {
-          const percentage = (goal.current / goal.target) * 100;
-          
-          return (
-            <div key={goal.id} className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <Target className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: goal.color }} />
-                <span className="text-sm font-medium text-gray-600">{Math.round(percentage)}%</span>
+        {goals.length > 0 ? (
+          goals.map((goal) => {
+            const percentage = (goal.current / goal.target) * 100;
+
+            return (
+              <div key={goal.id} className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <Target className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: goal.color }} />
+                  <span className="text-sm font-medium text-muted-foreground">{Math.round(percentage)}%</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3">{goal.name}</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Current</span>
+                    <span className="font-semibold text-foreground">{formatCurrency(goal.current)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Target</span>
+                    <span className="font-semibold text-foreground">{formatCurrency(goal.target)}</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-3 overflow-hidden mt-3">
+                    <div
+                      className="h-full transition-all duration-500 rounded-full"
+                      style={{
+                        width: `${Math.min(percentage, 100)}%`,
+                        backgroundColor: goal.color
+                      }}
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {formatCurrency(goal.target - goal.current)} to go
+                  </p>
+                </div>
+                <Button className="w-full mt-4 bg-muted/50 hover:bg-muted text-foreground transition-transform hover:scale-[1.02] active:scale-98">
+                  Add Funds
+                </Button>
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">{goal.name}</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Current</span>
-                  <span className="font-semibold text-gray-900">{formatCurrency(goal.current)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Target</span>
-                  <span className="font-semibold text-gray-900">{formatCurrency(goal.target)}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden mt-3">
-                  <div 
-                    className="h-full transition-all duration-500 rounded-full"
-                    style={{ 
-                      width: `${Math.min(percentage, 100)}%`,
-                      backgroundColor: goal.color
-                    }}
-                  />
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  {formatCurrency(goal.target - goal.current)} to go
-                </p>
-              </div>
-              <button className="w-full mt-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm active:bg-gray-100">
-                Add Funds
-              </button>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <div className="col-span-full bg-card rounded-xl sm:rounded-2xl p-6 text-center card-shadow">
+            <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-lg font-semibold text-foreground">No savings goals set up yet!</p>
+            <p className="text-sm mt-2 text-muted-foreground">Start saving for your dreams by creating a new goal.</p>
+            <Button className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+              Create First Goal
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Mobile-optimized chart */}
-      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Goal Progress Over Time</h3>
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Goal Progress Over Time</h3>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={[
             { month: 'Apr', emergency: 5200, vacation: 800, laptop: 1100 },
@@ -668,102 +670,147 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             { month: 'Sep', emergency: 6400, vacation: 1150, laptop: 1600 },
             { month: 'Oct', emergency: 6500, vacation: 1200, laptop: 1650 },
           ]}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="month" stroke="#9ca3af" style={{ fontSize: '12px' }} />
-            <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
-            <Tooltip 
-              contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+            <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+            <Tooltip
+              contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
               formatter={(value) => formatCurrency(Number(value))}
             />
             <Legend wrapperStyle={{ fontSize: '12px' }} />
-            <Line type="monotone" dataKey="emergency" stroke="#10b981" strokeWidth={2} name="Emergency" dot={false} />
-            <Line type="monotone" dataKey="vacation" stroke="#f59e0b" strokeWidth={2} name="Vacation" dot={false} />
-            <Line type="monotone" dataKey="laptop" stroke="#3b82f6" strokeWidth={2} name="Laptop" dot={false} />
+            <Line type="monotone" dataKey="emergency" stroke="hsl(var(--emerald))" strokeWidth={2} name="Emergency" dot={false} />
+            <Line type="monotone" dataKey="vacation" stroke="hsl(var(--blue))" strokeWidth={2} name="Vacation" dot={false} />
+            <Line type="monotone" dataKey="laptop" stroke="hsl(var(--lilac))" strokeWidth={2} name="Laptop" dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
     </div>
   );
 
-  const TransactionsView: React.FC = () => (
-    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Transactions</h2>
-        <div className="flex items-center space-x-2">
-          <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm active:bg-gray-100">
-            Filter
-          </button>
-          {/* Removed Export button as per simplification */}
-        </div>
-      </div>
+  const TransactionsView: React.FC = () => {
+    const filteredTransactions = useMemo(() => {
+      const lowerCaseSearchTerm = transactionSearchTerm.toLowerCase();
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      {/* Unified transaction list using cards */}
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <div className="divide-y divide-gray-100">
-          {transactions.map(txn => (
-            <div key={txn.id} className="p-4 active:bg-gray-50 transition-colors">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  <span className="text-2xl flex-shrink-0">
-                    {txn.amount > 0 ? '💰' : categories.find(c => c.name === txn.category)?.emoji || '💳'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm truncate">{txn.merchant}</p>
-                    <p className="text-xs text-gray-500">{txn.category}</p>
+      return transactions.filter(txn => {
+        const matchesSearch = txn.merchant.toLowerCase().includes(lowerCaseSearchTerm) ||
+                              txn.category.toLowerCase().includes(lowerCaseSearchTerm);
+
+        const transactionDate = new Date(txn.date);
+        const matchesPeriod = transactionFilterPeriod === 'all' || transactionDate >= startOfMonth;
+
+        return matchesSearch && matchesPeriod;
+      });
+    }, [transactions, transactionSearchTerm, transactionFilterPeriod]);
+
+    return (
+      <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Transactions</h2>
+          <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex items-center space-x-2 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.02] active:scale-98">
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Add Expense</span>
+            <span className="sm:hidden">Add</span>
+          </Button>
+        </div>
+
+        <div className="sticky top-[64px] sm:top-[72px] bg-background z-10 py-2 -mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-border card-shadow">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search transactions..."
+                className="w-full pl-9 bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0"
+                value={transactionSearchTerm}
+                onChange={(e) => setTransactionSearchTerm(e.target.value)}
+              />
+            </div>
+            <Select value={transactionFilterPeriod} onValueChange={(value: 'all' | 'thisMonth') => setTransactionFilterPeriod(value)}>
+              <SelectTrigger className="w-full sm:w-[150px] bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
+                <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Filter Period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="thisMonth">This Month</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="divide-y divide-border">
+            {filteredTransactions.length > 0 ? (
+              filteredTransactions.map(txn => (
+                <div key={txn.id} className="p-4 active:bg-muted/50 transition-colors">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <span className="text-2xl flex-shrink-0">
+                        {txn.amount > 0 ? '💰' : categories.find(c => c.name === txn.category)?.emoji || '💳'}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground text-sm truncate">{txn.merchant}</p>
+                        <p className="text-xs text-muted-foreground">{categories.find(c => c.name === txn.category)?.name || 'Uncategorized'}</p>
+                      </div>
+                    </div>
+                    <p className={`font-bold text-sm ml-2 flex-shrink-0 ${txn.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>
+                      {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{txn.date}</span>
+                    <span className={`px-2 py-0.5 rounded-full font-medium ${
+                      txn.status === 'pending' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400'
+                    }`}>
+                      {txn.status}
+                    </span>
                   </div>
                 </div>
-                <p className={`font-bold text-sm ml-2 flex-shrink-0 ${txn.amount > 0 ? 'text-green-600' : 'text-gray-900'}`}>
-                  {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
-                </p>
+              ))
+            ) : (
+              <div className="p-6 text-center text-muted-foreground">
+                <List className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-lg font-semibold text-foreground">No transactions found.</p>
+                <p className="text-sm mt-2">It looks like you haven't added any transactions yet. Use the "Add Expense" button to get started!</p>
+                <Button onClick={() => setIsQuickAddModalOpen(true)} className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+                  Add First Expense
+                </Button>
               </div>
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>{txn.date}</span>
-                <span className={`px-2 py-0.5 rounded-full font-medium ${
-                  txn.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'
-                }`}>
-                  {txn.status}
-                </span>
-              </div>
-            </div>
-          ))}
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-
-  // Monthly Reset Logic - Note: Full implementation requires server-side logic.
-  // For now, the budgetSettings.rolloverEnabled and previousMonthLeftover are displayed.
-  // A full "reset" would involve archiving current month's data and creating new budget entries.
-  // This is a complex backend task, often handled by Firebase Cloud Functions or similar.
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* iOS-style Sidebar - slides from left */}
-      <aside className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-transform duration-300 z-50 ${
+    <div className="min-h-screen bg-background">
+      <aside className={`fixed left-0 top-0 h-full bg-card/80 backdrop-blur-sm border-r border-border transition-transform duration-300 z-50 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } w-64 sm:w-72`}>
+      } w-64 sm:w-72 card-shadow`}>
         <div className="flex flex-col h-full">
-          <div className="p-5 sm:p-6 border-b border-gray-100">
+          <div className="p-5 sm:p-6 border-b border-border">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-lilac bg-clip-text text-transparent">
                 FinanceFlow
               </h1>
-              <button onClick={handleCloseSidebar} className="p-2 hover:bg-gray-100 rounded-lg active:bg-gray-200">
-                <X className="w-5 h-5 text-gray-500" />
+              <button onClick={handleCloseSidebar} className="p-2 hover:bg-muted/50 rounded-lg active:bg-muted">
+                <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
-            
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+
+            <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-xl">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-lilac rounded-full flex items-center justify-center text-white font-semibold">
                 JD
               </div>
               <div>
-                <p className="font-semibold text-gray-900 text-sm">John Doe</p>
-                <p className="text-xs text-gray-500">john@example.com</p>
+                <p className="font-semibold text-foreground text-sm">John Doe</p>
+                <p className="text-xs text-muted-foreground">john@example.com</p>
               </div>
             </div>
           </div>
-          
+
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {[
               { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/budget-app?view=dashboard' },
@@ -774,7 +821,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             ].map(item => {
               const Icon = item.icon;
               const isActive = (item.path === location.pathname + location.search) || (item.id === 'investments' && location.pathname === '/investments');
-              
+
               return (
                 <Link
                   key={item.id}
@@ -782,71 +829,68 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   onClick={() => handleViewChange(item.id)}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                     isActive
-                      ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
+                      ? 'bg-blue-50 dark:bg-blue/10 text-blue-600 dark:text-blue font-semibold shadow-sm'
+                      : 'text-muted-foreground hover:bg-muted/50 active:bg-muted'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
                   {isActive && (
-                    <div className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                    <div className="ml-auto w-1.5 h-1.5 bg-blue-600 dark:bg-blue rounded-full"></div>
                   )}
                 </Link>
               );
             })}
           </nav>
-          
-          <div className="p-4 border-t border-gray-100">
+
+          <div className="p-4 border-t border-border">
             <div className="space-y-1">
-              <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors active:bg-gray-100">
+              <Link to="/settings" className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted/50 transition-colors active:bg-muted">
                 <Settings className="w-5 h-5" />
                 <span>Settings</span>
-              </button>
-              <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors active:bg-gray-100">
+              </Link>
+              <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted/50 transition-colors active:bg-muted">
                 <Bell className="w-5 h-5" />
                 <span>Notifications</span>
               </button>
             </div>
-            
-            <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl">
-              <p className="text-sm font-semibold text-gray-900 mb-1">💡 Pro Tip</p>
-              <p className="text-xs text-gray-600">Review your transactions daily to stay on top of your spending!</p>
+
+            <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 dark:from-blue/10 to-lilac/50 dark:to-lilac/10 rounded-xl">
+              <p className="text-sm font-semibold text-foreground mb-1">💡 Pro Tip</p>
+              <p className="text-xs text-muted-foreground">Review your transactions daily to stay on top of your spending!</p>
             </div>
           </div>
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="flex flex-col min-h-screen">
-        {/* iOS-style Top Bar */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-40 safe-top">
+        <header className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-40 safe-top card-shadow">
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-              <button 
+              <button
                 onClick={handleSidebarToggle}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors active:bg-gray-200 flex-shrink-0"
+                className="p-2 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted flex-shrink-0"
               >
-                <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
               </button>
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 capitalize truncate">{activeView}</h2>
-                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Welcome back! Here's your financial overview.</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground capitalize truncate">{activeView}</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Welcome back! Here's your financial overview.</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-gray-100 rounded-lg">
-                <Calendar className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">{selectedMonth}</span>
+              <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-muted/50 rounded-lg">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">{selectedMonth}</span>
               </div>
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 JD
               </div>
             </div>
           </div>
         </header>
 
-        {/* Content Area with proper safe areas */}
         <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full">
           {error && <ErrorMessage error={error} />}
           {loading ? (
@@ -857,60 +901,21 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
               {activeView === 'budget' && <BudgetView />}
               {activeView === 'goals' && <GoalsView />}
               {activeView === 'transactions' && <TransactionsView />}
-              {/* Add other views here if needed, e.g., RecurringTransactionsView */}
             </>
           )}
         </main>
-
-        {/* iOS-style Bottom Navigation - Fixed at bottom on mobile */}
-        <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 safe-bottom">
-          <div className="grid grid-cols-5 gap-1 px-2 py-2"> {/* Changed to 5 columns */}
-            {[
-              { id: 'dashboard', label: 'Home', icon: Home, path: '/budget-app?view=dashboard' },
-              { id: 'transactions', label: 'Activity', icon: List, path: '/budget-app?view=transactions' },
-              { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app?view=budget' },
-              { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app?view=goals' },
-              { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
-            ].map(item => {
-              const Icon = item.icon;
-              const isActive = (item.path === location.pathname + location.search) || (item.id === 'investments' && location.pathname === '/investments');
-              return (
-                <Link
-                  key={item.id}
-                  to={item.path}
-                  onClick={() => handleViewChange(item.id)}
-                  className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all active:scale-95 ${
-                    isActive ? 'text-blue-600' : 'text-gray-500'
-                  }`}
-                >
-                  <Icon className={`w-6 h-6 mb-1 ${isActive ? 'stroke-2' : 'stroke-1.5'}`} />
-                  <span className={`text-xs ${isActive ? 'font-semibold' : 'font-medium'}`}>
-                    {item.label}
-                  </span>
-                  {isActive && (
-                    <div className="absolute bottom-0 w-8 h-1 bg-blue-600 rounded-t-full"></div>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-
-        {/* Removed Desktop Footer as per simplification */}
       </div>
 
-      {/* iOS-style overlay with blur effect */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-40 transition-opacity duration-300"
           onClick={handleCloseSidebar}
           style={{ WebkitBackdropFilter: 'blur(4px)' }}
         />
       )}
 
-      {/* Floating Quick Add Button */}
       <Button
-        className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 rounded-full p-3 sm:p-4 shadow-lg bg-blue-600 hover:bg-blue-700 text-white z-30 animate-in fade-in zoom-in duration-300"
+        className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 rounded-full p-3 sm:p-4 shadow-lg bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white z-30 animate-in fade-in zoom-in duration-300 transition-transform hover:scale-[1.05] active:scale-95"
         onClick={() => setIsQuickAddModalOpen(true)}
       >
         <Plus className="w-6 h-6 sm:w-7 sm:h-7" />

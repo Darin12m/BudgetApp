@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -31,7 +31,7 @@ interface AllocationData {
   color: string;
 }
 
-const ALLOCATION_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
+const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))', '#f59e0b', '#ef4444', '#06b6d4'];
 
 interface InvestmentsPageProps {
   userUid: string | null;
@@ -45,7 +45,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     addInvestment,
     updateInvestment,
     deleteInvestment,
-    priceChange, // Get price change status
+    priceChange,
   } = useInvestmentData(userUid);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -106,7 +106,6 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   // --- Filtered and Sorted Investments for Display ---
   const getSortedInvestments = useCallback((invList: Investment[]) => {
     let filtered = invList;
-    // Filter by type is handled by the tabs, so no need for filterType here.
 
     return filtered.sort((a, b) => {
       let valA: any;
@@ -193,17 +192,17 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   const LoadingSpinner: React.FC = () => (
     <div className="flex items-center justify-center p-8">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span className="ml-2 text-gray-600">Loading investments...</span>
+      <span className="ml-2 text-muted-foreground">Loading investments...</span>
     </div>
   );
 
   const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
-    <div className="bg-red-50 border border-red-200 rounded-lg p-4 m-4">
+    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 m-4">
       <div className="flex items-center">
-        <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
+        <AlertCircle className="w-5 h-5 text-destructive mr-2" />
         <div>
-          <h3 className="text-sm font-medium text-red-800">Error</h3>
-          <p className="text-sm text-red-600 mt-1">{message}</p>
+          <h3 className="text-sm font-medium text-destructive">Error</h3>
+          <p className="text-sm text-destructive mt-1">{message}</p>
         </div>
       </div>
     </div>
@@ -213,18 +212,18 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     return <LoadingSpinner />;
   }
 
-  const overallGainLossColor = overallPortfolioSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600';
+  const overallGainLossColor = overallPortfolioSummary.totalGainLossPercentage >= 0 ? 'text-emerald' : 'text-destructive';
   const OverallGainLossIcon: LucideIcon = overallPortfolioSummary.totalGainLossPercentage >= 0 ? TrendingUp : TrendingDown;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 sm:p-6 animate-in fade-in duration-500">
+    <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-24 sm:pb-6">
         {error && <ErrorMessage message={error} />}
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-bold">Investments</h1>
-          <Button onClick={handleAddInvestment} className="flex items-center space-x-2">
+          <Button onClick={handleAddInvestment} className="flex items-center space-x-2 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.02] active:scale-98">
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Investment</span>
             <span className="sm:hidden">Add</span>
@@ -232,7 +231,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
         </div>
 
         {/* Overall Portfolio Overview */}
-        <Card className="shadow-sm border border-gray-100 dark:border-gray-800 bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+        <Card className="card-shadow border-none bg-gradient-to-br from-blue-500 to-lilac text-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-blue-100">Total Portfolio Value</p>
@@ -250,14 +249,14 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 
         {/* Tabs for Stocks and Crypto */}
         <Tabs value={activeTab} onValueChange={(value: 'all' | 'stocks' | 'crypto') => setActiveTab(value)} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="all">All Holdings</TabsTrigger>
-            <TabsTrigger value="stocks">Stocks</TabsTrigger>
-            <TabsTrigger value="crypto">Crypto</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-muted/50 rounded-xl p-1 card-shadow">
+            <TabsTrigger value="all" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">All Holdings</TabsTrigger>
+            <TabsTrigger value="stocks" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">Stocks</TabsTrigger>
+            <TabsTrigger value="crypto" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">Crypto</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-6 space-y-6">
-            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+            <Card className="card-shadow border-none">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">Overall Allocation</CardTitle>
               </CardHeader>
@@ -285,18 +284,18 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400">No data to display.</p>
+                  <p className="text-muted-foreground">No data to display.</p>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+            <Card className="card-shadow border-none">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">All Holdings</CardTitle>
                 <div className="flex items-center space-x-2">
                   <Select value={sortBy} onValueChange={(value: 'name' | 'gainLossPercentage' | 'totalValue') => setSortBy(value)}>
-                    <SelectTrigger className="w-[150px] h-9 text-xs">
-                      <SortAsc className="h-3 w-3 mr-2" />
+                    <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
+                      <SortAsc className="h-3 w-3 mr-2 text-muted-foreground" />
                       <SelectValue placeholder="Sort By" />
                     </SelectTrigger>
                     <SelectContent>
@@ -305,8 +304,8 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                       <SelectItem value="totalValue">Total Value</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="icon" onClick={toggleSortOrder} className="h-9 w-9">
-                    {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  <Button variant="outline" size="icon" onClick={toggleSortOrder} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
+                    {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4 text-muted-foreground" /> : <TrendingDown className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </CardHeader>
@@ -317,7 +316,14 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                       <InvestmentListItem key={inv.id} investment={inv} onEdit={handleEditInvestment} priceChangeStatus={priceChange.get(inv.id) || 'none'} />
                     ))
                   ) : (
-                    <p className="text-center text-gray-500 py-4">No investments found. Add one to get started!</p>
+                    <div className="p-6 text-center text-muted-foreground">
+                      <Wallet className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-lg font-semibold text-foreground">No investments found.</p>
+                      <p className="text-sm mt-2">Add your first stock or crypto holding to track your portfolio.</p>
+                      <Button onClick={handleAddInvestment} className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+                        Add First Investment
+                      </Button>
+                    </div>
                   )}
                 </div>
               </CardContent>
@@ -325,7 +331,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
           </TabsContent>
 
           <TabsContent value="stocks" className="mt-6 space-y-6">
-            <Card className="shadow-sm border border-gray-100 dark:border-gray-800 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <Card className="card-shadow border-none bg-gradient-to-br from-blue-500 to-blue-600 text-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-blue-100">Stock Portfolio Value</p>
@@ -333,15 +339,15 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                 </div>
                 <p className="text-4xl font-bold mb-1">{formatCurrency(stockSummary.currentValue)}</p>
                 <div className="flex items-center space-x-2">
-                  {stockSummary.totalGainLossPercentage >= 0 ? <TrendingUp className={`w-4 h-4 text-green-600`} /> : <TrendingDown className={`w-4 h-4 text-red-600`} />}
-                  <span className={`text-sm ${stockSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {stockSummary.totalGainLossPercentage >= 0 ? <TrendingUp className={`w-4 h-4 text-emerald`} /> : <TrendingDown className={`w-4 h-4 text-destructive`} />}
+                  <span className={`text-sm ${stockSummary.totalGainLossPercentage >= 0 ? 'text-emerald' : 'text-destructive'}`}>
                     {stockSummary.totalGainLossPercentage.toFixed(2)}% this month
                   </span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+            <Card className="card-shadow border-none">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">Stock Allocation</CardTitle>
               </CardHeader>
@@ -369,18 +375,18 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400">No stock data to display.</p>
+                  <p className="text-muted-foreground">No stock data to display.</p>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+            <Card className="card-shadow border-none">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">Stock Holdings</CardTitle>
                 <div className="flex items-center space-x-2">
                   <Select value={sortBy} onValueChange={(value: 'name' | 'gainLossPercentage' | 'totalValue') => setSortBy(value)}>
-                    <SelectTrigger className="w-[150px] h-9 text-xs">
-                      <SortAsc className="h-3 w-3 mr-2" />
+                    <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
+                      <SortAsc className="h-3 w-3 mr-2 text-muted-foreground" />
                       <SelectValue placeholder="Sort By" />
                     </SelectTrigger>
                     <SelectContent>
@@ -389,8 +395,8 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                       <SelectItem value="totalValue">Total Value</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="icon" onClick={toggleSortOrder} className="h-9 w-9">
-                    {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  <Button variant="outline" size="icon" onClick={toggleSortOrder} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
+                    {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4 text-muted-foreground" /> : <TrendingDown className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </CardHeader>
@@ -401,7 +407,14 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                       <InvestmentListItem key={inv.id} investment={inv} onEdit={handleEditInvestment} priceChangeStatus={priceChange.get(inv.id) || 'none'} />
                     ))
                   ) : (
-                    <p className="text-center text-gray-500 py-4">No stock investments found. Add one to get started!</p>
+                    <div className="p-6 text-center text-muted-foreground">
+                      <DollarSign className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-lg font-semibold text-foreground">No stock investments found.</p>
+                      <p className="text-sm mt-2">Add your first stock holding to track its live performance.</p>
+                      <Button onClick={handleAddInvestment} className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+                        Add First Stock
+                      </Button>
+                    </div>
                   )}
                 </div>
               </CardContent>
@@ -409,23 +422,23 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
           </TabsContent>
 
           <TabsContent value="crypto" className="mt-6 space-y-6">
-            <Card className="shadow-sm border border-gray-100 dark:border-gray-800 bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+            <Card className="card-shadow border-none bg-gradient-to-br from-emerald to-blue-600 text-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-amber-100">Crypto Portfolio Value</p>
-                  <Bitcoin className="h-5 w-5 text-amber-100" />
+                  <p className="text-sm text-emerald-100">Crypto Portfolio Value</p>
+                  <Bitcoin className="h-5 w-5 text-emerald-100" />
                 </div>
                 <p className="text-4xl font-bold mb-1">{formatCurrency(cryptoSummary.currentValue)}</p>
                 <div className="flex items-center space-x-2">
-                  {cryptoSummary.totalGainLossPercentage >= 0 ? <TrendingUp className={`w-4 h-4 text-green-600`} /> : <TrendingDown className={`w-4 h-4 text-red-600`} />}
-                  <span className={`text-sm ${cryptoSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {cryptoSummary.totalGainLossPercentage >= 0 ? <TrendingUp className={`w-4 h-4 text-emerald`} /> : <TrendingDown className={`w-4 h-4 text-destructive`} />}
+                  <span className={`text-sm ${cryptoSummary.totalGainLossPercentage >= 0 ? 'text-emerald' : 'text-destructive'}`}>
                     {cryptoSummary.totalGainLossPercentage.toFixed(2)}% this month
                   </span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+            <Card className="card-shadow border-none">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">Crypto Allocation</CardTitle>
               </CardHeader>
@@ -453,18 +466,18 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400">No crypto data to display.</p>
+                  <p className="text-muted-foreground">No crypto data to display.</p>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
+            <Card className="card-shadow border-none">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">Crypto Holdings</CardTitle>
                 <div className="flex items-center space-x-2">
                   <Select value={sortBy} onValueChange={(value: 'name' | 'gainLossPercentage' | 'totalValue') => setSortBy(value)}>
-                    <SelectTrigger className="w-[150px] h-9 text-xs">
-                      <SortAsc className="h-3 w-3 mr-2" />
+                    <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
+                      <SortAsc className="h-3 w-3 mr-2 text-muted-foreground" />
                       <SelectValue placeholder="Sort By" />
                     </SelectTrigger>
                     <SelectContent>
@@ -473,8 +486,8 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                       <SelectItem value="totalValue">Total Value</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="icon" onClick={toggleSortOrder} className="h-9 w-9">
-                    {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  <Button variant="outline" size="icon" onClick={toggleSortOrder} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
+                    {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4 text-muted-foreground" /> : <TrendingDown className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </CardHeader>
@@ -485,7 +498,14 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                       <InvestmentListItem key={inv.id} investment={inv} onEdit={handleEditInvestment} priceChangeStatus={priceChange.get(inv.id) || 'none'} />
                     ))
                   ) : (
-                    <p className="text-center text-gray-500 py-4">No crypto investments found. Add one to get started!</p>
+                    <div className="p-6 text-center text-muted-foreground">
+                      <Bitcoin className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-lg font-semibold text-foreground">No crypto investments found.</p>
+                      <p className="text-sm mt-2">Add your first crypto holding to track its live performance.</p>
+                      <Button onClick={handleAddInvestment} className="mt-4 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white">
+                        Add First Crypto
+                      </Button>
+                    </div>
                   )}
                 </div>
               </CardContent>
@@ -496,7 +516,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 
       {/* Add/Edit Investment Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+        <DialogContent className="sm:max-w-[425px] bg-card text-foreground card-shadow">
           <DialogHeader>
             <DialogTitle>{editingInvestment ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
           </DialogHeader>
@@ -511,7 +531,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 
       {/* Fixed Add Button for Mobile */}
       <Button
-        className="fixed bottom-20 right-4 sm:hidden rounded-full p-3 shadow-lg"
+        className="fixed bottom-20 right-4 sm:hidden rounded-full p-3 shadow-lg bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.05] active:scale-95"
         onClick={handleAddInvestment}
       >
         <Plus className="w-6 h-6" />
@@ -535,8 +555,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
   const [buyPrice, setBuyPrice] = useState(investment?.buyPrice.toString() || '');
   const [currentPrice, setCurrentPrice] = useState(investment?.currentPrice.toString() || '');
   const [datePurchased, setDatePurchased] = useState(investment?.datePurchased || format(new Date(), 'yyyy-MM-dd'));
-  const [symbol, setSymbol] = useState(investment?.symbol || ''); // New state for stock symbol
-  const [coingeckoId, setCoingeckoId] = useState(investment?.coingeckoId || ''); // New state for crypto ID
+  const [symbol, setSymbol] = useState(investment?.symbol || '');
+  const [coingeckoId, setCoingeckoId] = useState(investment?.coingeckoId || '');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const validateForm = () => {
@@ -568,13 +588,11 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       symbol: type === 'Stock' ? symbol : undefined,
       coingeckoId: type === 'Crypto' ? coingeckoId : undefined,
     });
-    // onClose is called by onSave after successful operation
   };
 
   const handleDeleteClick = () => {
     if (investment?.id) {
       onDelete(investment.id);
-      // onClose is called by onDelete after successful operation
     }
   };
 
@@ -585,8 +603,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Asset Name
         </Label>
         <div className="col-span-3">
-          <Input id="name" value={name} onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }} />
-          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+          <Input id="name" value={name} onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
@@ -594,7 +612,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Type
         </Label>
         <Select value={type} onValueChange={(value: 'Stock' | 'Crypto') => setType(value)}>
-          <SelectTrigger className="col-span-3">
+          <SelectTrigger className="col-span-3 bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0">
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
           <SelectContent>
@@ -610,8 +628,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
             Ticker Symbol
           </Label>
           <div className="col-span-3">
-            <Input id="symbol" value={symbol} onChange={(e) => { setSymbol(e.target.value); setErrors(prev => ({ ...prev, symbol: '' })); }} placeholder="e.g., AAPL" />
-            {errors.symbol && <p className="text-red-500 text-xs mt-1">{errors.symbol}</p>}
+            <Input id="symbol" value={symbol} onChange={(e) => { setSymbol(e.target.value); setErrors(prev => ({ ...prev, symbol: '' })); }} placeholder="e.g., AAPL" className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+            {errors.symbol && <p className="text-destructive text-xs mt-1">{errors.symbol}</p>}
           </div>
         </div>
       )}
@@ -622,8 +640,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
             CoinGecko ID
           </Label>
           <div className="col-span-3">
-            <Input id="coingeckoId" value={coingeckoId} onChange={(e) => { setCoingeckoId(e.target.value); setErrors(prev => ({ ...prev, coingeckoId: '' })); }} placeholder="e.g., bitcoin" />
-            {errors.coingeckoId && <p className="text-red-500 text-xs mt-1">{errors.coingeckoId}</p>}
+            <Input id="coingeckoId" value={coingeckoId} onChange={(e) => { setCoingeckoId(e.target.value); setErrors(prev => ({ ...prev, coingeckoId: '' })); }} placeholder="e.g., bitcoin" className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+            {errors.coingeckoId && <p className="text-destructive text-xs mt-1">{errors.coingeckoId}</p>}
           </div>
         </div>
       )}
@@ -633,8 +651,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Quantity
         </Label>
         <div className="col-span-3">
-          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} />
-          {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity}</p>}
+          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity}</p>}
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
@@ -642,8 +660,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Buy Price
         </Label>
         <div className="col-span-3">
-          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} />
-          {errors.buyPrice && <p className="text-red-500 text-xs mt-1">{errors.buyPrice}</p>}
+          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          {errors.buyPrice && <p className="text-destructive text-xs mt-1">{errors.buyPrice}</p>}
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
@@ -651,8 +669,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Current Price
         </Label>
         <div className="col-span-3">
-          <Input id="currentPrice" type="number" step="0.01" value={currentPrice} onChange={(e) => { setCurrentPrice(e.target.value); setErrors(prev => ({ ...prev, currentPrice: '' })); }} />
-          {errors.currentPrice && <p className="text-red-500 text-xs mt-1">{errors.currentPrice}</p>}
+          <Input id="currentPrice" type="number" step="0.01" value={currentPrice} onChange={(e) => { setCurrentPrice(e.target.value); setErrors(prev => ({ ...prev, currentPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          {errors.currentPrice && <p className="text-destructive text-xs mt-1">{errors.currentPrice}</p>}
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
@@ -660,21 +678,21 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Date Purchased
         </Label>
         <div className="col-span-3">
-          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} />
-          {errors.datePurchased && <p className="text-red-500 text-xs mt-1">{errors.datePurchased}</p>}
+          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} className="bg-muted/50 border-none focus-visible:ring-blue focus-visible:ring-offset-0" />
+          {errors.datePurchased && <p className="text-destructive text-xs mt-1">{errors.datePurchased}</p>}
         </div>
       </div>
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-2 mt-4">
         {investment && (
-          <Button type="button" variant="destructive" onClick={handleDeleteClick} className="w-full sm:w-auto">
+          <Button type="button" variant="destructive" onClick={handleDeleteClick} className="w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-98">
             <Trash2 className="h-4 w-4 mr-2" /> Delete
           </Button>
         )}
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+          <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
             Cancel
           </Button>
-          <Button type="submit" className="flex-1">
+          <Button type="submit" className="flex-1 bg-blue-600 dark:bg-blue hover:bg-blue-700 dark:hover:bg-blue/80 text-white transition-transform hover:scale-[1.02] active:scale-98">
             <Save className="h-4 w-4 mr-2" /> Save
           </Button>
         </div>

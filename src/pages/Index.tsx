@@ -12,25 +12,25 @@ import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
 import { formatCurrency, calculateGainLoss } from '@/lib/utils';
 import RemainingBudgetCard from '@/components/RemainingBudgetCard';
 import QuickAddTransactionModal from '@/components/QuickAddTransactionModal';
-import AddInvestmentModal from '@/components/AddInvestmentModal'; // New modal for investments
-import BottomNavBar from '@/components/BottomNavBar'; // New bottom navigation
+import AddInvestmentModal from '@/components/AddInvestmentModal';
+import BottomNavBar from '@/components/BottomNavBar';
 
 interface IndexPageProps {
   userUid: string | null;
 }
 
-const ALLOCATION_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
+const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))', '#f59e0b', '#ef4444', '#06b6d4'];
 
 const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   const {
-    transactions, // Needed for quick add default account
+    transactions,
     budgetSettings,
     totalBudgeted,
     totalSpent,
     remainingBudget,
     remainingPerDay,
     daysLeft,
-    addDocument, // For quick add transaction
+    addDocument,
     loading: financeLoading,
     error: financeError,
   } = useFinanceData(userUid);
@@ -106,7 +106,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
       amount: amount,
       category: 'Uncategorized',
       status: 'pending',
-      account: transactions.length > 0 ? transactions[0].account : 'Default Account', // Use an existing account or default
+      account: transactions.length > 0 ? transactions[0].account : 'Default Account',
     });
   }, [addDocument, transactions]);
 
@@ -125,23 +125,23 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   const isLoading = financeLoading || investmentsLoading;
   const hasError = financeError || investmentsError;
 
-  const portfolioGainLossColor = overallPortfolioSummary.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600';
+  const portfolioGainLossColor = overallPortfolioSummary.totalGainLossPercentage >= 0 ? 'text-emerald' : 'text-destructive';
   const PortfolioGainLossIcon: LucideIcon = overallPortfolioSummary.totalGainLossPercentage >= 0 ? TrendingUp : TrendingDown;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 pb-20 sm:pb-0">
+    <div className="min-h-screen bg-background text-foreground pb-20 sm:pb-0">
       <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 animate-in fade-in duration-500">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
 
         {isLoading && (
           <div className="flex items-center justify-center p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600 dark:text-gray-300">Loading data...</span>
+            <span className="ml-2 text-muted-foreground">Loading data...</span>
           </div>
         )}
 
         {hasError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-destructive">
             <p>Error loading data: {financeError || investmentsError}</p>
           </div>
         )}
@@ -161,7 +161,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
             />
 
             {/* Total Investment Portfolio Card */}
-            <Card className="shadow-sm border border-gray-100 dark:border-gray-800 bg-gradient-to-br from-blue-500 to-purple-600 text-white animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <Card className="card-shadow border-none bg-gradient-to-br from-blue-500 to-lilac text-white animate-in fade-in slide-in-from-bottom-2 duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-blue-100">Total Investment Portfolio</p>
@@ -179,15 +179,15 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
             {/* Quick Action Buttons */}
             <div className="grid grid-cols-3 gap-4">
-              <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm">
+              <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-blue-600 hover:bg-blue-700 dark:bg-blue dark:hover:bg-blue/80 text-white rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
                 <Plus className="w-5 h-5 mb-1" />
                 <span className="text-xs font-medium">Add Expense</span>
               </Button>
-              <Button onClick={() => setIsAddInvestmentModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-sm">
+              <Button onClick={() => setIsAddInvestmentModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald dark:hover:bg-emerald/80 text-white rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
                 <DollarSign className="w-5 h-5 mb-1" />
                 <span className="text-xs font-medium">Add Investment</span>
               </Button>
-              <Link to="/budget-app?view=transactions" className="flex flex-col h-auto py-4 items-center justify-center text-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl shadow-sm">
+              <Link to="/budget-app?view=transactions" className="flex flex-col h-auto py-4 items-center justify-center text-center bg-muted/50 hover:bg-muted text-foreground rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
                 <List className="w-5 h-5 mb-1" />
                 <span className="text-xs font-medium">View Activity</span>
               </Link>
@@ -195,7 +195,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
             {/* Top 3 Performing Assets */}
             {topPerformers.length > 0 && (
-              <Card className="shadow-sm border border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <Card className="card-shadow border-none animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold">Top 3 Performers</CardTitle>
                 </CardHeader>
@@ -203,7 +203,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                   {topPerformers.map(inv => {
                     const { gainLossPercentage } = calculateGainLoss(inv);
                     const isPositive = gainLossPercentage >= 0;
-                    const gainLossColor = isPositive ? 'text-green-600' : 'text-red-600';
+                    const gainLossColor = isPositive ? 'text-emerald' : 'text-destructive';
                     const Icon = isPositive ? TrendingUp : TrendingDown;
                     const priceChangeStatus = priceChange.get(inv.id) || 'none';
                     const priceChangeClasses = {
@@ -213,16 +213,16 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                     };
 
                     return (
-                      <div key={inv.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors active:bg-gray-100">
+                      <div key={inv.id} className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted">
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            inv.type === 'Stock' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'
+                            inv.type === 'Stock' ? 'bg-blue-100 text-blue-600 dark:bg-blue/20 dark:text-blue' : 'bg-amber-100 text-amber-600 dark:bg-yellow-500/20 dark:text-yellow-400'
                           }`}>
                             {inv.type === 'Stock' ? <DollarSign className="w-4 h-4" /> : <Wallet className="w-4 h-4" />}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 text-sm truncate">{inv.name}</p>
-                            <p className="text-xs text-gray-500 truncate">{inv.type}</p>
+                            <p className="font-medium text-foreground text-sm truncate">{inv.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{inv.type}</p>
                           </div>
                         </div>
                         <div className="text-right ml-2 flex-shrink-0">
@@ -241,7 +241,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
             {/* Overall Allocation Chart Preview */}
             {overallAllocationData.length > 0 && (
-              <Card className="shadow-sm border border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <Card className="card-shadow border-none animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold">Portfolio Allocation</CardTitle>
                 </CardHeader>
@@ -284,8 +284,8 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
         isOpen={isAddInvestmentModalOpen}
         onClose={() => setIsAddInvestmentModalOpen(false)}
         onSave={handleSaveNewInvestment}
-        onDelete={handleDeleteInvestment} // Pass through, though not used for 'add'
-        investmentToEdit={null} // For adding new, no investment to edit
+        onDelete={handleDeleteInvestment}
+        investmentToEdit={null}
       />
 
       <BottomNavBar />

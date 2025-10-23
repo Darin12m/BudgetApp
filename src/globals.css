@@ -4,61 +4,50 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 100%; /* White */
+    --foreground: 222.2 84% 4.9%; /* Near-black for text */
 
-    --card: 0 0% 100%;
+    --card: 0 0% 100%; /* White */
     --card-foreground: 222.2 84% 4.9%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 210 40% 98%; /* Very light gray for primary buttons/accents */
+    --primary-foreground: 222.2 47.4% 11.2%; /* Dark text on primary */
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 210 40% 96.1%; /* Light gray */
     --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 40% 96.1%; /* Light gray for muted text/backgrounds */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Medium gray for muted text */
 
-    --accent: 210 40% 96.1%;
+    --accent: 210 40% 96.1%; /* Light gray for accents */
     --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84.2% 60.2%; /* Red for destructive actions */
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
+    --border: 214.3 31.8% 91.4%; /* Light gray border */
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem; /* Slightly more rounded corners */
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Custom accent colors for gradients and highlights */
+    --emerald: 150 80% 40%; /* A vibrant green */
+    --blue: 210 80% 50%; /* A vibrant blue */
+    --lilac: 270 60% 70%; /* A soft purple */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 220 14.3% 10.9%; /* Dark charcoal */
+    --foreground: 210 40% 98%; /* Off-white */
 
-    --card: 222.2 84% 4.9%;
+    --card: 215 14.3% 14.9%; /* Slightly lighter charcoal for cards */
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 215 14.3% 14.9%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 210 40% 98%;
@@ -79,14 +68,11 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Dark mode custom accents */
+    --emerald: 150 80% 50%;
+    --blue: 210 80% 60%;
+    --lilac: 270 60% 80%;
   }
 }
 
@@ -96,6 +82,15 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans; /* Use a sans-serif font */
   }
+}
+
+/* Custom shadow for cards */
+.card-shadow {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.dark .card-shadow {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1);
 }

@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import BudgetApp from "./pages/BudgetApp";
 import InvestmentsPage from "./pages/Investments";
+import SettingsPage from "./pages/Settings"; // Import the new SettingsPage
 import { useEffect, useState } from "react";
 import { auth } from '@/lib/firebase'; // Import auth from the new firebase.ts
 import { signInAnonymously, onAuthStateChanged, User } from "firebase/auth";
@@ -60,6 +61,7 @@ const App = () => {
             <Route path="/" element={<Index userUid={userUid} />} />
             <Route path="/budget-app" element={<BudgetApp userUid={userUid} />} />
             <Route path="/investments" element={<InvestmentsPage userUid={userUid} />} />
+            <Route path="/settings" element={<SettingsPage userUid={userUid} />} /> {/* New Settings Route */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
