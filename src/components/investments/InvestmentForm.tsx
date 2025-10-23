@@ -32,6 +32,31 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // Helper function to get current form errors without setting state
+  const getFormErrors = useCallback(() => {
+    const newErrors: { [key: string]: string } = {};
+    if (!name.trim()) newErrors.name = 'Asset Name is required.';
+    if (!quantity || parseFloat(quantity) <= 0) newErrors.quantity = 'Quantity must be a positive number.';
+    if (isNaN(parseFloat(quantity))) newErrors.quantity = 'Quantity must be a valid number.';
+    if (!buyPrice || parseFloat(buyPrice) <= 0) newErrors.buyPrice = 'Buy Price must be a positive number.';
+    if (isNaN(parseFloat(buyPrice))) newErrors.buyPrice = 'Buy Price must be a valid number.';
+    if (!datePurchased) newErrors.datePurchased = 'Date Purchased is required.';
+    if (new Date(datePurchased) > new Date()) newErrors.datePurchased = 'Date Purchased cannot be in the future.';
+
+    if (!symbolOrId.trim()) {
+      newErrors.symbolOrId = type === 'Stock' ? 'Stock Ticker Symbol is required.' : 'CoinGecko ID or symbol is required.';
+    } else {
+      if (type === 'Stock' && !/^[A-Z0-9.-]+$/.test(symbolOrId.toUpperCase())) {
+        newErrors.symbolOrId = 'Invalid stock ticker format (e.g., AAPL, BRK.B).';
+      }
+    }
+
+    if (livePrice === null || livePriceLoading || livePriceError) {
+      newErrors.livePrice = livePriceError || "Live price not available or still loading.";
+    }
+    return newErrors;
+  }, [name, quantity, buyPrice, datePurchased, symbolOrId, type, livePrice, livePriceLoading, livePriceError]);
+
   // Effect to populate form when an investment is selected for editing
   useEffect(() => {
     if (investment) {
@@ -95,35 +120,12 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
     return () => clearTimeout(debounceTimeout);
   }, [type, symbolOrId]);
 
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-    if (!name.trim()) newErrors.name = 'Asset Name is required.';
-    if (!quantity || parseFloat(quantity) <= 0) newErrors.quantity = 'Quantity must be a positive number.';
-    if (isNaN(parseFloat(quantity))) newErrors.quantity = 'Quantity must be a valid number.';
-    if (!buyPrice || parseFloat(buyPrice) <= 0) newErrors.buyPrice = 'Buy Price must be a positive number.';
-    if (isNaN(parseFloat(buyPrice))) newErrors.buyPrice = 'Buy Price must be a valid number.';
-    if (!datePurchased) newErrors.datePurchased = 'Date Purchased is required.';
-    if (new Date(datePurchased) > new Date()) newErrors.datePurchased = 'Date Purchased cannot be in the future.';
-
-    if (!symbolOrId.trim()) {
-      newErrors.symbolOrId = type === 'Stock' ? 'Stock Ticker Symbol is required.' : 'CoinGecko ID or symbol is required.';
-    } else {
-      if (type === 'Stock' && !/^[A-Z0-9.-]+$/.test(symbolOrId.toUpperCase())) {
-        newErrors.symbolOrId = 'Invalid stock ticker format (e.g., AAPL, BRK.B).';
-      }
-    }
-
-    if (livePrice === null || livePriceLoading || livePriceError) {
-      newErrors.livePrice = livePriceError || "Live price not available or still loading.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) {
+    const currentErrors = getFormErrors();
+    setErrors(currentErrors); // Set errors only on submit
+
+    if (Object.keys(currentErrors).length > 0) {
       return;
     }
 
@@ -153,7 +155,8 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
     }
   };
 
-  const isSaveDisabled = !validateForm() || livePriceLoading || livePrice === null;
+  // Determine if save button should be disabled based on current form errors
+  const isSaveDisabled = Object.keys(getFormErrors()).length > 0 || livePriceLoading || livePrice === null;
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
