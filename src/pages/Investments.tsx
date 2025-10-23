@@ -5,6 +5,7 @@ import { Plus, Wallet, DollarSign, Bitcoin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card"; // Import Card component
 
 import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
 import { calculateGainLoss } from '@/lib/utils';
@@ -304,16 +305,18 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 
       {/* Add/Edit Investment Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="z-[1000] sm:max-w-[425px] bg-card text-foreground card-shadow" onPointerDown={(e) => e.stopPropagation()}>
-          <DialogHeader>
-            <DialogTitle>{editingInvestment ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
-          </DialogHeader>
-          <InvestmentForm
-            investment={editingInvestment}
-            onSave={handleSaveInvestment}
-            onDelete={handleDeleteInvestment}
-            onClose={() => setIsModalOpen(false)}
-          />
+        <DialogContent className="z-[1000] sm:max-w-[425px]" onPointerDown={(e) => e.stopPropagation()}>
+          <Card className="bg-card text-foreground card-shadow border border-border/50 p-6"> {/* Apply card styling here */}
+            <DialogHeader>
+              <DialogTitle>{editingInvestment ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
+            </DialogHeader>
+            <InvestmentForm
+              investment={editingInvestment}
+              onSave={handleSaveInvestment}
+              onDelete={handleDeleteInvestment}
+              onClose={() => setIsModalOpen(false)}
+            />
+          </Card>
         </DialogContent>
       </Dialog>
 

@@ -2,8 +2,9 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card"; // Import Card component
 import { Investment } from '@/hooks/use-investment-data';
-import InvestmentForm from './investments/InvestmentForm'; // Updated import path
+import InvestmentForm from './investments/InvestmentForm';
 
 interface AddInvestmentModalProps {
   isOpen: boolean;
@@ -26,16 +27,18 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="z-[1000] sm:max-w-[425px] bg-card text-foreground card-shadow" onPointerDown={(e) => e.stopPropagation()}>
-        <DialogHeader>
-          <DialogTitle>{investmentToEdit ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
-        </DialogHeader>
-        <InvestmentForm
-          investment={investmentToEdit || null}
-          onSave={handleSave}
-          onDelete={handleDelete}
-          onClose={onClose}
-        />
+      <DialogContent className="z-[1000] sm:max-w-[425px]" onPointerDown={(e) => e.stopPropagation()}>
+        <Card className="bg-card text-foreground card-shadow border border-border/50 p-6"> {/* Apply card styling here */}
+          <DialogHeader>
+            <DialogTitle>{investmentToEdit ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
+          </DialogHeader>
+          <InvestmentForm
+            investment={investmentToEdit || null}
+            onSave={handleSave}
+            onDelete={handleDelete}
+            onClose={onClose}
+          />
+        </Card>
       </DialogContent>
     </Dialog>
   );
