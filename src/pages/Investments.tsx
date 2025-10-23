@@ -231,11 +231,11 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
         </div>
 
         {/* Overall Portfolio Overview */}
-        <Card className="card-shadow border-none bg-gradient-to-br from-blue to-lilac text-white">
+        <Card className="card-shadow border-none bg-card text-foreground border border-border/50">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-blue-100">Total Portfolio Value</p>
-              <Wallet className="h-5 w-5 text-blue-100" />
+              <p className="text-sm text-muted-foreground">Total Portfolio Value</p>
+              <Wallet className="h-5 w-5 text-muted-foreground" />
             </div>
             <p className="text-4xl font-bold mb-1">{formatCurrency(overallPortfolioSummary.currentValue)}</p>
             <div className="flex items-center space-x-2">
@@ -256,7 +256,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
           </TabsList>
 
           <TabsContent value="all" className="mt-6 space-y-6">
-            <Card className="card-shadow border-none">
+            <Card className="card-shadow border-none bg-card border border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">Overall Allocation</CardTitle>
               </CardHeader>
@@ -289,7 +289,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               </CardContent>
             </Card>
 
-            <Card className="card-shadow border-none">
+            <Card className="card-shadow border-none bg-card border border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">All Holdings</CardTitle>
                 <div className="flex items-center space-x-2">
@@ -331,11 +331,11 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
           </TabsContent>
 
           <TabsContent value="stocks" className="mt-6 space-y-6">
-            <Card className="card-shadow border-none bg-gradient-to-br from-blue to-blue-600 text-white">
+            <Card className="card-shadow border-none bg-card text-foreground border border-border/50">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-blue-100">Stock Portfolio Value</p>
-                  <DollarSign className="h-5 w-5 text-blue-100" />
+                  <p className="text-sm text-muted-foreground">Stock Portfolio Value</p>
+                  <DollarSign className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <p className="text-4xl font-bold mb-1">{formatCurrency(stockSummary.currentValue)}</p>
                 <div className="flex items-center space-x-2">
@@ -347,7 +347,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               </CardContent>
             </Card>
 
-            <Card className="card-shadow border-none">
+            <Card className="card-shadow border-none bg-card border border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">Stock Allocation</CardTitle>
               </CardHeader>
@@ -380,7 +380,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               </CardContent>
             </Card>
 
-            <Card className="card-shadow border-none">
+            <Card className="card-shadow border-none bg-card border border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">Stock Holdings</CardTitle>
                 <div className="flex items-center space-x-2">
@@ -422,11 +422,11 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
           </TabsContent>
 
           <TabsContent value="crypto" className="mt-6 space-y-6">
-            <Card className="card-shadow border-none bg-gradient-to-br from-emerald to-blue text-white">
+            <Card className="card-shadow border-none bg-card text-foreground border border-border/50">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-emerald-100">Crypto Portfolio Value</p>
-                  <Bitcoin className="h-5 w-5 text-emerald-100" />
+                  <p className="text-sm text-muted-foreground">Crypto Portfolio Value</p>
+                  <Bitcoin className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <p className="text-4xl font-bold mb-1">{formatCurrency(cryptoSummary.currentValue)}</p>
                 <div className="flex items-center space-x-2">
@@ -438,7 +438,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               </CardContent>
             </Card>
 
-            <Card className="card-shadow border-none">
+            <Card className="card-shadow border-none bg-card border border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">Crypto Allocation</CardTitle>
               </CardHeader>
@@ -471,7 +471,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               </CardContent>
             </Card>
 
-            <Card className="card-shadow border-none">
+            <Card className="card-shadow border-none bg-card border border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">Crypto Holdings</CardTitle>
                 <div className="flex items-center space-x-2">

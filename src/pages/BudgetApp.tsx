@@ -264,7 +264,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     bgColor: string;
     trend?: { value: string; color: string };
   }> = memo(({ title, value, subtitle, icon: Icon, color, bgColor, trend }) => (
-    <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
       <div className="flex items-center justify-between mb-2">
         <div className="flex-1">
           <p className="text-xs sm:text-sm text-muted-foreground mb-1">{title}</p>
@@ -321,7 +321,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     const health = getHealthStatus(category.spent, category.budgeted);
 
     return (
-      <div className="p-4 sm:p-6 hover:bg-muted/50 transition-colors active:bg-muted animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="p-4 sm:p-6 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             <span className="text-2xl flex-shrink-0">{category.emoji}</span>
@@ -381,8 +381,8 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           value={formatCurrency(totalSpent)}
           subtitle={`of ${formatCurrency(totalBudgeted)}`}
           icon={DollarSign}
-          color="hsl(var(--blue))"
-          bgColor="hsl(var(--blue)/10%)"
+          color="hsl(var(--primary))"
+          bgColor="hsl(var(--primary)/10%)"
         />
         <StatsCard
           title="Remaining"
@@ -403,7 +403,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
           <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Spending Trend</h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={spendingTrend}>
@@ -414,13 +414,13 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                 contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                 formatter={(value) => formatCurrency(Number(value))}
               />
-              <Line type="monotone" dataKey="spent" stroke="hsl(var(--blue))" strokeWidth={2} name="Spent" dot={false} />
+              <Line type="monotone" dataKey="spent" stroke="hsl(var(--primary))" strokeWidth={2} name="Spent" dot={false} />
               <Line type="monotone" dataKey="budget" stroke="hsl(var(--emerald))" strokeWidth={2} strokeDasharray="5 5" name="Budget" dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
           <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Spending by Category</h3>
           <div className="flex items-center justify-center">
             <ResponsiveContainer width="100%" height={200}>
@@ -445,7 +445,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
       </div>
 
-      <div className="hidden sm:block bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="hidden sm:block bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
         <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Net Worth Growth</h3>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={netWorthTrend}>
@@ -461,7 +461,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </ResponsiveContainer>
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-base sm:text-lg font-semibold text-foreground">Upcoming Recurring Bills</h3>
@@ -493,7 +493,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base sm:text-lg font-semibold text-foreground">Recent Transactions</h3>
           <Link to="/budget-app?view=transactions" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:text-primary/90 font-medium flex items-center">
@@ -512,11 +512,11 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
 
   const BudgetView: React.FC = () => (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
-      <div className="bg-gradient-to-r from-blue to-lilac rounded-xl sm:rounded-2xl p-5 sm:p-6 text-white card-shadow">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 text-foreground card-shadow border border-border/50">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl sm:text-2xl font-bold">October Budget</h2>
           {budgetSettings.rolloverEnabled && (
-            <div className="flex items-center space-x-1 bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
+            <div className="flex items-center space-x-1 bg-muted/50 px-3 py-1 rounded-full text-xs font-medium text-muted-foreground">
               <ArrowRight className="w-3 h-3" />
               <span>Rollover ON</span>
             </div>
@@ -524,39 +524,39 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
         <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-4">
           <div>
-            <p className="text-blue-100 text-xs sm:text-sm">Budget</p>
+            <p className="text-muted-foreground text-xs sm:text-sm">Budget</p>
             <p className="text-xl sm:text-3xl font-bold">{formatCurrency(totalBudgeted)}</p>
           </div>
           <div>
-            <p className="text-blue-100 text-xs sm:text-sm">Spent</p>
+            <p className="text-muted-foreground text-xs sm:text-sm">Spent</p>
             <p className="text-xl sm:text-2xl font-semibold">{formatCurrency(totalSpent)}</p>
           </div>
           <div>
-            <p className="text-blue-100 text-xs sm:text-sm">Left</p>
+            <p className="text-muted-foreground text-xs sm:text-sm">Left</p>
             <p className="text-xl sm:text-2xl font-semibold">{formatCurrency(remainingBudget)}</p>
           </div>
         </div>
         {budgetSettings.rolloverEnabled && budgetSettings.previousMonthLeftover > 0 && (
-          <div className="bg-white/10 rounded-lg p-3 mb-3 text-sm">
+          <div className="bg-muted/50 rounded-lg p-3 mb-3 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-blue-100">Previous month rollover</span>
-              <span className="font-semibold">+{formatCurrency(budgetSettings.previousMonthLeftover)}</span>
+              <span className="text-muted-foreground">Previous month rollover</span>
+              <span className="font-semibold text-foreground">+{formatCurrency(budgetSettings.previousMonthLeftover)}</span>
             </div>
           </div>
         )}
-        <div className="bg-white/20 rounded-full h-2 overflow-hidden">
+        <div className="bg-muted rounded-full h-2 overflow-hidden">
           <div
-            className="bg-white h-full transition-all duration-500"
+            className="bg-primary h-full transition-all duration-500"
             style={{ width: `${(totalSpent / totalBudgeted) * 100}%` }}
           />
         </div>
         <div className="mt-3 flex items-center justify-between text-sm">
-          <span className="text-blue-100">{formatCurrency(remainingPerDay)}/day • {daysLeft} days left</span>
-          <span className="font-medium">{Math.round((totalSpent / totalBudgeted) * 100)}% used</span>
+          <span className="text-muted-foreground">{formatCurrency(remainingPerDay)}/day • {daysLeft} days left</span>
+          <span className="font-medium text-foreground">{Math.round((totalSpent / totalBudgeted) * 100)}% used</span>
         </div>
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
         <div className="p-4 sm:p-6 border-b border-border">
           <div className="flex items-center justify-between">
             <h3 className="text-base sm:text-lg font-semibold text-foreground">Budget Categories</h3>
@@ -605,7 +605,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             const percentage = (goal.current / goal.target) * 100;
 
             return (
-              <div key={goal.id} className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div key={goal.id} className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
                 <div className="flex items-center justify-between mb-4">
                   <Target className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: goal.color }} />
                   <span className="text-sm font-medium text-muted-foreground">{Math.round(percentage)}%</span>
@@ -640,7 +640,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             );
           })
         ) : (
-          <div className="col-span-full bg-card rounded-xl sm:rounded-2xl p-6 text-center card-shadow">
+          <div className="col-span-full bg-card rounded-xl sm:rounded-2xl p-6 text-center card-shadow border border-border/50">
             <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-lg font-semibold text-foreground">No savings goals set up yet!</p>
             <p className="text-sm mt-2 text-muted-foreground">Start saving for your dreams by creating a new goal.</p>
@@ -651,7 +651,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         )}
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
         <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Goal Progress Over Time</h3>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={[
@@ -732,7 +732,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           </div>
         </div>
 
-        <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
           <div className="divide-y divide-border">
             {filteredTransactions.length > 0 ? (
               filteredTransactions.map(txn => (

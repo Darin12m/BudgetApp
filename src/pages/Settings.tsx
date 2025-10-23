@@ -96,7 +96,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
         <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
 
         {/* Theme Settings */}
-        <Card className="card-shadow border-none">
+        <Card className="card-shadow border-none bg-card border border-border/50">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <Palette className="w-5 h-5 mr-2 text-muted-foreground" /> Theme
@@ -118,7 +118,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
         </Card>
 
         {/* Budget Settings */}
-        <Card className="card-shadow border-none">
+        <Card className="card-shadow border-none bg-card border border-border/50">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <DollarSign className="w-5 h-5 mr-2 text-muted-foreground" /> Budget
@@ -145,7 +145,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
         </Card>
 
         {/* Account Settings */}
-        <Card className="card-shadow border-none">
+        <Card className="card-shadow border-none bg-card border border-border/50">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <User className="w-5 h-5 mr-2 text-muted-foreground" /> Account
@@ -167,7 +167,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
         </Card>
 
         {/* API Integrations (Placeholder) */}
-        <Card className="card-shadow border-none">
+        <Card className="card-shadow border-none bg-card border border-border/50">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <Key className="w-5 h-5 mr-2 text-muted-foreground" /> API Integrations
