@@ -78,40 +78,38 @@ export const fetchSingleCryptoPrice = async (coingeckoId: string): Promise<numbe
   }
 };
 
+// Firebase Cloud Function endpoint for stock prices
+const FIREBASE_STOCK_FUNCTION_URL = "https://us-central1-YOUR_FIREBASE_PROJECT_ID.cloudfunctions.net/getStockPrice";
+
 export const fetchStockPrices = async (symbols: string[]): Promise<Map<string, number>> => {
   if (symbols.length === 0) return new Map();
-  try {
-    const response = await axios.get<YahooFinanceResponse>(
-      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols.join(',')}`
-    );
-    const prices = new Map<string, number>();
-    if (response.data.quoteResponse && response.data.quoteResponse.result) {
-      response.data.quoteResponse.result.forEach(item => {
-        if (item.regularMarketPrice && item.symbol) {
-          prices.set(item.symbol, item.regularMarketPrice);
-        }
-      });
+  const prices = new Map<string, number>();
+  
+  // Fetch prices for each symbol individually using the Cloud Function
+  await Promise.all(symbols.map(async (symbol) => {
+    try {
+      const response = await axios.get(`${FIREBASE_STOCK_FUNCTION_URL}?symbol=${symbol.toUpperCase()}`);
+      if (response.data && response.data.price) {
+        prices.set(symbol.toUpperCase(), response.data.price);
+      }
+    } catch (error) {
+      console.error(`Error fetching stock price for ${symbol} via Cloud Function:`, error);
     }
-    return prices;
-  } catch (error) {
-    console.error("Error fetching stock prices (likely CORS/rate limit):", error);
-    return new Map(); // Return empty map on error
-  }
+  }));
+  return prices;
 };
 
 export const fetchSingleStockPrice = async (symbol: string): Promise<number | null> => {
   if (!symbol) return null;
   try {
-    const response = await axios.get<YahooFinanceResponse>(
-      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`
-    );
-    if (response.data.quoteResponse && response.data.quoteResponse.result && response.data.quoteResponse.result.length > 0) {
-      return response.data.quoteResponse.result[0].regularMarketPrice || null;
+    const response = await axios.get(`${FIREBASE_STOCK_FUNCTION_URL}?symbol=${symbol.toUpperCase()}`);
+    if (response.data && response.data.price) {
+      return response.data.price;
     }
-    console.warn(`Yahoo Finance API: No data found for stock symbol ${symbol}. This is often due to CORS or rate limits.`);
-    return null; // Return null if no data found
+    console.warn(`Cloud Function: No price data found for stock symbol ${symbol}.`);
+    return null;
   } catch (error) {
-    console.error(`Error fetching price for stock symbol ${symbol} (likely CORS/rate limit):`, error);
-    return null; // Return null on error
+    console.error(`Error fetching single stock price for ${symbol} via Cloud Function:`, error);
+    return null;
   }
 };
