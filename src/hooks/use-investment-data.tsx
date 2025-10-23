@@ -16,6 +16,9 @@ export interface Investment {
   ownerUid: string;
   symbol?: string; // For stocks (e.g., AAPL)
   coingeckoId?: string; // For crypto (e.g., bitcoin)
+  lastPrice?: number; // The last fetched live price
+  priceSource?: 'CoinGecko' | 'YahooFinance'; // Source of the last price
+  lastUpdated?: string; // Timestamp of last price update
   // For UI animations
   previousPrice?: number; // To track price changes
 }
@@ -81,16 +84,19 @@ export const useInvestmentData = (userUid: string | null) => {
       return prevInvestments.map(inv => {
         let updatedPrice = inv.currentPrice;
         let identifier = '';
+        let priceSource: 'CoinGecko' | 'YahooFinance' | undefined;
 
         if (inv.type === 'Stock' && inv.symbol) {
           identifier = inv.symbol;
           if (stockPrices.has(inv.symbol)) {
             updatedPrice = stockPrices.get(inv.symbol)!;
+            priceSource = 'YahooFinance';
           }
         } else if (inv.type === 'Crypto' && inv.coingeckoId) {
           identifier = inv.coingeckoId;
           if (cryptoPrices.has(inv.coingeckoId)) {
             updatedPrice = cryptoPrices.get(inv.coingeckoId)!;
+            priceSource = 'CoinGecko';
           }
         }
 
@@ -109,6 +115,9 @@ export const useInvestmentData = (userUid: string | null) => {
           ...inv,
           previousPrice: inv.currentPrice, // Store current price as previous for animation
           currentPrice: updatedPrice,
+          lastPrice: updatedPrice, // Update lastPrice with the fetched price
+          priceSource: priceSource,
+          lastUpdated: new Date().toISOString(), // Update lastUpdated timestamp
         };
       });
     });

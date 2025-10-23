@@ -20,6 +20,32 @@ interface YahooFinanceResponse {
   };
 }
 
+// Map common crypto symbols to CoinGecko IDs
+const cryptoSymbolMap: { [key: string]: string } = {
+  'BTC': 'bitcoin',
+  'ETH': 'ethereum',
+  'SOL': 'solana',
+  'INJ': 'injective-protocol',
+  'XRP': 'ripple',
+  'ADA': 'cardano',
+  'DOGE': 'dogecoin',
+  'BNB': 'binancecoin',
+  'DOT': 'polkadot',
+  'LTC': 'litecoin',
+  // Add more as needed
+};
+
+export const getCoingeckoId = (symbolOrId: string): string => {
+  const normalizedInput = symbolOrId.toLowerCase();
+  // Check if it's a common symbol first
+  if (cryptoSymbolMap[symbolOrId.toUpperCase()]) {
+    return cryptoSymbolMap[symbolOrId.toUpperCase()];
+  }
+  // Otherwise, assume it's already a CoinGecko ID
+  return normalizedInput;
+};
+
+
 export const fetchCryptoPrices = async (ids: string[]): Promise<Map<string, number>> => {
   if (ids.length === 0) return new Map();
   try {
@@ -36,6 +62,19 @@ export const fetchCryptoPrices = async (ids: string[]): Promise<Map<string, numb
   } catch (error) {
     console.error("Error fetching crypto prices:", error);
     return new Map();
+  }
+};
+
+export const fetchSingleCryptoPrice = async (coingeckoId: string): Promise<number | null> => {
+  if (!coingeckoId) return null;
+  try {
+    const response = await axios.get<CryptoPriceResponse>(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`
+    );
+    return response.data[coingeckoId]?.usd || null;
+  } catch (error) {
+    console.error(`Error fetching price for crypto ID ${coingeckoId}:`, error);
+    return null;
   }
 };
 
@@ -59,5 +98,21 @@ export const fetchStockPrices = async (symbols: string[]): Promise<Map<string, n
   } catch (error) {
     console.error("Error fetching stock prices:", error);
     return new Map();
+  }
+};
+
+export const fetchSingleStockPrice = async (symbol: string): Promise<number | null> => {
+  if (!symbol) return null;
+  try {
+    const response = await axios.get<YahooFinanceResponse>(
+      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`
+    );
+    if (response.data.quoteResponse && response.data.quoteResponse.result && response.data.quoteResponse.result.length > 0) {
+      return response.data.quoteResponse.result[0].regularMarketPrice || null;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching price for stock symbol ${symbol}:`, error);
+    return null;
   }
 };
