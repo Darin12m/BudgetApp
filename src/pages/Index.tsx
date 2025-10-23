@@ -24,12 +24,8 @@ const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(-
 const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   const {
     transactions,
+    categories, // Added categories to calculate budget values
     budgetSettings,
-    totalBudgeted,
-    totalSpent,
-    remainingBudget,
-    remainingPerDay,
-    daysLeft,
     addDocument,
     loading: financeLoading,
     error: financeError,
@@ -47,6 +43,32 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false);
   const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
+
+  // --- Derived Budget Values ---
+  const totalBudgeted = useMemo(() =>
+    (budgetSettings?.totalBudgeted || 0) + categories.reduce((sum, cat) => sum + cat.budgeted, 0),
+    [categories, budgetSettings?.totalBudgeted]
+  );
+
+  const totalSpent = useMemo(() =>
+    categories.reduce((sum, cat) => sum + cat.spent, 0),
+    [categories]
+  );
+
+  const remainingBudget = useMemo(() =>
+    budgetSettings.rolloverEnabled
+      ? totalBudgeted - totalSpent + budgetSettings.previousMonthLeftover
+      : totalBudgeted - totalSpent,
+    [totalBudgeted, totalSpent, budgetSettings]
+  );
+
+  const today = new Date();
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const daysLeft = Math.ceil((endOfMonth.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const remainingPerDay = useMemo(() =>
+    remainingBudget / daysLeft,
+    [remainingBudget, daysLeft]
+  );
 
   // --- Overall Investment Portfolio Summary ---
   const overallPortfolioSummary = useMemo(() => {

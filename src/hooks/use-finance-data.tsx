@@ -55,10 +55,11 @@ interface RecurringTransaction {
 }
 
 interface BudgetSettings {
-  id: string; // Added 'id' property
+  id: string;
   rolloverEnabled: boolean;
   previousMonthLeftover: number;
   ownerUid: string;
+  totalBudgeted?: number; // Added totalBudgeted here
 }
 
 export const useFinanceData = (userUid: string | null) => {
@@ -115,8 +116,9 @@ export const useFinanceData = (userUid: string | null) => {
           ownerUid: userUid,
           rolloverEnabled: true,
           previousMonthLeftover: 0,
+          totalBudgeted: 0, // Initialize totalBudgeted
         }).then(docRef => {
-          setBudgetSettings({ id: docRef.id, ownerUid: userUid, rolloverEnabled: true, previousMonthLeftover: 0 });
+          setBudgetSettings({ id: docRef.id, ownerUid: userUid, rolloverEnabled: true, previousMonthLeftover: 0, totalBudgeted: 0 });
         }).catch(err => {
           console.error("Error creating default budget settings:", err);
           toast.error("Failed to create default budget settings.");

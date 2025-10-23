@@ -61,12 +61,7 @@ interface RecurringTransaction {
   ownerUid: string;
 }
 
-interface BudgetSettings {
-  rolloverEnabled: boolean;
-  previousMonthLeftover: number;
-  ownerUid: string;
-  totalBudgeted?: number; // Added totalBudgeted here for consistency
-}
+// Removed local BudgetSettings interface, now relying on the one from use-finance-data.tsx
 
 interface HealthStatus {
   status: 'over' | 'warning' | 'good';
