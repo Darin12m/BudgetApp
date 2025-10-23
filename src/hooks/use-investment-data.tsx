@@ -162,7 +162,7 @@ export const useInvestmentData = (userUid: string | null) => {
     try {
       await addDoc(collection(db, "investments"), {
         ...data,
-        ownerUid: userUid,
+        ownerUid: userUid, // This line ensures ownerUid is set
         createdAt: serverTimestamp(),
       });
       toast.success("Investment added successfully!");
