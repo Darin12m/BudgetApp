@@ -257,7 +257,7 @@ const useFinanceData = () => {
 
         if (accountsData.length === 0) {
           const mockAccounts: Account[] = [
-            { name: 'Chase Checking', balance: 4523.67, type: 'checking', lastUpdated: '2 mins ago' },
+            { name: 'Chase Checking', balance: 4523.67, type: 'checking', lastUpdated: '2 mins ago', },
             { name: 'Savings Account', balance: 12456.89, type: 'savings', lastUpdated: '5 mins ago' },
             { name: 'Amex Credit', balance: -1234.56, type: 'credit', lastUpdated: '1 min ago' },
             { name: 'Investment Account', balance: 23456.78, type: 'investment', lastUpdated: '10 mins ago' },
@@ -500,7 +500,7 @@ const FinanceFlow: React.FC = () => {
       {trend && (
         <div className="text-xs text-gray-500 flex items-center mt-2">
           <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-          Auto-updated {accounts[0].lastUpdated}
+          Auto-updated {accounts.length > 0 ? accounts[0].lastUpdated : 'N/A'}
         </div>
       )}
     </div>
@@ -580,7 +580,7 @@ const FinanceFlow: React.FC = () => {
             <span className="text-sm">+3.2% this month</span>
           </div>
           <div className="text-xs text-blue-100">
-            Updated {accounts[0].lastUpdated}
+            Updated {accounts.length > 0 ? accounts[0].lastUpdated : 'N/A'}
           </div>
         </div>
       </div>
