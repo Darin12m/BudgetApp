@@ -162,7 +162,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Asset Name
         </Label>
         <div className="col-span-3">
-          <Input id="name" value={name} onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
+          <Input id="name" value={name} onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
           {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
         </div>
       </div>
@@ -185,10 +185,10 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           }}
           className="col-span-3 justify-start"
         >
-          <ToggleGroupItem value="Stock" aria-label="Toggle Stock" className="px-4 py-2 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm">
+          <ToggleGroupItem value="Stock" aria-label="Toggle Stock" className="px-4 py-2 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm min-h-[44px]">
             Stock
           </ToggleGroupItem>
-          <ToggleGroupItem value="Crypto" aria-label="Toggle Crypto" className="px-4 py-2 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm">
+          <ToggleGroupItem value="Crypto" aria-label="Toggle Crypto" className="px-4 py-2 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm min-h-[44px]">
             Crypto
           </ToggleGroupItem>
         </ToggleGroup>
@@ -204,7 +204,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
             value={symbolOrId}
             onChange={(e) => { setSymbolOrId(e.target.value); setErrors(prev => ({ ...prev, symbolOrId: '' })); }}
             placeholder={type === 'Stock' ? 'e.g., AAPL' : 'e.g., BTC or bitcoin'}
-            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
+            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.symbolOrId && <p className="text-destructive text-xs mt-1">{errors.symbolOrId}</p>}
         </div>
@@ -225,7 +225,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Quantity
         </Label>
         <div className="col-span-3">
-          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
+          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
           {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity}</p>}
         </div>
       </div>
@@ -234,7 +234,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Buy Price
         </Label>
         <div className="col-span-3">
-          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
+          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
           {errors.buyPrice && <p className="text-destructive text-xs mt-1">{errors.buyPrice}</p>}
         </div>
       </div>
@@ -243,7 +243,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Date Purchased
         </Label>
         <div className="col-span-3">
-          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
+          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, datePurchased: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
           {errors.datePurchased && <p className="text-destructive text-xs mt-1">{errors.datePurchased}</p>}
           {new Date(datePurchased) > new Date() && (
             <p className="text-amber-500 text-xs mt-1 flex items-center">
@@ -254,15 +254,15 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       </div>
       <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mt-4">
         {investment && (
-          <Button type="button" variant="destructive" onClick={handleDeleteClick} className="w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-98">
+          <Button type="button" variant="destructive" onClick={handleDeleteClick} className="w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
             <Trash2 className="h-4 w-4 mr-2" /> Delete
           </Button>
         )}
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
+          <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
             Cancel
           </Button>
-          <Button type="submit" disabled={isSaveDisabled} className="flex-1 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98">
+          <Button type="submit" disabled={isSaveDisabled} className="flex-1 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
             <Save className="h-4 w-4 mr-2" /> Save
           </Button>
         </div>

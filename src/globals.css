@@ -83,6 +83,7 @@
 
   body {
     @apply bg-background text-foreground font-sans; /* Use a sans-serif font */
+    overscroll-behavior-y: contain; /* Prevent scroll bounce on mobile */
   }
 }
 
@@ -106,7 +107,11 @@
   transform: translateY(-2px);
 }
 
-/* Safe area for bottom navigation */
+/* Safe area for bottom navigation and drawers */
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
 }
