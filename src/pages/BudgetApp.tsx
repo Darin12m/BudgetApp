@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search, Lightbulb, Zap } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useFinanceData } from '@/hooks/use-finance-data';
 import { formatCurrency } from '@/lib/utils';
@@ -9,6 +9,7 @@ import QuickAddTransactionModal from '@/components/QuickAddTransactionModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format, addDays } from 'date-fns'; // Import addDays
 
 // TypeScript Interfaces (moved to use-finance-data.tsx for centralized management)
 interface Transaction {
@@ -116,7 +117,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState<boolean>(false);
-  const [selectedMonth, setSelectedMonth] = useState<string>('October 2025'); // This would ideally be dynamic based on current date
+  const [selectedMonth, setSelectedMonth] = useState<string>(format(new Date(), 'MMMM yyyy')); // Make it dynamic
   const [transactionSearchTerm, setTransactionSearchTerm] = useState<string>('');
   const [transactionFilterPeriod, setTransactionFilterPeriod] = useState<'all' | 'thisMonth'>('thisMonth');
 
@@ -203,6 +204,95 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     }
     return "On track to stay under budget this month.";
   }, [totalBudgeted, totalSpent, remainingBudget, daysLeft]);
+
+  // --- Smart Forecast Calculations ---
+  const currentMonthDate = useMemo(() => new Date(), []);
+  const currentMonthYearForForecast = useMemo(() => format(currentMonthDate, 'MMMM yyyy'), [currentMonthDate]);
+
+  const filteredTransactionsForForecast = useMemo(() => {
+    return transactions.filter(txn => format(new Date(txn.date), 'MMMM yyyy') === currentMonthYearForForecast);
+  }, [transactions, currentMonthYearForForecast]);
+
+  const totalExpensesThisMonth = useMemo(() => {
+    return filteredTransactionsForForecast
+      .filter(txn => txn.amount < 0)
+      .reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
+  }, [filteredTransactionsForForecast]);
+
+  const daysPassedThisMonthForForecast = currentMonthDate.getDate();
+  const totalDaysInMonthForForecast = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0).getDate();
+
+  const dailyAvgSpending = daysPassedThisMonthForForecast > 0 ? totalExpensesThisMonth / daysPassedThisMonthForForecast : 0;
+  const forecastedTotalSpending = dailyAvgSpending * totalDaysInMonthForForecast;
+  const forecastedRemainingBalance = totalBudgeted - forecastedTotalSpending;
+
+  const { runOutMessage, runOutColor, runOutIcon } = useMemo(() => {
+    let message = '';
+    let color = 'text-foreground';
+    let icon: LucideIcon = Lightbulb;
+
+    if (totalBudgeted === 0 || dailyAvgSpending === 0 || daysPassedThisMonthForForecast === 0) {
+      message = "No forecast available yet. Add some transactions and set a budget!";
+    } else if (forecastedRemainingBalance >= 0) {
+      message = `At your current pace, you’ll have ${formatCurrency(forecastedRemainingBalance)} left at the end of the month.`;
+      color = 'text-emerald';
+      icon = TrendingUp;
+    } else {
+      const remainingBudgetBeforeForecast = totalBudgeted - totalExpensesThisMonth;
+      if (remainingBudgetBeforeForecast <= 0) {
+        message = `You are already ${formatCurrency(Math.abs(remainingBudgetBeforeForecast))} over budget this month.`;
+        color = 'text-destructive';
+        icon = TrendingDown;
+      } else {
+        const daysToRunOut = remainingBudgetBeforeForecast / dailyAvgSpending;
+        const projectedRunOutDate = addDays(currentMonthDate, daysToRunOut);
+        message = `At your current pace, you’ll run out of money on ${format(projectedRunOutDate, 'MMMM dd')}.`;
+        color = 'text-destructive';
+        icon = TrendingDown;
+      }
+    }
+    return { runOutMessage: message, runOutColor: color, runOutIcon: icon };
+  }, [totalBudgeted, dailyAvgSpending, daysPassedThisMonthForForecast, forecastedRemainingBalance, totalExpensesThisMonth, currentMonthDate]);
+
+  const spendingForecastChartData = useMemo(() => {
+    const data = [];
+    let cumulativeActualSpent = 0;
+    const currentDay = new Date().getDate();
+    const totalDays = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+
+    const sortedTransactions = filteredTransactionsForForecast
+      .filter(txn => txn.amount < 0)
+      .map(txn => ({ ...txn, date: new Date(txn.date) }))
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const actualCumulativeByDay: { [key: number]: number } = {};
+    for (let day = 1; day <= currentDay; day++) {
+      cumulativeActualSpent += sortedTransactions
+        .filter(txn => txn.date.getDate() === day)
+        .reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
+      actualCumulativeByDay[day] = cumulativeActualSpent;
+    }
+
+    for (let day = 1; day <= totalDays; day++) {
+      const dayData: { day: number; actual?: number; forecast?: number } = { day };
+
+      if (day <= currentDay) {
+        dayData.actual = actualCumulativeByDay[day];
+        dayData.forecast = actualCumulativeByDay[day];
+      } else {
+        dayData.actual = undefined;
+        if (dailyAvgSpending > 0) {
+          dayData.forecast = actualCumulativeByDay[currentDay] + (dailyAvgSpending * (day - currentDay));
+        } else {
+          dayData.forecast = actualCumulativeByDay[currentDay];
+        }
+      }
+      data.push(dayData);
+    }
+    return data;
+  }, [filteredTransactionsForForecast, dailyAvgSpending]);
+  // --- End Smart Forecast Calculations ---
+
 
   const handleViewChange = useCallback((view: string) => {
     setActiveView(view);
@@ -366,6 +456,34 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         previousMonthLeftover={budgetSettings.previousMonthLeftover}
         smartSummary={smartSummary}
       />
+
+      {/* Smart Forecast Card */}
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+        <div className="flex items-center space-x-3 mb-3">
+          {runOutIcon && <runOutIcon className={`w-5 h-5 ${runOutColor}`} />}
+          <h3 className={`text-base sm:text-lg font-semibold ${runOutColor}`}>Smart Forecast</h3>
+        </div>
+        <p className={`text-sm sm:text-base ${runOutColor} mb-4`}>{runOutMessage}</p>
+
+        {totalBudgeted > 0 && dailyAvgSpending > 0 && (
+          <>
+            <h4 className="text-sm font-semibold text-foreground mb-2">Spending Trajectory</h4>
+            <ResponsiveContainer width="100%" height={150}>
+              <LineChart data={spendingForecastChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} />
+                <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} formatter={(value) => formatCurrency(Number(value))} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                  formatter={(value) => formatCurrency(Number(value))}
+                />
+                <Line type="monotone" dataKey="actual" stroke="hsl(var(--primary))" strokeWidth={2} name="Actual Spent" dot={false} />
+                <Line type="monotone" dataKey="forecast" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="5 5" name="Forecasted Spent" dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatsCard
