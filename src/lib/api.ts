@@ -81,8 +81,6 @@ export const fetchSingleCryptoPrice = async (coingeckoId: string): Promise<numbe
 export const fetchStockPrices = async (symbols: string[]): Promise<Map<string, number>> => {
   if (symbols.length === 0) return new Map();
   try {
-    // Note: Direct access to Yahoo Finance API might be rate-limited or require a proxy in production.
-    // For this example, we'll use a direct call.
     const response = await axios.get<YahooFinanceResponse>(
       `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols.join(',')}`
     );
@@ -96,8 +94,8 @@ export const fetchStockPrices = async (symbols: string[]): Promise<Map<string, n
     }
     return prices;
   } catch (error) {
-    console.error("Error fetching stock prices:", error);
-    return new Map();
+    console.error("Error fetching stock prices (likely CORS/rate limit):", error);
+    return new Map(); // Return empty map on error
   }
 };
 
@@ -110,15 +108,10 @@ export const fetchSingleStockPrice = async (symbol: string): Promise<number | nu
     if (response.data.quoteResponse && response.data.quoteResponse.result && response.data.quoteResponse.result.length > 0) {
       return response.data.quoteResponse.result[0].regularMarketPrice || null;
     }
-    // If no result, it means symbol not found or API returned empty data.
-    // Returning a mock price to allow the form to be saved.
-    console.warn(`Yahoo Finance API: No data found for stock symbol ${symbol}. This is often due to CORS or rate limits. Returning a mock price.`);
-    return 100; // Mock price
+    console.warn(`Yahoo Finance API: No data found for stock symbol ${symbol}. This is often due to CORS or rate limits.`);
+    return null; // Return null if no data found
   } catch (error) {
-    // This error often indicates CORS issues or rate limiting from Yahoo Finance.
-    // Returning a mock price to allow the form to be saved.
-    console.error(`Error fetching price for stock symbol ${symbol}:`, error);
-    console.warn(`Yahoo Finance API call failed for ${symbol}. This is often due to CORS or rate limits. Returning a mock price.`);
-    return 100; // Mock price
+    console.error(`Error fetching price for stock symbol ${symbol} (likely CORS/rate limit):`, error);
+    return null; // Return null on error
   }
 };
