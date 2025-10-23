@@ -4,15 +4,15 @@ import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, 
 import { Link } from 'react-router-dom'; // Import Link for navigation
 
 // Firebase imports
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { db, auth } from '@/lib/firebase'; // Import db and auth from centralized firebase.ts
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 /*
 FIREBASE INTEGRATION REQUIREMENTS:
-1. Install Firebase: npm install firebase
-2. Create Firebase project and get config
-3. Uncomment Firebase imports and service functions
+1. Install Firebase: npm install firebase (already handled)
+2. Create Firebase project and get config (already handled)
+3. Uncomment Firebase imports and service functions (already handled)
 4. Replace mock data with actual Firebase calls
 5. Add Firebase collections: transactions, categories, goals, accounts, recurringTransactions
 6. Implement CRUD operations for each data type
@@ -105,22 +105,6 @@ interface CategoryData {
   color: string;
   [key: string]: any;
 }
-
-// Firebase Configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDs1wN6kNT6oT667vTIrsedlUwpxR5DLF0",
-  authDomain: "budgetapp-e468c.firebaseapp.com",
-  projectId: "budgetapp-e468c",
-  storageBucket: "budgetapp-e468c.firebasestorage.app",
-  messagingSenderId: "824666869433",
-  appId: "1:824666869433:web:e2445de24654cb1fd2d568",
-  measurementId: "G-B2SW20PLLT"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
 
 // Firebase Service Functions
 const fetchTransactions = async (): Promise<Transaction[]> => {
