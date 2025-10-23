@@ -3,6 +3,7 @@ import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { fetchCryptoPrices, fetchStockPrices } from '@/lib/api'; // Import API functions
+import { auth } from '@/lib/firebase'; // Import auth to access currentUser
 
 // TypeScript Interfaces
 export interface Investment {
@@ -27,8 +28,8 @@ export const useInvestmentData = (userUid: string | null) => {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [livePrices, setLivePrices] = useState<Map<string, number>>(new Map());
-  const [priceChange, setPriceChange] = useState<Map<string, 'up' | 'down' | 'none'>>(new Map());
+  const [livePrices, setLivePrices] = new Map();
+  const [priceChange, setPriceChange] = new Map();
 
   // Ref to store the latest investments to avoid stale closures in setInterval
   const latestInvestments = useRef<Investment[]>([]);
@@ -155,20 +156,28 @@ export const useInvestmentData = (userUid: string | null) => {
 
 
   const addInvestment = useCallback(async (data: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
+    console.log("Attempting to add investment...");
+    console.log("auth.currentUser:", auth.currentUser);
+    console.log("auth.currentUser.uid:", auth.currentUser?.uid);
+
     if (!userUid) {
       toast.error("You must be logged in to save data.");
       return;
     }
+
+    const payload = {
+      ...data,
+      ownerUid: userUid, // This line ensures ownerUid is set
+      createdAt: serverTimestamp(),
+    };
+    console.log("Payload being sent:", payload);
+
     try {
-      await addDoc(collection(db, "investments"), {
-        ...data,
-        ownerUid: userUid, // This line ensures ownerUid is set
-        createdAt: serverTimestamp(),
-      });
+      await addDoc(collection(db, "investments"), payload);
       toast.success("Investment added successfully!");
     } catch (e: any) { // Explicitly type 'e' as 'any' for error.code
       console.error("Error adding investment:", e.code, e.message); // Log error.code
-      toast.error("Failed to add investment.");
+      toast.error(`Failed to add investment: ${e.message}`); // Display specific error message
     }
   }, [userUid]);
 
