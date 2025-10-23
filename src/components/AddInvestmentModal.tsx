@@ -191,7 +191,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[1000] sm:max-w-[425px] bg-card text-foreground card-shadow" onPointerDown={(e) => e.stopPropagation()}>
+      <DialogContent className="z-[1000] sm:max-w-[425px] bg-card text-foreground card-shadow" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>{investmentToEdit ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
         </DialogHeader>

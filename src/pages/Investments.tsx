@@ -516,7 +516,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 
       {/* Add/Edit Investment Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[1000] sm:max-w-[425px] bg-card text-foreground card-shadow" onPointerDown={(e) => e.stopPropagation()}>
+        <DialogContent className="z-[1000] sm:max-w-[425px] bg-card text-foreground card-shadow" onPointerDown={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>{editingInvestment ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
           </DialogHeader>
