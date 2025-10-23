@@ -516,7 +516,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 
       {/* Add/Edit Investment Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-card text-foreground card-shadow">
+        <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[1000] sm:max-w-[425px] bg-card text-foreground card-shadow" onPointerDown={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>{editingInvestment ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
           </DialogHeader>
@@ -670,7 +670,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
         </Label>
         <div className="col-span-3">
           <Input id="currentPrice" type="number" step="0.01" value={currentPrice} onChange={(e) => { setCurrentPrice(e.target.value); setErrors(prev => ({ ...prev, currentPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0" />
-          {errors.currentPrice && <p className="text-destructive text-xs mt-1">{errors.currentPrice}</p>}
+          {errors.currentPrice && <p className className="text-destructive text-xs mt-1">{errors.currentPrice}</p>}
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
