@@ -148,7 +148,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   const handleMicroInvest = useCallback(async (amount: number, assetName: string, assetType: 'Stock' | 'Crypto', symbol?: string, coingeckoId?: string) => {
     // For simplicity, we'll use the current price as buy price for micro-investments
     // In a real app, you'd fetch the live price at the moment of investment
-    const currentPrice = existingInvestments.find(inv => inv.name === assetName)?.currentPrice || 1; // Default to 1 if not found
+    const currentPrice = investments.find(inv => inv.name === assetName)?.currentPrice || 1; // Fixed: Use 'investments'
     const quantity = amount / currentPrice;
 
     await addInvestment({
@@ -161,7 +161,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
       symbol: symbol,
       coingeckoId: coingeckoId,
     });
-  }, [addInvestment, existingInvestments]);
+  }, [addInvestment, investments]); // Fixed: Use 'investments' in dependency array
 
   const isLoading = financeLoading || investmentsLoading;
   const hasError = financeError || investmentsError;
