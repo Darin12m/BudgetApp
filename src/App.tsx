@@ -57,7 +57,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Index userUid={userUid} />} />
             <Route path="/budget-app" element={<BudgetApp userUid={userUid} />} />
             <Route path="/investments" element={<InvestmentsPage userUid={userUid} />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
