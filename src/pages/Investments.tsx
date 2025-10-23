@@ -12,20 +12,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from 'date-fns';
 
-// Firebase imports
-import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where, onSnapshot } from 'firebase/firestore';
+// Firebase imports removed
 
 // --- Interfaces ---
 interface Investment {
-  id: string; // Firebase document ID
+  id: string;
   name: string;
   type: 'Stock' | 'Crypto';
   quantity: number;
   buyPrice: number;
   currentPrice: number;
   datePurchased: string; // YYYY-MM-DD
-  ownerUid: string; // Added ownerUid
+  ownerUid: string;
 }
 
 interface PortfolioSummary {
@@ -54,7 +52,7 @@ interface TopPerformerData {
   color: string;
 }
 
-// --- Mock Data (as fallback if Firebase is empty) ---
+// --- Mock Data ---
 const MOCK_INVESTMENTS: Investment[] = [
   { id: 'mock-1', name: 'AAPL', type: 'Stock', quantity: 10, buyPrice: 150, currentPrice: 175, datePurchased: '2023-01-15', ownerUid: 'mock' },
   { id: 'mock-2', name: 'GOOGL', type: 'Stock', quantity: 5, buyPrice: 100, currentPrice: 110, datePurchased: '2023-03-20', ownerUid: 'mock' },
@@ -96,62 +94,22 @@ const calculateGainLoss = (investment: Investment) => {
   return { gainLoss, gainLossPercentage };
 };
 
-// --- Firebase Service Functions for Investments ---
-const investmentsCollection = collection(db, 'investments');
-
-const addInvestment = async (investment: Omit<Investment, 'id'>): Promise<string> => {
-  const docRef = await addDoc(investmentsCollection, investment);
-  return docRef.id;
-};
-
-const updateInvestment = async (id: string, updates: Partial<Investment>): Promise<void> => {
-  await updateDoc(doc(investmentsCollection, id), updates);
-};
-
-const deleteInvestment = async (id: string): Promise<void> => {
-  await deleteDoc(doc(investmentsCollection, id));
-};
-
 interface InvestmentsPageProps {
-  userUid: string | null;
+  // userUid prop removed
 }
 
-const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
-  const [investments, setInvestments] = useState<Investment[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+const InvestmentsPage: React.FC<InvestmentsPageProps> = () => {
+  const [investments, setInvestments] = useState<Investment[]>(MOCK_INVESTMENTS); // Initialize with mock data
+  const [loading, setLoading] = useState<boolean>(false); // No loading as we use mock data
+  const [error, setError] = useState<string | null>(null); // No error as we use mock data
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
   const [filterType, setFilterType] = useState<'All' | 'Stock' | 'Crypto'>('All');
   const [sortBy, setSortBy] = useState<'name' | 'gainLossPercentage' | 'totalValue'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // --- Real-time data fetching with Firebase onSnapshot ---
-  useEffect(() => {
-    if (!userUid) {
-      setLoading(false);
-      setError("User not authenticated.");
-      return;
-    }
-
-    const q = query(investmentsCollection, where('ownerUid', '==', userUid), orderBy('name'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedInvestments: Investment[] = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Investment));
-
-      setInvestments(fetchedInvestments);
-      setLoading(false);
-      setError(null);
-    }, (err) => {
-      console.error("Error fetching investments:", err);
-      setError("Failed to load investments. Please check your Firebase connection and security rules.");
-      setLoading(false);
-    });
-
-    return () => unsubscribe(); // Clean up the listener on component unmount
-  }, [userUid]); // Re-run when userUid changes
+  // --- No real-time data fetching with Firebase onSnapshot ---
+  // useEffect removed as Firebase is no longer used for data fetching.
 
   // --- Computed Portfolio Summary ---
   const portfolioSummary: PortfolioSummary = useMemo(() => {
@@ -247,7 +205,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
       .slice(0, 5);
   }, [investments]);
 
-  // --- Handlers ---
+  // --- Handlers (now operating on local state/mock data) ---
   const handleAddInvestment = useCallback(() => {
     setEditingInvestment(null);
     setIsModalOpen(true);
@@ -259,45 +217,32 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   }, []);
 
   const handleSaveInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid'>) => {
-    if (!userUid) {
-      setError("User not authenticated. Cannot save investment.");
-      return;
+    // For mock data, we'll simulate saving by updating local state
+    if (editingInvestment) {
+      setInvestments(prev => prev.map(inv => inv.id === editingInvestment.id ? { ...inv, ...newInvestment, id: editingInvestment.id, ownerUid: 'mock' } : inv));
+    } else {
+      // Generate a simple mock ID
+      const newId = `mock-${investments.length + 1}`;
+      setInvestments(prev => [...prev, { ...newInvestment, id: newId, ownerUid: 'mock' }]);
     }
-    try {
-      if (editingInvestment) {
-        await updateInvestment(editingInvestment.id, newInvestment);
-      } else {
-        await addInvestment({ ...newInvestment, ownerUid: userUid });
-      }
-      setIsModalOpen(false);
-      setEditingInvestment(null);
-    } catch (err) {
-      console.error("Error saving investment:", err);
-      setError("Failed to save investment. Please try again.");
-    }
-  }, [editingInvestment, userUid]);
+    setIsModalOpen(false);
+    setEditingInvestment(null);
+  }, [editingInvestment, investments.length]);
 
   const handleDeleteInvestment = useCallback(async (id: string) => {
-    try {
-      if (confirm('Are you sure you want to delete this investment?')) {
-        await deleteInvestment(id);
-        setIsModalOpen(false);
-        setEditingInvestment(null);
-      }
-    } catch (err) {
-      console.error("Error deleting investment:", err);
-      setError("Failed to delete investment. Please try again.");
+    if (confirm('Are you sure you want to delete this investment?')) {
+      setInvestments(prev => prev.filter(inv => inv.id !== id));
+      setIsModalOpen(false);
+      setEditingInvestment(null);
     }
   }, []);
 
   const handleRefreshPrices = useCallback(() => {
-    // In a real app, this would trigger an API call to fetch live prices
-    // For now, we'll just simulate a refresh or slightly randomize current prices
+    // Simulate price refresh for mock data
     setInvestments(prev => prev.map(inv => ({
       ...inv,
       currentPrice: inv.currentPrice * (1 + (Math.random() * 0.1 - 0.05)) // +/- 5%
     })));
-    // You could also show a toast notification here
     console.log("Prices refreshed!");
   }, []);
 
