@@ -53,7 +53,12 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
     }
 
     if (livePrice === null || livePriceLoading || livePriceError) {
-      newErrors.livePrice = livePriceError || "Live price not available or still loading.";
+      // Only add a livePrice error if there's an actual error message or it's not loading
+      if (livePriceError) {
+        newErrors.livePrice = livePriceError;
+      } else if (!livePriceLoading && livePrice === null && symbolOrId.trim()) {
+        newErrors.livePrice = "Live price not available.";
+      }
     }
     return newErrors;
   }, [name, quantity, buyPrice, datePurchased, symbolOrId, type, livePrice, livePriceLoading, livePriceError]);
@@ -99,7 +104,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       if (type === 'Stock') {
         fetchedPrice = await fetchSingleStockPrice(symbolOrId.toUpperCase());
         if (fetchedPrice === null) {
-          errorMsg = "Couldn't find stock ticker. Please check the symbol.";
+          errorMsg = "Invalid stock ticker symbol. Please try again."; // Updated error message
         }
       } else { // Crypto
         const coingeckoId = getCoingeckoId(symbolOrId);
