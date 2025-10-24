@@ -3,7 +3,7 @@ import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { isTransactionInCurrentWeek, isTransactionInPreviousWeek, isTransactionInCurrentMonth, getStartOfCurrentWeek, getEndOfCurrentWeek, getStartOfPreviousWeek, getEndOfPreviousWeek } from '@/lib/utils';
-import { format, parseISO, getDaysInMonth, isWithinInterval, startOfDay, endOfDay, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth } from 'date-fns'; // Added startOfMonth, endOfMonth
+import { format, parseISO, getDaysInMonth, isWithinInterval, startOfDay, endOfDay, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth, addMonths, addWeeks, addYears, isBefore, isAfter, isSameDay } from 'date-fns'; // Added date-fns imports for recurring logic
 
 // TypeScript Interfaces (re-defined for clarity within the hook context)
 interface Transaction {
@@ -21,7 +21,7 @@ interface Category {
   id: string;
   name: string;
   budgeted: number;
-  spent: number;
+  // spent: number; // REMOVED: spent will be calculated dynamically
   color: string;
   emoji: string;
   ownerUid: string;
@@ -52,7 +52,7 @@ interface RecurringTransaction {
   amount: number;
   category: string;
   frequency: 'Monthly' | 'Weekly' | 'Yearly';
-  nextDate: string;
+  nextDate: string; // YYYY-MM-DD
   emoji: string;
   ownerUid: string;
 }
@@ -68,6 +68,56 @@ interface BudgetSettings {
   priceAlertThreshold?: number; // New: Price alert threshold
   categoriesInitialized?: boolean; // New: Flag to track if categories have been initialized
 }
+
+// Helper function to generate recurring transaction occurrences within a date range
+const generateRecurringOccurrences = (
+  recurringTxn: RecurringTransaction,
+  rangeStart: Date,
+  rangeEnd: Date
+): Transaction[] => {
+  const occurrences: Transaction[] = [];
+  let currentOccurrenceDate = parseISO(recurringTxn.nextDate);
+
+  // Find the first occurrence date that is within or after the rangeStart
+  while (isBefore(currentOccurrenceDate, startOfDay(rangeStart))) {
+    if (recurringTxn.frequency === 'Monthly') {
+      currentOccurrenceDate = addMonths(currentOccurrenceDate, 1);
+    } else if (recurringTxn.frequency === 'Weekly') {
+      currentOccurrenceDate = addWeeks(currentOccurrenceDate, 1);
+    } else if (recurringTxn.frequency === 'Yearly') {
+      currentOccurrenceDate = addYears(currentOccurrenceDate, 1);
+    } else {
+      break; // Unknown frequency, prevent infinite loop
+    }
+  }
+
+  // Generate all occurrences within the specified range (inclusive of start and end days)
+  while (isWithinInterval(currentOccurrenceDate, { start: startOfDay(rangeStart), end: endOfDay(rangeEnd) })) {
+    occurrences.push({
+      id: `recurring-${recurringTxn.id}-${format(currentOccurrenceDate, 'yyyy-MM-dd')}`, // Unique ID for each occurrence
+      date: format(currentOccurrenceDate, 'yyyy-MM-dd'),
+      merchant: recurringTxn.name,
+      amount: recurringTxn.amount,
+      category: recurringTxn.category,
+      status: 'cleared', // Assume recurring transactions are cleared once due
+      account: 'Recurring', // A generic account for recurring transactions
+      ownerUid: recurringTxn.ownerUid,
+    });
+
+    // Advance to the next potential occurrence date
+    if (recurringTxn.frequency === 'Monthly') {
+      currentOccurrenceDate = addMonths(currentOccurrenceDate, 1);
+    } else if (recurringTxn.frequency === 'Weekly') {
+      currentOccurrenceDate = addWeeks(currentOccurrenceDate, 1);
+    } else if (recurringTxn.frequency === 'Yearly') {
+      currentOccurrenceDate = addYears(currentOccurrenceDate, 1);
+    } else {
+      break; // Unknown frequency
+    }
+  }
+  return occurrences;
+};
+
 
 export const useFinanceData = (userUid: string | null, startDate: Date | undefined, endDate: Date | undefined) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -155,12 +205,12 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
         if (collectionName === 'categories' && budgetSettings.categoriesInitialized !== undefined) { // Ensure budgetSettings is loaded
           if (snapshot.empty && !budgetSettings.categoriesInitialized) {
             const defaultCategories = [
-              { name: 'Groceries', budgeted: 300, spent: 0, color: 'hsl(var(--emerald))', emoji: '🛒', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Rent', budgeted: 1200, spent: 0, color: 'hsl(var(--blue))', emoji: '🏠', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Utilities', budgeted: 150, spent: 0, color: 'hsl(var(--lilac))', emoji: '💡', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Transportation', budgeted: 100, spent: 0, color: '#f59e0b', emoji: '🚗', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Entertainment', budgeted: 80, spent: 0, color: '#ef4444', emoji: '🎉', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Uncategorized', budgeted: 0, spent: 0, color: '#6B7280', emoji: '🏷️', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Groceries', budgeted: 300, color: 'hsl(var(--emerald))', emoji: '🛒', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Rent', budgeted: 1200, color: 'hsl(var(--blue))', emoji: '🏠', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Utilities', budgeted: 150, color: 'hsl(var(--lilac))', emoji: '💡', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Transportation', budgeted: 100, color: '#f59e0b', emoji: '🚗', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Entertainment', budgeted: 80, color: '#ef4444', emoji: '🎉', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Uncategorized', budgeted: 0, color: '#6B7280', emoji: '🏷️', ownerUid: userUid, createdAt: serverTimestamp() },
             ];
 
             defaultCategories.forEach(async (cat) => {
@@ -256,42 +306,68 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   }, [userUid]);
 
   // --- Derived Financial Data ---
-  // These now operate on the transactions filtered by the global date range
+
+  // Combine actual transactions with generated recurring transaction occurrences
+  const allTransactionsInDateRange = useMemo(() => {
+    if (!startDate || !endDate) return [];
+
+    const recurringOccurrences: Transaction[] = [];
+    recurringTransactions.forEach(rt => {
+      recurringOccurrences.push(...generateRecurringOccurrences(rt, startDate, endDate));
+    });
+
+    // Filter actual transactions to be within the selected range
+    const filteredActualTransactions = transactions.filter(txn => {
+      const txnDate = parseISO(txn.date);
+      return isWithinInterval(txnDate, { start: startOfDay(startDate), end: endOfDay(endDate) });
+    });
+
+    return [...filteredActualTransactions, ...recurringOccurrences];
+  }, [transactions, recurringTransactions, startDate, endDate]);
+
+
   const currentMonthTransactions = useMemo(() => {
     if (!startDate || !endDate) return [];
     const now = new Date();
-    return transactions.filter(txn => {
+    const startOfCurrentMonth = startOfMonth(now);
+    const endOfCurrentMonth = endOfMonth(now);
+
+    return allTransactionsInDateRange.filter(txn => {
       const txnDate = parseISO(txn.date);
-      return isWithinInterval(txnDate, { start: startOfMonth(now), end: endOfMonth(now) });
+      return isWithinInterval(txnDate, { start: startOfCurrentMonth, end: endOfCurrentMonth });
     });
-  }, [transactions, startDate, endDate]);
+  }, [allTransactionsInDateRange, startDate, endDate]);
 
   const currentWeekTransactions = useMemo(() => {
     if (!startDate || !endDate) return [];
     const now = new Date();
-    return transactions.filter(txn => {
+    const startOfCurrentWeek = startOfWeek(now, { weekStartsOn: 1 });
+    const endOfCurrentWeek = endOfWeek(now, { weekStartsOn: 1 });
+
+    return allTransactionsInDateRange.filter(txn => {
       const txnDate = parseISO(txn.date);
-      return isWithinInterval(txnDate, { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) });
+      return isWithinInterval(txnDate, { start: startOfCurrentWeek, end: endOfCurrentWeek });
     });
-  }, [transactions, startDate, endDate]);
+  }, [allTransactionsInDateRange, startDate, endDate]);
 
   const previousWeekTransactions = useMemo(() => {
     if (!startDate || !endDate) return [];
     const now = new Date();
     const prevWeekStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
     const prevWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
-    return transactions.filter(txn => {
+
+    return allTransactionsInDateRange.filter(txn => {
       const txnDate = parseISO(txn.date);
       return isWithinInterval(txnDate, { start: prevWeekStart, end: prevWeekEnd });
     });
-  }, [transactions, startDate, endDate]);
+  }, [allTransactionsInDateRange, startDate, endDate]);
 
   const currentWeekSpending = useMemo(() => {
-    return currentWeekTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
+    return currentWeekTransactions.filter(txn => txn.amount < 0).reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
   }, [currentWeekTransactions]);
 
   const previousWeekSpending = useMemo(() => {
-    return previousWeekTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
+    return previousWeekTransactions.filter(txn => txn.amount < 0).reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
   }, [previousWeekTransactions]);
 
   const totalBudgetedMonthly = useMemo(() =>
@@ -300,9 +376,20 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   );
 
   const totalSpentMonthly = useMemo(() =>
-    currentMonthTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0),
+    currentMonthTransactions.filter(txn => txn.amount < 0).reduce((sum, txn) => sum + Math.abs(txn.amount), 0),
     [currentMonthTransactions]
   );
+
+  // Categories with dynamically calculated 'spent' for the current period
+  const categoriesWithSpent = useMemo(() => {
+    return categories.map(cat => {
+      const spent = allTransactionsInDateRange
+        .filter(txn => txn.category === cat.name && txn.amount < 0) // Only count expenses
+        .reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
+      return { ...cat, spent };
+    });
+  }, [categories, allTransactionsInDateRange]);
+
 
   const daysInMonth = useMemo(() => getDaysInMonth(new Date()), []);
   const weeklyBudgetTarget = useMemo(() => totalBudgetedMonthly / (daysInMonth / 7), [totalBudgetedMonthly, daysInMonth]);
@@ -315,8 +402,8 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   );
 
   const topSpendingCategories = useMemo(() => {
-    const categorySpending: { [key: string]: number } = {};
-    currentMonthTransactions.forEach(txn => {
+    const categorySpending: { name: string; amount: number } = {};
+    currentMonthTransactions.filter(txn => txn.amount < 0).forEach(txn => { // Only consider expenses
       categorySpending[txn.category] = (categorySpending[txn.category] || 0) + Math.abs(txn.amount);
     });
 
@@ -327,8 +414,8 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   }, [currentMonthTransactions]);
 
   return {
-    transactions,
-    categories,
+    transactions: allTransactionsInDateRange, // Return combined transactions
+    categories: categoriesWithSpent, // Return categories with calculated spent
     accounts,
     goals,
     recurringTransactions,
