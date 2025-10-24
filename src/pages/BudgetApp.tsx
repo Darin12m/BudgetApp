@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search, Lightbulb, Zap, LucideIcon, Edit, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useFinanceData, Goal } from '@/hooks/use-finance-data';
+import { useFinanceData, Goal, Category, Transaction, Account, RecurringTransaction } from '@/hooks/use-finance-data'; // Import Category, Transaction, Account, RecurringTransaction
 import { formatDate } from '@/lib/utils';
 import RemainingBudgetCard from '@/components/RemainingBudgetCard';
 import QuickAddTransactionModal from '@/components/QuickAddTransactionModal';
@@ -31,47 +31,8 @@ import { useDateRange } from '@/context/DateRangeContext';
 import { DateRangePicker } from '@/components/common/DateRangePicker';
 import { toast } from 'sonner';
 
-// TypeScript Interfaces (moved to use-finance-data.tsx for centralized management)
-interface Transaction {
-  id: string;
-  date: string; // YYYY-MM-DD
-  merchant: string;
-  amount: number;
-  category: string;
-  status: 'pending' | 'cleared';
-  account: string;
-  ownerUid: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  budgeted: number;
-  spent: number;
-  color: string;
-  emoji: string;
-  ownerUid: string;
-}
-
-interface Account {
-  id: string;
-  name: string;
-  balance: number;
-  type: 'checking' | 'savings' | 'credit' | 'investment';
-  lastUpdated: string;
-  ownerUid: string;
-}
-
-interface RecurringTransaction {
-  id: string;
-  name: string;
-  amount: number;
-  category: string;
-  frequency: 'Monthly' | 'Weekly' | 'Yearly';
-  nextDate: string;
-  emoji: string;
-  ownerUid: string;
-}
+// TypeScript Interfaces (now imported from use-finance-data.tsx)
+// Removed local definitions for Transaction, Category, Account, RecurringTransaction
 
 interface HealthStatus {
   status: 'over' | 'warning' | 'good';
@@ -506,7 +467,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           <div key={txn.id} className="p-4 active:bg-muted/50 transition-colors">
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center space-x-3 flex-1 min-w-0">
-                <span className="text-2xl flex-shrink-0">
+                <span className="2xl flex-shrink-0">
                   {txn.amount > 0 ? '💰' : categories.find(c => c.name === txn.category)?.emoji || '💳'}
                 </span>
                 <div className="flex-1 min-w-0">
