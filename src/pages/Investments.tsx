@@ -22,6 +22,7 @@ import InvestmentHoldingsList from '@/components/investments/InvestmentHoldingsL
 import InvestmentForm from '@/components/investments/InvestmentForm';
 import BottomNavBar from '@/components/BottomNavBar';
 import Sidebar from '@/components/layout/Sidebar'; // Import the new Sidebar component
+import AddInvestmentModal from '@/components/AddInvestmentModal'; // <--- ADDED THIS IMPORT
 
 // --- Interfaces ---
 interface PortfolioSummary {
