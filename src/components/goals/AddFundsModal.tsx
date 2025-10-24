@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDeviceDetection } from '@/hooks/use-device-detection';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext'; // New import
 
 interface AddFundsModalProps {
   isOpen: boolean;
@@ -22,6 +22,7 @@ interface AddFundsModalProps {
 
 const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFunds, goalName, currentAmount, targetAmount }) => {
   const { isMobile } = useDeviceDetection();
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
   const [amountToAdd, setAmountToAdd] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 

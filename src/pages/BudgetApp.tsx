@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search, Lightbulb, Zap, LucideIcon, Edit, Trash2 } from 'lucide-react'; // Added Edit, Trash2
+import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search, Lightbulb, Zap, LucideIcon, Edit, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useFinanceData } from '@/hooks/use-finance-data';
-import { formatCurrency, formatDate } from '@/lib/utils'; // Added formatDate
+import { formatDate } from '@/lib/utils'; // Removed formatCurrency from here
 import RemainingBudgetCard from '@/components/RemainingBudgetCard';
 import QuickAddTransactionModal from '@/components/QuickAddTransactionModal';
 import { Button } from '@/components/ui/button';
@@ -11,9 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, addDays } from 'date-fns';
 import Sidebar from '@/components/layout/Sidebar';
-import AddEditCategoryModal from '@/components/budget/AddEditCategoryModal'; // New import
-import AddEditGoalModal from '@/components/goals/AddEditGoalModal'; // New import
-import AddFundsModal from '@/components/goals/AddFundsModal'; // New import
+import AddEditCategoryModal from '@/components/budget/AddEditCategoryModal';
+import AddEditGoalModal from '@/components/goals/AddEditGoalModal';
+import AddFundsModal from '@/components/goals/AddFundsModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +24,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // For delete confirmation
+} from "@/components/ui/alert-dialog";
+import { useCurrency } from '@/context/CurrencyContext'; // New import
 
 // TypeScript Interfaces (moved to use-finance-data.tsx for centralized management)
 interface Transaction {
@@ -116,6 +117,8 @@ interface BudgetAppProps {
 
 const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const location = useLocation();
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+
   const {
     transactions,
     categories,
@@ -230,7 +233,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       return `${formatCurrency(remainingBudget)} left for ${daysLeft} days. On track!`;
     }
     return "On track to stay under budget this month.";
-  }, [totalBudgeted, totalSpent, remainingBudget, daysLeft]);
+  }, [totalBudgeted, totalSpent, remainingBudget, daysLeft, formatCurrency]);
 
   // --- Smart Forecast Calculations ---
   const currentMonthDate = useMemo(() => new Date(), []);
@@ -279,7 +282,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       }
     }
     return { runOutMessage: message, runOutColor: color, runOutIcon: icon };
-  }, [totalBudgeted, dailyAvgSpending, daysPassedThisMonthForForecast, forecastedRemainingBalance, totalExpensesThisMonth, currentMonthDate]);
+  }, [totalBudgeted, dailyAvgSpending, daysPassedThisMonthForForecast, forecastedRemainingBalance, totalExpensesThisMonth, currentMonthDate, formatCurrency]);
 
   const spendingForecastChartData = useMemo(() => {
     const data = [];
