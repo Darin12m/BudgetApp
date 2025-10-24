@@ -10,6 +10,17 @@ import { Plus, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDeviceDetection } from '@/hooks/use-device-detection';
 import { useCurrency } from '@/context/CurrencyContext'; // New import
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // Import AlertDialog components
 
 interface AddFundsModalProps {
   isOpen: boolean;
@@ -107,7 +118,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-card text-foreground card-shadow backdrop-blur-lg" onPointerDown={(e) => e.stopPropagation()}>
+      <DialogContent onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <Plus className="w-5 h-5 mr-2" /> Add Funds to {goalName}

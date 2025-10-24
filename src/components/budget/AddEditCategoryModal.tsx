@@ -11,6 +11,17 @@ import { toast } from 'sonner';
 import { useDeviceDetection } from '@/hooks/use-device-detection';
 import ColorPicker from '@/components/common/ColorPicker';
 import EmojiPicker from '@/components/common/EmojiPicker';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // Import AlertDialog components
 
 // Predefined colors and emojis for selection
 const CATEGORY_COLORS = [
@@ -172,7 +183,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-card text-foreground card-shadow backdrop-blur-lg" onPointerDown={(e) => e.stopPropagation()}>
+      <DialogContent onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
             {categoryToEdit ? 'Edit Category' : 'Add New Category'}

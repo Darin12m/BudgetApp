@@ -63,9 +63,10 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)", // Now 12px
-        md: "calc(var(--radius) - 4px)", // 8px
-        sm: "calc(var(--radius) - 8px)", // 4px
+        lg: "var(--radius)", // Now 1rem (16px)
+        md: "calc(var(--radius) - 4px)", // 12px
+        sm: "calc(var(--radius) - 8px)", // 8px
+        xl: "1rem", // Explicitly define xl for 16px
       },
       keyframes: {
         "accordion-down": {
@@ -114,6 +115,10 @@ export default {
             "border-color": "hsl(var(--destructive))"
           },
         },
+        "modal-in": {
+          from: { opacity: "0", transform: "translate(-50%, -45%) scale(0.98)" },
+          to: { opacity: "1", transform: "translate(-50%, -50%) scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -124,9 +129,10 @@ export default {
         "slide-in-from-bottom": "slide-in-from-bottom 0.5s ease-out forwards",
         "float-up-down": "float-up-down 1.5s ease-in-out infinite",
         "pulse-red-glow": "pulse-red-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", // New animation
+        "modal-in": "modal-in 0.18s ease-out forwards",
       },
       boxShadow: {
-        glass: '0 8px 32px 0 rgba(0, 0, 0, 0.15)', // Soft, diffused shadow for glassmorphism
+        glass: '0 10px 30px rgba(0,0,0,0.35)', // Soft, diffused shadow for glassmorphism
       },
     },
   },

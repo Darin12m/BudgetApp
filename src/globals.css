@@ -33,7 +33,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 210 100% 50%; /* Primary accent for ring focus */
 
-    --radius: 0.75rem; /* 12px rounded corners */
+    --radius: 1rem; /* 16px rounded corners */
 
     /* Custom accent colors for gradients and highlights */
     --emerald: 123 50% 49%; /* #4CAF50 (green for up arrow) */
