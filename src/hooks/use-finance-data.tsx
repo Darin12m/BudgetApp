@@ -179,7 +179,7 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       }
     }, (err) => {
       console.error("Error fetching budget settings:", err.code, err.message); // Enhanced error logging
-      toast.error(`Failed to load budget settings. Error: ${err.code} - ${err.message}`); // More specific error message
+      toast.error(`Failed to load budget settings. Error: ${err.code} - ${err.message}`);
     });
     unsubscribes.push(unsubscribeBudgetSettings);
 
@@ -229,14 +229,13 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       toast.error("Authentication required to delete data.");
       return;
     }
-    if (confirm('Are you sure you want to delete this item?')) {
-      try {
-        await deleteDoc(doc(db, collectionName, id));
-        toast.success(`${collectionName.slice(0, -1)} deleted successfully!`);
-      } catch (e) {
-        console.error(`Error deleting ${collectionName.slice(0, -1)}:`, e);
-        toast.error(`Failed to delete ${collectionName.slice(0, -1)}.`);
-      }
+    // Removed the native confirm() call here, as the UI components (CategoryCard, GoalsView) now handle it.
+    try {
+      await deleteDoc(doc(db, collectionName, id));
+      toast.success(`${collectionName.slice(0, -1)} deleted successfully!`);
+    } catch (e) {
+      console.error(`Error deleting ${collectionName.slice(0, -1)}:`, e);
+      toast.error(`Failed to delete ${collectionName.slice(0, -1)}.`);
     }
   }, [userUid]);
 

@@ -41,7 +41,7 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
   const [error, setError] = useState<string | null>(null);
   const [livePrices, setLivePrices] = useState<Map<string, number>>(new Map());
   const [priceChange, setPriceChange] = useState<Map<string, 'up' | 'down' | 'none'>>(new Map());
-  const [alertedInvestments, setAlertedInvestments] = useState<Map<string, boolean>>(new Map()); // New state for alerts
+  const [alertedInvestments, setAlertedInvestments] = new Map(); // New state for alerts
 
   const { budgetSettings } = useFinanceData(userUid, startDate, endDate); // Get budget settings for alert threshold
 
@@ -367,14 +367,13 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
       toast.error("Authentication required to delete investment.");
       return;
     }
-    if (confirm('Are you sure you want to delete this investment?')) {
-      try {
-        await deleteDoc(doc(db, "investments", id));
-        toast.success("Investment deleted successfully!");
-      } catch (e) {
-        console.error("Error deleting investment:", e);
-        toast.error("Failed to delete investment.");
-      }
+    // Removed the native confirm() call here, as the UI component (InvestmentForm) now handles it.
+    try {
+      await deleteDoc(doc(db, "investments", id));
+      toast.success("Investment deleted successfully!");
+    } catch (e) {
+      console.error("Error deleting investment:", e);
+      toast.error("Failed to delete investment.");
     }
   }, [userUid]);
 
