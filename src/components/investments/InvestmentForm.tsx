@@ -11,6 +11,7 @@ import { Investment } from '@/hooks/use-investment-data';
 import { fetchSingleCryptoPrice, fetchStockPrice, fetchCompanyProfile, getCoingeckoId } from '@/lib/api'; // Import new API functions
 import LivePriceDisplay from './LivePriceDisplay'; // New component
 import { toast } from 'sonner'; // Import toast from sonner
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface InvestmentFormProps {
   investment: Investment | null;
@@ -20,6 +21,7 @@ interface InvestmentFormProps {
 }
 
 const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onDelete, onClose }) => {
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
   const [name, setName] = useState(investment?.name || '');
   const [type, setType] = useState<'Stock' | 'Crypto'>(investment?.type || 'Stock');
   const [quantity, setQuantity] = useState(investment?.quantity.toString() || '');

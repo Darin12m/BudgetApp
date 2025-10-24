@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Wallet, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface OverallPortfolioSummaryCardProps {
   currentValue: number;
@@ -14,6 +14,7 @@ const OverallPortfolioSummaryCard: React.FC<OverallPortfolioSummaryCardProps> = 
   currentValue,
   gainLossPercentage,
 }) => {
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
   const isPositive = gainLossPercentage >= 0;
   const gainLossColor = isPositive ? 'text-arrowUp' : 'text-arrowDown';
   const Icon: LucideIcon = isPositive ? TrendingUp : TrendingDown;

@@ -6,13 +6,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(value);
-};
+// The formatCurrency function is now provided by the CurrencyContext
+// export const formatCurrency = (value: number): string => {
+//   return new Intl.NumberFormat('en-US', {
+//     style: 'currency',
+//     currency: 'USD',
+//     minimumFractionDigits: 2,
+//   }).format(value);
+// };
 
 // Re-exporting Investment interface from use-investment-data for type consistency
 import { Investment } from '@/hooks/use-investment-data'; // Updated import path

@@ -3,7 +3,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line } from 'recharts'; // Added LineChart, Line
 import { PiggyBank, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface RemainingBudgetCardProps {
   totalBudgeted: number;
@@ -26,6 +26,8 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   previousMonthLeftover,
   smartSummary,
 }) => {
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
   const remainingPercentage = 100 - spentPercentage;
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface AllocationData {
   name: string;
@@ -18,6 +18,8 @@ interface InvestmentAllocationChartProps {
 }
 
 const InvestmentAllocationChart: React.FC<InvestmentAllocationChartProps> = ({ title, data, emptyMessage }) => {
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+
   return (
     <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

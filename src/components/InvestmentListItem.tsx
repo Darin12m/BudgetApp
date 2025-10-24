@@ -3,9 +3,9 @@
 import React from 'react';
 import { Investment } from '@/hooks/use-investment-data';
 import { TrendingUp, TrendingDown, DollarSign, Bitcoin, Edit, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
-import { formatCurrency } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils'; // Import cn for conditional class merging
+import { Button } from '@/components/ui/button';
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface InvestmentListItemProps {
   investment: Investment;
@@ -15,6 +15,8 @@ interface InvestmentListItemProps {
 }
 
 const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onEdit, priceChangeStatus, isAlerted }) => {
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+
   const invested = investment.quantity * investment.buyPrice;
   const currentValue = investment.quantity * investment.currentPrice;
   const gainLoss = currentValue - invested;

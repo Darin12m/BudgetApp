@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SortAsc, TrendingUp, TrendingDown, Wallet, DollarSign, Bitcoin } from 'lucide-react';
 import InvestmentListItem from '@/components/InvestmentListItem';
 import { Investment } from '@/hooks/use-investment-data';
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface InvestmentHoldingsListProps {
   title: string;

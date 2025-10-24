@@ -4,9 +4,9 @@ import React, { useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Zap, X } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
 import { Investment } from '@/hooks/use-investment-data';
 import { toast } from 'sonner';
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface MicroInvestingSuggestionCardProps {
   weeklyRemainingBudget: number;
@@ -27,6 +27,8 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
   onInvest,
   onDismiss,
 }) => {
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+
   const shouldSuggest = useMemo(() => {
     if (!microInvestingEnabled || weeklyBudgetTarget <= 0) return false;
     // Suggest if remaining budget is more than 25% of the weekly target
@@ -65,7 +67,7 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
       toast.success(`Invested ${formatCurrency(suggestedInvestmentAmount)} into ${suggestedAsset.name}!`);
       onDismiss(); // Dismiss after investing
     }
-  }, [suggestedInvestmentAmount, suggestedAsset, onInvest, onDismiss]);
+  }, [suggestedInvestmentAmount, suggestedAsset, onInvest, onDismiss, formatCurrency]);
 
   if (!shouldSuggest || suggestedInvestmentAmount <= 0) {
     return null;

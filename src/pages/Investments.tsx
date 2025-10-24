@@ -11,7 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns'; // Import format for date display
 
 import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
-import { calculateGainLoss, formatCurrency } from '@/lib/utils';
+import { calculateGainLoss } from '@/lib/utils'; // Removed formatCurrency from here
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 // New modular components
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -50,6 +51,8 @@ interface InvestmentsPageProps {
 }
 
 const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+
   const {
     investments,
     portfolioSnapshots,

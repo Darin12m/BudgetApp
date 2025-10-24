@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useFinanceData } from '@/hooks/use-finance-data';
 import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
-import { formatCurrency, calculateGainLoss, getStartOfCurrentWeek, getEndOfCurrentWeek } from '@/lib/utils';
+import { calculateGainLoss, getStartOfCurrentWeek, getEndOfCurrentWeek } from '@/lib/utils';
 import RemainingBudgetCard from '@/components/RemainingBudgetCard';
 import QuickAddTransactionModal from '@/components/QuickAddTransactionModal';
 import AddInvestmentModal from '@/components/AddInvestmentModal';
@@ -18,6 +18,7 @@ import MicroInvestingSuggestionCard from '@/components/MicroInvestingSuggestionC
 import SmartFinancialCoachCard from '@/components/SmartFinancialCoachCard';
 import Sidebar from '@/components/layout/Sidebar'; // Import Sidebar
 import { format } from 'date-fns';
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface IndexPageProps {
   userUid: string | null;
@@ -26,6 +27,8 @@ interface IndexPageProps {
 const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))', '#f59e0b', '#ef4444', '#06b6d4'];
 
 const Index: React.FC<IndexPageProps> = ({ userUid }) => {
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+
   const {
     transactions,
     categories,

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
-import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, ChevronRight, Palette, Zap, BellRing, Menu, Calendar } from 'lucide-react'; // Added Menu, Calendar icons
+import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, ChevronRight, Palette, Zap, BellRing, Menu, Calendar, Landmark } from 'lucide-react'; // Added Menu, Calendar icons, Landmark for currency
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,8 @@ import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/layout/Sidebar'; // Import Sidebar
 import { format } from 'date-fns'; // Import format for date display
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
+import { useCurrency, CURRENCIES } from '@/context/CurrencyContext'; // Import useCurrency and CURRENCIES
 
 interface SettingsPageProps {
   userUid: string | null;
@@ -30,6 +32,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false); // State for sidebar
 
   const { budgetSettings, updateDocument, loading: financeLoading } = useFinanceData(userUid);
+  const { selectedCurrency, setCurrency } = useCurrency(); // Use the currency context
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -192,6 +195,41 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                     checked={isDarkMode}
                     onCheckedChange={toggleTheme}
                   />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Currency Settings */}
+            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center">
+                  <Landmark className="w-5 h-5 mr-2 text-muted-foreground" /> Currency
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="main-currency" className="text-base">Main Currency</Label>
+                  <Input
+                    id="main-currency"
+                    value="USD ($)"
+                    readOnly
+                    className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 cursor-not-allowed"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="secondary-currency" className="text-base">Secondary Currency</Label>
+                  <Select value={selectedCurrency.code} onValueChange={setCurrency}>
+                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
+                      <SelectValue placeholder="Select a currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map((currency) => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.code} ({currency.symbol})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface LivePriceDisplayProps {
   price: number | null;
@@ -10,6 +10,8 @@ interface LivePriceDisplayProps {
 }
 
 const LivePriceDisplay: React.FC<LivePriceDisplayProps> = ({ price, loading, error }) => {
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+
   if (loading) {
     return (
       <div className="flex items-center space-x-2 text-sm text-muted-foreground">

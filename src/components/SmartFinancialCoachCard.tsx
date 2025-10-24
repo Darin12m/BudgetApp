@@ -3,8 +3,8 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lightbulb, TrendingUp, TrendingDown, Zap } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface SmartFinancialCoachCardProps {
   currentWeekSpending: number;
@@ -23,6 +23,8 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
   totalSpentMonthly,
   currentMonthTransactions,
 }) => {
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+
   const spendingChangePercentage = useMemo(() => {
     if (previousWeekSpending === 0) {
       return currentWeekSpending > 0 ? 100 : 0; // If previous was 0, any spending is 100% increase
@@ -45,7 +47,7 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
     }
     const categories = topSpendingCategories.map(cat => `${cat.name} (${formatCurrency(cat.amount)})`);
     return `${categories.join(' and ')} ${categories.length > 1 ? 'are' : 'is'} your top ${categories.length > 1 ? 'categories' : 'category'}.`;
-  }, [topSpendingCategories]);
+  }, [topSpendingCategories, formatCurrency]);
 
   // --- Smart Forecast Calculations (re-used from BudgetApp) ---
   const currentMonthDate = useMemo(() => new Date(), []);
@@ -77,7 +79,7 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
         return `At your current pace, you’ll run out of budget on ${format(projectedRunOutDate, 'MMMM dd')}.`;
       }
     }
-  }, [totalBudgetedMonthly, dailyAvgSpending, daysPassedThisMonth, forecastedRemainingBalance, totalExpensesThisMonth, currentMonthDate]);
+  }, [totalBudgetedMonthly, dailyAvgSpending, daysPassedThisMonth, forecastedRemainingBalance, totalExpensesThisMonth, currentMonthDate, formatCurrency]);
   // --- End Smart Forecast Calculations ---
 
   return (

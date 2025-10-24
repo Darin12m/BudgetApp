@@ -10,6 +10,7 @@ import { Plus, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useDeviceDetection } from '@/hooks/use-device-detection'; // Import the new hook
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface QuickAddTransactionModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ interface QuickAddTransactionModalProps {
 
 const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isOpen, onClose, onSave }) => {
   const { isMobile } = useDeviceDetection();
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
   const [amount, setAmount] = useState<string>('');
   const [note, setNote] = useState<string>('');
   const [date, setDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
@@ -69,7 +71,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
             step="0.01"
             value={amount}
             onChange={(e) => { setAmount(e.target.value); setErrors(prev => ({ ...prev, amount: '' })); }}
-            placeholder="e.g., -25.50 for expense, 100 for income"
+            placeholder={`e.g., ${formatCurrency(-25.50)} for expense, ${formatCurrency(100)} for income`}
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" // Added min-h-[44px]
           />
           {errors.amount && <p className="text-destructive text-xs mt-1">{errors.amount}</p>}
