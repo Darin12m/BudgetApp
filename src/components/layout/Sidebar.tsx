@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
       {/* Sidebar */}
       <aside className={`fixed left-0 top-0 h-full bg-card backdrop-blur-lg border-r border-border transition-transform duration-300 ease-in-out z-50 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } w-64 sm:w-72 card-shadow sm:translate-x-0 sm:static sm:h-auto sm:border-r-0 sm:shadow-none`}>
+      } w-64 sm:w-72 card-shadow`}> {/* Removed sm:translate-x-0 sm:static sm:h-auto sm:border-r-0 sm:shadow-none */}
         <div className="flex flex-col h-full">
           <div className="p-5 sm:p-6 border-b border-border">
             <div className="flex items-center justify-between mb-6">
