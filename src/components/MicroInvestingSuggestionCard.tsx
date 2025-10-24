@@ -72,7 +72,7 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
   }
 
   return (
-    <Card className="card-shadow border-none bg-gradient-to-br from-primary/10 to-lilac/10 border border-border/50 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <Card className="card-shadow border-none bg-gradient-to-br from-primary/10 to-blue/10 border border-border/50 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <CardContent className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Zap className="w-6 h-6 text-primary flex-shrink-0" />

@@ -321,7 +321,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const LoadingSpinner: React.FC = memo(() => (
     <div className="flex items-center justify-center p-8">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      <span className="ml-2 text-muted-foreground">Loading...</span>
+      <span className="ml-2 text-muted-foreground">Loading data...</span>
     </div>
   ));
 
@@ -897,7 +897,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
 
   return (
     <div className="min-h-screen bg-background">
-      <aside className={`fixed left-0 top-0 h-full bg-card/80 backdrop-blur-sm border-r border-border transition-transform duration-300 z-50 ${
+      <aside className={`fixed left-0 top-0 h-full bg-card/90 backdrop-blur-md border-r border-border transition-transform duration-300 z-50 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } w-64 sm:w-72 card-shadow`}>
         <div className="flex flex-col h-full">
@@ -975,7 +975,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       </aside>
 
       <div className="flex flex-col min-h-screen">
-        <header className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-40 safe-top card-shadow">
+        <header className="bg-card/90 backdrop-blur-md border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
               <button

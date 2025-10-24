@@ -166,7 +166,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   const isLoading = financeLoading || investmentsLoading;
   const hasError = financeError || investmentsError;
 
-  const portfolioGainLossColor = overallPortfolioSummary.totalGainLossPercentage >= 0 ? 'text-emerald' : 'text-destructive';
+  const portfolioGainLossColor = overallPortfolioSummary.totalGainLossPercentage >= 0 ? 'text-arrowUp' : 'text-arrowDown';
   const PortfolioGainLossIcon: LucideIcon = overallPortfolioSummary.totalGainLossPercentage >= 0 ? TrendingUp : TrendingDown;
 
   const currentWeekStart = format(getStartOfCurrentWeek(), 'MMM dd');
@@ -270,7 +270,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                   {topPerformers.map(inv => {
                     const { gainLossPercentage } = calculateGainLoss(inv);
                     const isPositive = gainLossPercentage >= 0;
-                    const gainLossColor = isPositive ? 'text-emerald' : 'text-destructive';
+                    const gainLossColor = isPositive ? 'text-arrowUp' : 'text-arrowDown';
                     const Icon = isPositive ? TrendingUp : TrendingDown;
                     const priceChangeStatus = priceChange.get(inv.id) || 'none';
                     const priceChangeClasses = {
@@ -293,11 +293,13 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                           </div>
                         </div>
                         <div className="text-right ml-2 flex-shrink-0">
-                          <p className={`font-semibold text-sm ${gainLossColor} flex items-center justify-end ${priceChangeClasses[priceChangeStatus]}`}>
-                            <Icon className="w-3 h-3 mr-1" />
-                            {gainLossPercentage.toFixed(2)}%
-                          </p>
-                          <p className={`text-xs ${gainLossColor} ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(inv.quantity * inv.currentPrice)}</p>
+                          <div className={`flex items-center justify-end rounded-full px-2 py-1 ${isPositive ? 'bg-arrowUp/10' : 'bg-arrowDown/10'} ${priceChangeClasses[priceChangeStatus]} animate-float-up-down`}>
+                            <Icon className={`w-3 h-3 mr-1 ${gainLossColor}`} />
+                            <p className={`font-semibold text-sm ${gainLossColor}`}>
+                              {gainLossPercentage.toFixed(2)}%
+                            </p>
+                          </div>
+                          <p className={`text-xs ${gainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(inv.quantity * inv.currentPrice)}</p>
                         </div>
                       </div>
                     );

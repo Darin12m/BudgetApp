@@ -15,7 +15,7 @@ const OverallPortfolioSummaryCard: React.FC<OverallPortfolioSummaryCardProps> = 
   gainLossPercentage,
 }) => {
   const isPositive = gainLossPercentage >= 0;
-  const gainLossColor = isPositive ? 'text-emerald' : 'text-destructive';
+  const gainLossColor = isPositive ? 'text-arrowUp' : 'text-arrowDown';
   const Icon: LucideIcon = isPositive ? TrendingUp : TrendingDown;
 
   return (

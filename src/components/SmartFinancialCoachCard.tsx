@@ -89,15 +89,15 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
       </CardHeader>
       <CardContent className="space-y-3 text-sm text-foreground">
         <p className="flex items-center">
-          {spendingChangePercentage > 0 ? <TrendingUp className="w-4 h-4 mr-2 text-destructive" /> : <TrendingDown className="w-4 h-4 mr-2 text-emerald" />}
+          {spendingChangePercentage > 0 ? <TrendingUp className="w-4 h-4 mr-2 text-arrowDown" /> : <TrendingDown className="w-4 h-4 mr-2 text-arrowUp" />}
           {spendingTrendText}
         </p>
         <p className="flex items-center">
-          <Zap className="w-4 h-4 mr-2 text-lilac" />
+          <Zap className="w-4 h-4 mr-2 text-blue" /> {/* Changed from lilac to blue for consistency */}
           {topCategoriesText}
         </p>
         <p className="flex items-center">
-          <Lightbulb className="w-4 h-4 mr-2 text-blue" />
+          <Lightbulb className="w-4 h-4 mr-2 text-primary" /> {/* Changed from blue to primary for consistency */}
           {projectedBudgetStatus}
         </p>
         {/* Add a short recommendation line based on insights */}

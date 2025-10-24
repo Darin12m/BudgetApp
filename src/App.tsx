@@ -65,9 +65,9 @@ const App = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-4 text-lg text-gray-600 dark:text-gray-300">Loading application...</span>
+      <div className="min-h-screen flex items-center justify-center bg-background"> {/* Changed to bg-background */}
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <span className="ml-4 text-lg text-muted-foreground">Loading application...</span> {/* Changed to text-muted-foreground */}
       </div>
     );
   }

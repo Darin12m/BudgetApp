@@ -19,7 +19,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
   const gainLossPercentage = invested === 0 ? 0 : (gainLoss / invested) * 100;
 
   const isPositive = gainLossPercentage >= 0;
-  const gainLossColor = isPositive ? 'text-emerald' : 'text-destructive'; // Changed to use emerald/destructive
+  const gainLossColor = isPositive ? 'text-arrowUp' : 'text-arrowDown'; // Changed to use new arrow colors
   const Icon = investment.type === 'Stock' ? DollarSign : Bitcoin;
 
   // Price change animation classes
@@ -41,10 +41,10 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
           <p className="font-semibold text-foreground text-sm truncate">{investment.name}</p>
           <p className="text-xs text-muted-foreground truncate">
             {investment.type} • {formatCurrency(currentValue)}
-            <span className="ml-2 text-emerald text-xs font-medium flex items-center">
+            <span className="ml-2 text-arrowUp text-xs font-medium flex items-center">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald/40 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-arrowUp/40 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-arrowUp"></span>
               </span>
               <span className="ml-1">Live</span>
             </span>
@@ -52,11 +52,13 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
         </div>
       </div>
       <div className="text-right ml-2 flex-shrink-0">
-        <p className={`font-semibold text-sm ${gainLossColor} flex items-center justify-end ${priceChangeClasses[priceChangeStatus]}`}>
-          {isPositive ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-          {gainLossPercentage.toFixed(2)}%
-        </p>
-        <p className={`text-xs ${gainLossColor} ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(gainLoss)}</p>
+        <div className={`flex items-center justify-end rounded-full px-2 py-1 ${isPositive ? 'bg-arrowUp/10' : 'bg-arrowDown/10'} ${priceChangeClasses[priceChangeStatus]} animate-float-up-down`}>
+          {isPositive ? <TrendingUp className="w-3 h-3 mr-1 text-arrowUp" /> : <TrendingDown className="w-3 h-3 mr-1 text-arrowDown" />}
+          <p className={`font-semibold text-sm ${gainLossColor}`}>
+            {gainLossPercentage.toFixed(2)}%
+          </p>
+        </div>
+        <p className={`text-xs ${gainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(gainLoss)}</p>
       </div>
       <Button variant="ghost" size="icon" onClick={() => onEdit(investment)} className="ml-2 flex-shrink-0 text-muted-foreground hover:bg-muted/50">
         <Edit className="h-4 w-4" />

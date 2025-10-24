@@ -16,7 +16,7 @@ const BottomNavBar: React.FC = () => {
   ];
 
   return (
-    <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-sm border-t border-border z-40 safe-bottom">
+    <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t border-border z-40 safe-bottom transition-colors duration-300">
       <div className="grid grid-cols-5 gap-1 px-2 py-2">
         {navItems.map(item => {
           const Icon = item.icon;

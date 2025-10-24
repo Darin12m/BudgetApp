@@ -35,7 +35,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   ];
 
   const isOverBudget = remainingBudget < 0;
-  const summaryColor = isOverBudget ? 'text-destructive' : 'text-emerald';
+  const summaryColor = isOverBudget ? 'text-arrowDown' : 'text-arrowUp';
   const SummaryIcon: LucideIcon = isOverBudget ? TrendingDown : TrendingUp;
 
   // Placeholder data for sparkline chart

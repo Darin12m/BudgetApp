@@ -4,75 +4,85 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%; /* #F9FAFB */
-    --foreground: 220 20% 11%; /* #111827 */
+    /* Light Theme */
+    --background: 0 0% 100%; /* Placeholder, actual background is gradient */
+    --foreground: 210 2% 20%; /* #333333 */
 
     --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 220 20% 11%;
+    --card-foreground: 210 2% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 11%;
+    --popover-foreground: 210 2% 20%;
 
-    --primary: 179 69% 37%; /* #1F9E9D (teal) */
+    --primary: 195 100% 50%; /* #00C2FF (electric cyan) */
     --primary-foreground: 0 0% 100%; /* White text on primary */
 
-    --secondary: 217 90% 60%; /* #3B82F6 (mid-blue) */
-    --secondary-foreground: 0 0% 100%; /* White text on secondary */
+    --secondary: 210 40% 96.1%; /* Light gray for muted backgrounds */
+    --secondary-foreground: 210 2% 33%; /* #555555 */
+
+    --destructive: 359 77% 56%; /* #E53935 (red) */
+    --destructive-foreground: 0 0% 100%;
 
     --muted: 210 40% 96.1%; /* Light gray for muted backgrounds */
-    --muted-foreground: 217 9% 46%; /* #6B7280 (muted text) */
+    --muted-foreground: 210 2% 33%; /* #555555 */
 
     --accent: 210 40% 96.1%; /* Light gray for accents */
-    --accent-foreground: 220 20% 11%;
-
-    --destructive: 0 84% 60%; /* #EF4444 (red) */
-    --destructive-foreground: 0 0% 100%;
+    --accent-foreground: 210 2% 20%;
 
     --border: 214.3 31.8% 91.4%; /* Light gray border */
     --input: 214.3 31.8% 91.4%;
-    --ring: 179 69% 37%; /* Primary accent for ring focus */
+    --ring: 195 100% 50%; /* Primary accent for ring focus */
 
-    --radius: 1rem; /* 16px rounded corners */
+    --radius: 0.75rem; /* 12px rounded corners */
 
     /* Custom accent colors for gradients and highlights */
-    --emerald: 150 80% 40%; /* #10B981 (green) */
-    --blue: 217 90% 60%; /* #3B82F6 (mid-blue) */
-    --lilac: 270 60% 70%; /* A soft purple */
+    --emerald: 123 50% 49%; /* #4CAF50 (green for up arrow) */
+    --blue: 195 100% 50%; /* #00C2FF (electric cyan, used for accent) */
+    --lilac: 270 60% 70%; /* Keeping for existing usage, but new accent is --blue */
+
+    /* Arrow specific colors */
+    --arrow-up-color: 123 50% 49%; /* #4CAF50 */
+    --arrow-down-color: 359 77% 56%; /* #E53935 */
   }
 
   .dark {
-    --background: 240 18% 15%; /* #1E1E2E */
-    --foreground: 210 40% 98%; /* Off-white */
+    /* Dark Theme */
+    --background: 240 18% 10%; /* #121212 */
+    --foreground: 0 0% 100%; /* #FFFFFF */
 
-    --card: 240 15% 20%; /* #2C2C3A */
-    --card-foreground: 210 40% 98%;
+    --card: 240 15% 12%; /* #1E1E1E */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 240 15% 20%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 15% 12%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 179 69% 50%; /* Brighter teal for dark mode primary */
-    --primary-foreground: 220 20% 11%; /* Dark text on primary */
+    --primary: 195 100% 50%; /* #00C2FF (electric cyan) */
+    --primary-foreground: 240 18% 10%; /* Dark text on primary */
 
-    --secondary: 217 90% 70%; /* Brighter blue for dark mode secondary */
-    --secondary-foreground: 220 20% 11%;
+    --secondary: 217.2 32.6% 17.5%; /* Muted dark gray */
+    --secondary-foreground: 0 0% 69%; /* #B0B0B0 */
+
+    --destructive: 359 77% 56%; /* #E53935 (red) */
+    --destructive-foreground: 0 0% 100%;
 
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted-foreground: 0 0% 69%; /* #B0B0B0 */
 
     --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --accent-foreground: 0 0% 100%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 179 69% 50%; /* Dark mode primary accent for ring focus */
+    --ring: 195 100% 50%; /* Dark mode primary accent for ring focus */
 
     /* Dark mode custom accents */
-    --emerald: 150 80% 50%;
-    --blue: 217 90% 70%;
-    --lilac: 270 60% 80%;
+    --emerald: 123 50% 49%; /* #4CAF50 */
+    --blue: 195 100% 50%; /* #00C2FF */
+    --lilac: 270 60% 80%; /* Keeping for existing usage */
+
+    /* Arrow specific colors */
+    --arrow-up-color: 123 50% 49%; /* #4CAF50 */
+    --arrow-down-color: 359 77% 56%; /* #E53935 */
   }
 }
 
@@ -84,27 +94,34 @@
   body {
     @apply bg-background text-foreground font-sans; /* Use a sans-serif font */
     overscroll-behavior-y: contain; /* Prevent scroll bounce on mobile */
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out; /* Smooth theme transition */
+  }
+
+  /* Light theme gradient background */
+  body:not(.dark) {
+    background-image: linear-gradient(to bottom right, #F8F9FB, #ECEFF2);
+    background-attachment: fixed;
   }
 }
 
 /* Custom shadow for cards */
 .card-shadow {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.03);
   transition: all 0.2s ease-in-out;
 }
 
 .card-shadow:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.09), 0 2px 6px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
 }
 
 .dark .card-shadow {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dark .card-shadow:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.3);
-  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 /* Safe area for bottom navigation and drawers */

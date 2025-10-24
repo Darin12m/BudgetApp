@@ -79,7 +79,7 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md card-shadow border border-border/50">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-lilac bg-clip-text text-transparent">
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-blue bg-clip-text text-transparent">
             FinanceFlow
           </CardTitle>
           <CardDescription className="mt-2 text-muted-foreground">

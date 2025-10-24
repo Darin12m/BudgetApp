@@ -31,10 +31,10 @@ const LivePriceDisplay: React.FC<LivePriceDisplayProps> = ({ price, loading, err
   }
 
   return (
-    <div className="flex items-center space-x-2 text-sm font-medium text-emerald">
+    <div className="flex items-center space-x-2 text-sm font-medium text-arrowUp">
       <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald/40 opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald"></span>
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-arrowUp/40 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-arrowUp"></span>
       </span>
       <span>{formatCurrency(price)}</span>
     </div>

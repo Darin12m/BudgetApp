@@ -52,14 +52,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        emerald: "hsl(var(--emerald))",
-        blue: "hsl(var(--blue))",
-        lilac: "hsl(var(--lilac))",
+        emerald: "hsl(var(--emerald))", // Green for up arrow
+        blue: "hsl(var(--blue))",       // Electric cyan for accent
+        lilac: "hsl(var(--lilac))",     // Keeping for existing usage
+        arrowUp: "hsl(var(--arrow-up-color))",
+        arrowDown: "hsl(var(--arrow-down-color))",
       },
       borderRadius: {
-        lg: "var(--radius)", // Now 16px
-        md: "calc(var(--radius) - 4px)", // 12px
-        sm: "calc(var(--radius) - 8px)", // 8px
+        lg: "var(--radius)", // Now 12px
+        md: "calc(var(--radius) - 4px)", // 8px
+        sm: "calc(var(--radius) - 8px)", // 4px
       },
       keyframes: {
         "accordion-down": {
@@ -80,11 +82,11 @@ export default {
         },
         "pulse-green": {
           "0%, 100%": { backgroundColor: "transparent" },
-          "50%": { backgroundColor: "rgba(16, 185, 129, 0.2)" }, // green-500 with opacity
+          "50%": { backgroundColor: "hsl(var(--emerald) / 0.2)" }, // green-500 with opacity
         },
         "pulse-red": {
           "0%, 100%": { backgroundColor: "transparent" },
-          "50%": { backgroundColor: "rgba(239, 68, 68, 0.2)" }, // red-500 with opacity
+          "50%": { backgroundColor: "hsl(var(--destructive) / 0.2)" }, // red-500 with opacity
         },
         "fade-in": {
           "0%": { opacity: "0" },
@@ -94,6 +96,10 @@ export default {
           "0%": { transform: "translateY(20px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
+        "float-up-down": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-2px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -102,6 +108,7 @@ export default {
         "pulse-red": "pulse-red 1s ease-in-out",
         "fade-in": "fade-in 0.5s ease-out forwards",
         "slide-in-from-bottom": "slide-in-from-bottom 0.5s ease-out forwards",
+        "float-up-down": "float-up-down 1.5s ease-in-out infinite",
       },
     },
   },
