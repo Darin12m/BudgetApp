@@ -16,6 +16,16 @@ import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // Import AlertDialog components
 
 interface Transaction {
   id: string;
@@ -86,6 +96,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   const [frequency, setFrequency] = useState<'Monthly' | 'Weekly' | 'Yearly'>('Monthly');
   const [nextDate, setNextDate] = useState<Date | undefined>(undefined);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false); // State for delete confirmation dialog
 
   const isEditing = !!transactionToEdit;
   const isExistingRecurring = isEditing && recurringTransactions.some(rt => rt.name === transactionToEdit?.merchant && rt.amount === transactionToEdit?.amount && rt.category === transactionToEdit?.category);
@@ -180,6 +191,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   const handleDeleteClick = () => {
     if (transactionToEdit?.id) {
       onDelete(transactionToEdit.id);
+      setIsDeleteConfirmOpen(false); // Close dialog after deletion
     }
   };
 
@@ -388,9 +400,25 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
         {isEditing && (
-          <Button type="button" variant="destructive" onClick={handleDeleteClick} className="w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-            <Trash2 className="h-4 w-4 mr-2" /> Delete
-          </Button>
+          <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+            <AlertDialogTrigger asChild>
+              <Button type="button" variant="destructive" className="w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+                <Trash2 className="h-4 w-4 mr-2" /> Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the transaction "{transactionToEdit?.merchant}".
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteClick} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
         <div className="flex gap-2 w-full sm:w-auto">
           <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
@@ -423,7 +451,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-card text-foreground card-shadow backdrop-blur-lg" onPointerDown={(e) => e.stopPropagation()}>
+      <DialogContent className="sm:max-w-[425px]" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
             {isEditing ? 'Edit Transaction' : 'Add New Transaction'}

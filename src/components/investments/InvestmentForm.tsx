@@ -12,6 +12,17 @@ import { fetchSingleCryptoPrice, fetchStockPrice, fetchCompanyProfile, getCoinge
 import LivePriceDisplay from './LivePriceDisplay'; // New component
 import { toast } from 'sonner'; // Import toast from sonner
 import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // Import AlertDialog components
 
 interface InvestmentFormProps {
   investment: Investment | null;
@@ -35,6 +46,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
   const [livePriceError, setLivePriceError] = useState<string | null>(null);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false); // State for delete confirmation dialog
 
   // Debounce timer ref
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -187,6 +199,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
   const handleDeleteClick = () => {
     if (investment?.id) {
       onDelete(investment.id);
+      setIsDeleteConfirmOpen(false); // Close dialog after deletion
     }
   };
 
@@ -310,9 +323,25 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       </div>
       <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mt-4">
         {investment && (
-          <Button type="button" variant="destructive" onClick={handleDeleteClick} className="w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-            <Trash2 className="h-4 w-4 mr-2" /> Delete
-          </Button>
+          <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+            <AlertDialogTrigger asChild>
+              <Button type="button" variant="destructive" className="w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+                <Trash2 className="h-4 w-4 mr-2" /> Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your investment in "{investment.name}".
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteClick} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
         <div className="flex gap-2 w-full sm:w-auto">
           <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
