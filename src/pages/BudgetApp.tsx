@@ -1158,6 +1158,18 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       toast.error("User not authenticated.");
       return;
     }
+
+    // Check for duplicate category name only when adding a new category
+    if (!categoryToEdit) {
+      const isDuplicate = categories.some(
+        (cat) => cat.name.toLowerCase() === categoryData.name.toLowerCase()
+      );
+      if (isDuplicate) {
+        toast.error("A category with this name already exists.");
+        return;
+      }
+    }
+
     if (categoryToEdit) {
       await updateDocument('categories', categoryToEdit.id, categoryData);
     } else {
@@ -1165,7 +1177,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     }
     setIsAddEditCategoryModalOpen(false);
     setCategoryToEdit(null);
-  }, [userUid, categoryToEdit, addDocument, updateDocument]);
+  }, [userUid, categoryToEdit, addDocument, updateDocument, categories]); // Added categories to dependencies
 
   const handleDeleteCategory = useCallback(async (categoryId: string) => {
     if (!userUid) {
