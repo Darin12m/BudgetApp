@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Plus, TrendingUp, TrendingDown, DollarSign, Wallet, List, LucideIcon, Menu, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'; // Added Menu, Calendar, ChevronLeft, ChevronRight
+import { Plus, TrendingUp, TrendingDown, DollarSign, Wallet, List, LucideIcon, Menu } from 'lucide-react'; // Removed Calendar, ChevronLeft, ChevronRight
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -16,11 +16,11 @@ import AddInvestmentModal from '@/components/AddInvestmentModal';
 import BottomNavBar from '@/components/BottomNavBar';
 import MicroInvestingSuggestionCard from '@/components/MicroInvestingSuggestionCard';
 import SmartFinancialCoachCard from '@/components/SmartFinancialCoachCard';
-import Sidebar from '@/components/layout/Sidebar'; // Import Sidebar
+import Sidebar from '@/components/layout/Sidebar';
 import { format } from 'date-fns';
-import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext'; // Import useDateRange
-import { DateRangePicker } from '@/components/common/DateRangePicker'; // Import DateRangePicker
+import { DateRangePicker } from '@/components/common/DateRangePicker';
 
 interface IndexPageProps {
   userUid: string | null;
@@ -29,8 +29,8 @@ interface IndexPageProps {
 const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))', '#f59e0b', '#ef4444', '#06b6d4'];
 
 const Index: React.FC<IndexPageProps> = ({ userUid }) => {
-  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
-  const { selectedRange, goToPreviousPeriod, goToNextPeriod } = useDateRange(); // Use date range context
+  const { formatCurrency } = useCurrency();
+  const { selectedRange } = useDateRange(); // Removed goToPreviousPeriod, goToNextPeriod
 
   const {
     transactions,
@@ -47,7 +47,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
     weeklyBudgetTarget,
     topSpendingCategories,
     currentMonthTransactions,
-  } = useFinanceData(userUid, selectedRange.from, selectedRange.to); // Pass selected range to useFinanceData
+  } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
 
   const {
     investments,
@@ -57,13 +57,13 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
     priceChange,
     loading: investmentsLoading,
     error: investmentsError,
-  } = useInvestmentData(userUid, selectedRange.from, selectedRange.to); // Pass selected range to useInvestmentData
+  } = useInvestmentData(userUid, selectedRange.from, selectedRange.to);
 
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false);
   const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
   const [showMicroInvestingSuggestion, setShowMicroInvestingSuggestion] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false); // State for sidebar
-  const navigate = useNavigate(); // For navigation within onViewChange
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   // --- Derived Budget Values ---
   const totalBudgeted = totalBudgetedMonthly;
@@ -213,13 +213,9 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              <Button variant="ghost" size="icon" onClick={goToPreviousPeriod} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
-                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
-              </Button>
-              <DateRangePicker /> {/* Use the new DateRangePicker component */}
-              <Button variant="ghost" size="icon" onClick={goToNextPeriod} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </Button>
+              {/* Removed previous period button */}
+              <DateRangePicker />
+              {/* Removed next period button */}
               <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 JD
               </div>
@@ -296,7 +292,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
               </Card>
 
               {/* Quick Action Buttons */}
-              <div className="grid grid-cols-2 gap-4"> {/* Changed grid-cols-3 to grid-cols-2 */}
+              <div className="grid grid-cols-2 gap-4">
                 <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
                   <Plus className="w-5 h-5 mb-1" />
                   <span className="text-xs font-medium">Add Expense</span>
@@ -305,7 +301,6 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                   <DollarSign className="w-5 h-5 mb-1" />
                   <span className="text-xs font-medium">Add Investment</span>
                 </Button>
-                {/* Removed the "View Activity" Link component */}
               </div>
 
               {/* Top 3 Performing Assets */}

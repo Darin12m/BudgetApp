@@ -506,7 +506,30 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
       <div className="space-y-2 sm:space-y-3">
         {transactions.slice(0, 5).map(txn => (
-          <TransactionCard key={txn.id} transaction={txn} categories={categories} formatCurrency={formatCurrency} />
+          <div key={txn.id} className="p-4 active:bg-muted/50 transition-colors">
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center space-x-3 flex-1 min-w-0">
+                <span className="text-2xl flex-shrink-0">
+                  {txn.amount > 0 ? '💰' : categories.find(c => c.name === txn.category)?.emoji || '💳'}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground text-sm truncate">{txn.merchant}</p>
+                  <p className="text-xs text-muted-foreground">{categories.find(c => c.name === txn.category)?.name || 'Uncategorized'}</p>
+                </div>
+              </div>
+              <p className={`font-bold text-sm ml-2 flex-shrink-0 ${txn.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>
+                {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
+              </p>
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{txn.date}</span>
+              <span className={`px-2 py-0.5 rounded-full font-medium ${
+                txn.status === 'pending' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400'
+              }`}>
+                {txn.status}
+              </span>
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -874,7 +897,7 @@ interface BudgetAppProps {
 const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const location = useLocation();
   const { formatCurrency } = useCurrency();
-  const { selectedRange, goToPreviousPeriod, goToNextPeriod } = useDateRange();
+  const { selectedRange } = useDateRange(); // Removed goToPreviousPeriod, goToNextPeriod
 
   const {
     transactions,
@@ -1211,13 +1234,9 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              <Button variant="ghost" size="icon" onClick={goToPreviousPeriod} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
-                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
-              </Button>
+              {/* Removed previous period button */}
               <DateRangePicker />
-              <Button variant="ghost" size="icon" onClick={goToNextPeriod} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </Button>
+              {/* Removed next period button */}
               <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 JD
               </div>
