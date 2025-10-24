@@ -1,9 +1,10 @@
 "use client";
 
-import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line } from 'recharts'; // Added LineChart, Line
+import React, { useState, useEffect, useCallback } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector, LineChart, Line } from 'recharts';
 import { PiggyBank, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react';
-import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import { useCurrency } from '@/context/CurrencyContext';
+import { cn } from '@/lib/utils'; // Import cn for conditional class merging
 
 interface RemainingBudgetCardProps {
   totalBudgeted: number;
@@ -16,6 +17,28 @@ interface RemainingBudgetCardProps {
   smartSummary: string;
 }
 
+// Custom Active Shape for hover effect
+const CustomActiveShape: React.FC<any> = (props) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
+  const { name, value } = payload;
+
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 8} // Slightly larger on hover
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        className="transition-all duration-150 ease-out"
+        style={{ filter: `drop-shadow(0 0 8px ${fill}80)` }} // Enhanced glow
+      />
+    </g>
+  );
+};
+
 const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   totalBudgeted,
   totalSpent,
@@ -26,21 +49,30 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   previousMonthLeftover,
   smartSummary,
 }) => {
-  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const { formatCurrency } = useCurrency();
+
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [showPercentageLabel, setShowPercentageLabel] = useState(false);
 
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
-  const remainingPercentage = 100 - spentPercentage;
+  const isOverBudget = remainingBudget < 0;
 
-  const data = [
-    { name: 'Spent', value: totalSpent, color: 'hsl(var(--primary))' }, // Use primary accent for spent
-    { name: 'Remaining', value: remainingBudget > 0 ? remainingBudget : 0, color: 'hsl(var(--emerald))' }, // Use emerald for remaining
+  // Visually cap the spent percentage at 100% for the chart ring
+  const visualSpentPercentage = Math.min(spentPercentage, 100);
+  const visualRemainingPercentage = 100 - visualSpentPercentage;
+
+  const pieChartData = [
+    { name: 'Spent', value: visualSpentPercentage, color: 'url(#gradientPrimary)' },
+    { name: 'Remaining', value: visualRemainingPercentage, color: 'hsl(var(--emerald))' },
   ];
 
-  const isOverBudget = remainingBudget < 0;
+  // Data for the subtle background ring (always 100%)
+  const backgroundPieData = [{ name: 'Background', value: 100, color: 'hsl(var(--muted)/50%)' }];
+
   const summaryColor = isOverBudget ? 'text-arrowDown' : 'text-arrowUp';
   const SummaryIcon: LucideIcon = isOverBudget ? TrendingDown : TrendingUp;
 
-  // Placeholder data for sparkline chart
+  // Sparkline Chart Placeholder
   const sparklineData = [
     { name: 'Day 1', value: 1000 },
     { name: 'Day 2', value: 950 },
@@ -50,6 +82,42 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
     { name: 'Day 6', value: 550 },
     { name: 'Day 7', value: 400 },
   ];
+
+  // Animation for percentage label fade-in
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPercentageLabel(true);
+    }, 800); // After ring animation duration
+    return () => clearTimeout(timer);
+  }, []);
+
+  const onPieEnter = useCallback((_: any, index: number) => {
+    setActiveIndex(index);
+  }, []);
+
+  const onPieLeave = useCallback(() => {
+    setActiveIndex(null);
+  }, []);
+
+  // Custom Tooltip Content
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const spentAmount = totalSpent;
+      const budgetedAmount = totalBudgeted;
+      const overBudgetAmount = isOverBudget ? Math.abs(remainingBudget) : 0;
+
+      return (
+        <div className="bg-tooltip-bg border border-tooltip-border-color rounded-lg p-3 text-sm text-tooltip-text-color shadow-lg">
+          <p className="font-semibold mb-1">{data.name}</p>
+          <p>Budgeted: <span className="font-medium">{formatCurrency(budgetedAmount)}</span></p>
+          <p>Spent: <span className="font-medium">{formatCurrency(spentAmount)}</span></p>
+          {isOverBudget && <p className="text-destructive">Over Budget: <span className="font-medium">{formatCurrency(overBudgetAmount)}</span></p>}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="bg-card rounded-xl sm:rounded-2xl p-6 card-shadow animate-in fade-in slide-in-from-top-2 duration-300 border border-border/50 backdrop-blur-lg">
@@ -63,9 +131,30 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
         </div>
         <div className="w-28 h-28 relative">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart onMouseEnter={onPieEnter} onMouseLeave={onPieLeave}>
+              <defs>
+                <linearGradient id="gradientPrimary" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--blue))" />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" />
+                </linearGradient>
+              </defs>
+              {/* Background Ring */}
               <Pie
-                data={data}
+                data={backgroundPieData}
+                cx="50%"
+                cy="50%"
+                innerRadius={50}
+                outerRadius={60}
+                fill="hsl(var(--muted)/50%)"
+                dataKey="value"
+                isAnimationActive={false}
+                stroke="none"
+              />
+              {/* Main Data Ring */}
+              <Pie
+                activeIndex={activeIndex !== null ? activeIndex : undefined}
+                activeShape={activeIndex !== null ? CustomActiveShape : undefined}
+                data={pieChartData}
                 cx="50%"
                 cy="50%"
                 innerRadius={50}
@@ -75,17 +164,28 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                 paddingAngle={0}
                 dataKey="value"
                 isAnimationActive={true}
-                animationDuration={500}
-                // Removed label prop to prevent overlap
+                animationDuration={800}
+                animationEasing="ease-out"
+                stroke="none"
+                className={cn(
+                  isOverBudget && 'animate-pulse-red' // Apply pulsing glow if over budget
+                )}
               >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {pieChartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    style={{ filter: `drop-shadow(0 0 4px ${entry.color}40)` }} // Soft glow
+                  />
                 ))}
               </Pie>
-              <Tooltip formatter={(value, name) => [`${formatCurrency(Number(value))}`, name]} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }} />
+              <Tooltip content={<CustomTooltip />} />
             </PieChart>
           </ResponsiveContainer>
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className={cn(
+            "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
+            showPercentageLabel ? 'opacity-100' : 'opacity-0'
+          )}>
             <span className="text-xl font-bold text-foreground">
               {totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
             </span>
