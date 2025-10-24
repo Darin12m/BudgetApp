@@ -66,6 +66,7 @@ interface BudgetSettings {
   microInvestingEnabled?: boolean;
   microInvestingPercentage?: number;
   priceAlertThreshold?: number; // New: Price alert threshold
+  categoriesInitialized?: boolean; // New: Flag to track if categories have been initialized
 }
 
 export const useFinanceData = (userUid: string | null, startDate: Date | undefined, endDate: Date | undefined) => {
@@ -74,14 +75,12 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
-  const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ id: '', rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '' });
+  const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ id: '', rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '', categoriesInitialized: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // New ref to track if default budget settings have been attempted to be created
+  // Ref to track if default budget settings have been attempted to be created
   const hasCreatedDefaultBudgetSettings = useRef(false);
-  // New ref to track if default categories have been attempted to be created
-  const hasCreatedDefaultCategories = useRef(false);
 
   useEffect(() => {
     if (!userUid) {
@@ -93,6 +92,49 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
     setError(null);
 
     const unsubscribes: (() => void)[] = [];
+
+    // Fetch budget settings first, as it contains the categoriesInitialized flag
+    const budgetSettingsRef = collection(db, 'budgetSettings');
+    const qBudgetSettings = query(budgetSettingsRef, where("ownerUid", "==", userUid));
+    const unsubscribeBudgetSettings = onSnapshot(qBudgetSettings, (snapshot) => {
+      if (!snapshot.empty) {
+        const settings = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as BudgetSettings;
+        // Ensure categoriesInitialized exists, default to false if not present
+        if (settings.categoriesInitialized === undefined) {
+          settings.categoriesInitialized = false;
+          // Update Firestore to set the flag if it's missing
+          updateDoc(doc(db, 'budgetSettings', settings.id), { categoriesInitialized: false });
+        }
+        setBudgetSettings(settings);
+        hasCreatedDefaultBudgetSettings.current = true; // Mark as true if settings are found
+      } else {
+        // If no settings exist AND we haven't tried to create them yet
+        if (!hasCreatedDefaultBudgetSettings.current) {
+          hasCreatedDefaultBudgetSettings.current = true; // Mark immediately to prevent re-entry
+          addDoc(budgetSettingsRef, {
+            ownerUid: userUid,
+            rolloverEnabled: true,
+            previousMonthLeftover: 0,
+            totalBudgeted: 0,
+            microInvestingEnabled: true,
+            microInvestingPercentage: 30,
+            priceAlertThreshold: 5, // Default price alert threshold
+            categoriesInitialized: false, // Initialize new flag to false
+            createdAt: serverTimestamp(), // Add createdAt for default settings
+          }).then(() => {
+            // No need to set state here, onSnapshot will pick it up
+          }).catch(err => {
+            console.error("Error creating default budget settings:", err);
+            toast.error("Failed to create default budget settings.");
+            hasCreatedDefaultBudgetSettings.current = false; // Reset if creation failed
+          });
+        }
+      }
+    }, (err) => {
+      console.error("Error fetching budget settings:", err.code, err.message); // Enhanced error logging
+      toast.error(`Failed to load budget settings. Error: ${err.code} - ${err.message}`);
+    });
+    unsubscribes.push(unsubscribeBudgetSettings);
 
     const fetchData = (collectionName: string, setState: (data: any[]) => void, applyDateFilter: boolean = false) => {
       let q = query(collection(db, collectionName), where("ownerUid", "==", userUid));
@@ -109,11 +151,9 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
         setState(data as any[]);
         setLoading(false);
 
-        // Special handling for categories: add defaults if empty
-        if (collectionName === 'categories') {
-          if (snapshot.empty && !hasCreatedDefaultCategories.current) {
-            // Only create defaults if the collection is truly empty AND we haven't tried before.
-            hasCreatedDefaultCategories.current = true; // Mark immediately to prevent re-entry
+        // Special handling for categories: add defaults if empty AND not yet initialized
+        if (collectionName === 'categories' && budgetSettings.categoriesInitialized !== undefined) { // Ensure budgetSettings is loaded
+          if (snapshot.empty && !budgetSettings.categoriesInitialized) {
             const defaultCategories = [
               { name: 'Groceries', budgeted: 300, spent: 0, color: 'hsl(var(--emerald))', emoji: '🛒', ownerUid: userUid, createdAt: serverTimestamp() },
               { name: 'Rent', budgeted: 1200, spent: 0, color: 'hsl(var(--blue))', emoji: '🏠', ownerUid: userUid, createdAt: serverTimestamp() },
@@ -129,15 +169,19 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
               } catch (e) {
                 console.error("Error adding default category:", e);
                 toast.error("Failed to add default category data.");
-                // If adding fails, we might want to reset the flag to allow a retry,
-                // but this could lead to multiple attempts if there's a persistent issue.
-                // For now, let's keep it true to avoid infinite loops.
               }
             });
-          } else if (!snapshot.empty) {
-            // If there are categories (even if they were just added or existed before),
-            // ensure the flag is set to true so defaults are not added later.
-            hasCreatedDefaultCategories.current = true;
+
+            // Mark categories as initialized in budgetSettings after adding defaults
+            if (budgetSettings.id) {
+              updateDoc(doc(db, 'budgetSettings', budgetSettings.id), { categoriesInitialized: true });
+            }
+          } else if (!snapshot.empty && !budgetSettings.categoriesInitialized) {
+            // If categories are found (meaning user added them or defaults were added previously)
+            // and the flag is still false, set it to true.
+            if (budgetSettings.id) {
+              updateDoc(doc(db, 'budgetSettings', budgetSettings.id), { categoriesInitialized: true });
+            }
           }
         }
       }, (err) => {
@@ -157,46 +201,10 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
     fetchData('goals', setGoals);
     fetchData('recurringTransactions', setRecurringTransactions);
 
-    // Fetch budget settings separately as it's a single document or has a different structure
-    const budgetSettingsRef = collection(db, 'budgetSettings');
-    const qBudgetSettings = query(budgetSettingsRef, where("ownerUid", "==", userUid));
-    const unsubscribeBudgetSettings = onSnapshot(qBudgetSettings, (snapshot) => {
-      if (!snapshot.empty) {
-        setBudgetSettings({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as BudgetSettings);
-        hasCreatedDefaultBudgetSettings.current = true; // Mark as true if settings are found
-      } else {
-        // If no settings exist AND we haven't tried to create them yet
-        if (!hasCreatedDefaultBudgetSettings.current) {
-          hasCreatedDefaultBudgetSettings.current = true; // Mark immediately to prevent re-entry
-          addDoc(budgetSettingsRef, {
-            ownerUid: userUid,
-            rolloverEnabled: true,
-            previousMonthLeftover: 0,
-            totalBudgeted: 0,
-            microInvestingEnabled: true,
-            microInvestingPercentage: 30,
-            priceAlertThreshold: 5, // Default price alert threshold
-            createdAt: serverTimestamp(), // Add createdAt for default settings
-          }).then(() => {
-            // No need to set state here, onSnapshot will pick it up
-          }).catch(err => {
-            console.error("Error creating default budget settings:", err);
-            toast.error("Failed to create default budget settings.");
-            hasCreatedDefaultBudgetSettings.current = false; // Reset if creation failed
-          });
-        }
-      }
-    }, (err) => {
-      console.error("Error fetching budget settings:", err.code, err.message); // Enhanced error logging
-      toast.error(`Failed to load budget settings. Error: ${err.code} - ${err.message}`);
-    });
-    unsubscribes.push(unsubscribeBudgetSettings);
-
-
     return () => {
       unsubscribes.forEach(unsub => unsub());
     };
-  }, [userUid, startDate, endDate]); // Add startDate and endDate to dependencies
+  }, [userUid, startDate, endDate, budgetSettings.categoriesInitialized, budgetSettings.id]); // Add budgetSettings.categoriesInitialized and budgetSettings.id to dependencies
 
   const addDocument = useCallback(async (collectionName: string, data: any) => {
     if (!userUid) {
