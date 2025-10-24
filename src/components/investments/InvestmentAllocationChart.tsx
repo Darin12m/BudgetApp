@@ -36,7 +36,7 @@ const InvestmentAllocationChart: React.FC<InvestmentAllocationChartProps> = ({ t
                 fill="#8884d8"
                 dataKey="value"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                // Removed label prop to prevent overlap
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />

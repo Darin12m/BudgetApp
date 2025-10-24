@@ -29,6 +29,12 @@
     --accent: 210 40% 96.1%; /* Light gray for accents */
     --accent-foreground: 210 2% 20%;
 
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 2% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 2% 20%;
+
     --border: 0 0% 0% / 0.05; /* Black with 5% opacity for light theme glass border */
     --input: 214.3 31.8% 91.4%;
     --ring: 195 100% 50%; /* Primary accent for ring focus */
@@ -37,8 +43,8 @@
 
     /* Custom accent colors for gradients and highlights */
     --emerald: 123 50% 49%; /* #4CAF50 (green for up arrow) */
-    --blue: 195 100% 50%; /* #00C2FF (electric cyan, used for accent) */
-    --lilac: 270 60% 70%; /* Keeping for existing usage */
+    --blue: 195 100% 50%;       /* #00C2FF (electric cyan for accent) */
+    --lilac: 270 60% 70%;     /* Keeping for existing usage */
 
     /* Arrow specific colors */
     --arrow-up-color: 123 50% 49%; /* #4CAF50 */
@@ -76,6 +82,12 @@
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 0 0% 100%;
 
+    --popover: 240 15% 12%;
+    --popover-foreground: 0 0% 100%;
+
+    --card: 240 15% 12%;
+    --card-foreground: 0 0% 100%;
+
     --border: 0 0% 100% / 0.1; /* White with 10% opacity for dark theme glass border */
     --input: 217.2 32.6% 17.5%;
     --ring: 195 100% 50%; /* Dark mode primary accent for ring focus */
@@ -90,8 +102,8 @@
     --arrow-down-color: 359 77% 56%; /* #E53935 */
 
     /* Tooltip specific colors (always dark for consistency as requested) */
-    --tooltip-bg: 240 15% 12%; /* #1e1e1e */
-    --tooltip-border-color: 240 10% 25%; /* #404040 */
+    --tooltip-bg: 240 15% 20%; /* Slightly lighter dark gray for better contrast */
+    --tooltip-border-color: 240 10% 30%; /* Slightly lighter border */
     --tooltip-text-color: 0 0% 100%; /* White text */
   }
 }

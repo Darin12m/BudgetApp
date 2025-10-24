@@ -368,7 +368,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                           fill="#8884d8"
                           dataKey="value"
                           labelLine={false}
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          // Removed label prop to prevent overlap
                         >
                           {overallAllocationData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />

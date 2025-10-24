@@ -74,6 +74,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                 dataKey="value"
                 isAnimationActive={true}
                 animationDuration={500}
+                // Removed label prop to prevent overlap
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />

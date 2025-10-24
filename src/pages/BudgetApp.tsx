@@ -552,6 +552,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   outerRadius={80}
                   paddingAngle={2}
                   dataKey="value"
+                  // Removed label prop to prevent overlap
                 >
                   {categoryData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
