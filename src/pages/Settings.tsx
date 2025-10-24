@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronRight, Palette, Zap } from 'lucide-react'; // Added Zap icon
+import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, Palette, Zap } from 'lucide-react'; // Added ChevronLeft icon
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import BottomNavBar from '@/components/BottomNavBar';
 import { useFinanceData } from '@/hooks/use-finance-data';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 interface SettingsPageProps {
   userUid: string | null;
@@ -25,6 +26,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
   const [microInvestingPercentage, setMicroInvestingPercentage] = useState<string>('30');
 
   const { budgetSettings, updateDocument, loading: financeLoading } = useFinanceData(userUid);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     // Initialize dark mode state from localStorage or system preference
@@ -118,9 +120,21 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20 sm:pb-0 animate-in fade-in duration-500">
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
-        <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
+      <header className="bg-card/90 backdrop-blur-md border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
+        <div className="flex items-center px-4 sm:px-6 py-3 sm:py-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)} // Go back to the previous page
+            className="mr-2 sm:mr-4 text-muted-foreground hover:bg-muted/50"
+          >
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+          </Button>
+          <h1 className="text-lg sm:text-xl font-bold">Settings</h1>
+        </div>
+      </header>
 
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
         {/* Theme Settings */}
         <Card className="card-shadow border-none bg-card border border-border/50">
           <CardHeader>
