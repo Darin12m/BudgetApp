@@ -32,12 +32,12 @@ const CustomActiveShape: React.FC<any> = (props) => {
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 5} // Slightly larger on hover
+        outerRadius={outerRadius + 8} // More pronounced scale on hover
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
         className="transition-all duration-150 ease-out"
-        style={{ filter: `drop-shadow(0 0 5px ${fill}80)` }} // Subtle glow
+        style={{ filter: `drop-shadow(0 0 8px ${fill}80)` }} // Enhanced glow
       />
       <Sector
         cx={cx}
@@ -52,10 +52,10 @@ const CustomActiveShape: React.FC<any> = (props) => {
   );
 };
 
-// Custom Label for percentages (without animation to avoid hook call error)
+// Custom Label for percentages
 const CustomizedLabel: React.FC<any> = ({ cx, cy, midAngle, outerRadius, percent, index, name }) => {
   const RADIAN = Math.PI / 180;
-  const radius = outerRadius * 0.7; // Position inside the slice
+  const radius = outerRadius * 0.65; // Position slightly further inside the slice
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -97,7 +97,7 @@ const CustomLegend: React.FC<any> = ({ payload, totalValue, formatCurrency }) =>
 
 
 const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChartProps> = ({ title, data, emptyMessage, totalPortfolioValue }) => {
-  const { formatUSD } = useCurrency(); // Call useCurrency here, use formatUSD
+  const { formatUSD } = useCurrency();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const onPieEnter = useCallback((_: any, index: number) => {
@@ -109,7 +109,6 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
   }, []);
 
   const chartData = useMemo(() => {
-    // Add a 'percentage' field to each data item for easier use in tooltips/labels
     const total = data.reduce((sum, item) => sum + item.value, 0);
     return data.map(item => ({
       ...item,
@@ -127,26 +126,33 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
           <div className="relative w-full h-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
+                <defs>
+                  {chartData.map((entry, index) => (
+                    <linearGradient key={`grad-${index}`} id={`color-${index}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={entry.color} stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor={entry.color} stopOpacity={0.5}/>
+                    </linearGradient>
+                  ))}
+                </defs>
                 <Pie
                   activeIndex={activeIndex !== null ? activeIndex : undefined}
-                  activeShape={<CustomActiveShape formatCurrency={formatUSD} />} // Pass formatUSD
+                  activeShape={<CustomActiveShape formatCurrency={formatUSD} />}
                   data={chartData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
                   outerRadius={90}
-                  fill="#8884d8"
                   dataKey="value"
                   isAnimationActive={true}
-                  animationDuration={800} // Smooth drawing animation
+                  animationDuration={800}
                   animationEasing="ease-out"
                   onMouseEnter={onPieEnter}
                   onMouseLeave={onPieLeave}
                   labelLine={false}
-                  label={CustomizedLabel} // Percentage labels (without animation)
+                  label={CustomizedLabel}
                 >
                   {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={`url(#color-${index})`} stroke={entry.color} strokeWidth={1} />
                   ))}
                 </Pie>
                 <Tooltip
@@ -158,12 +164,12 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                     color: 'hsl(var(--tooltip-text-color))'
                   }}
                   formatter={(value: number, name: string, props: any) => [
-                    formatUSD(value), // Use formatUSD here
+                    formatUSD(value),
                     `${props.payload.name} (${props.payload.percentage.toFixed(0)}%)`
                   ]}
                 />
                 <Legend
-                  content={<CustomLegend totalValue={totalPortfolioValue} formatCurrency={formatUSD} />} // Pass formatUSD
+                  content={<CustomLegend totalValue={totalPortfolioValue} formatCurrency={formatUSD} />}
                   wrapperStyle={{ paddingTop: '16px' }}
                 />
               </PieChart>
