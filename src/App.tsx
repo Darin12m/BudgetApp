@@ -12,6 +12,7 @@ import LoginPage from "./pages/Login";
 import { useEffect, useState } from "react";
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, User, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { ErrorDialogProvider } from "./components/ErrorDialogProvider"; // Import ErrorDialogProvider
 
 const queryClient = new QueryClient();
 
@@ -88,46 +89,48 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                  <Index userUid={userUid} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/budget-app"
-              element={
-                <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                  <BudgetApp userUid={userUid} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/investments"
-              element={
-                <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                  <InvestmentsPage userUid={userUid} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                  <SettingsPage userUid={userUid} />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <ErrorDialogProvider> {/* Wrap with ErrorDialogProvider */}
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                    <Index userUid={userUid} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/budget-app"
+                element={
+                  <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                    <BudgetApp userUid={userUid} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/investments"
+                element={
+                  <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                    <InvestmentsPage userUid={userUid} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                    <SettingsPage userUid={userUid} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </ErrorDialogProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
