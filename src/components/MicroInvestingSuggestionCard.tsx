@@ -27,7 +27,7 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
   onInvest,
   onDismiss,
 }) => {
-  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const { formatCurrency, formatUSD } = useCurrency(); // Use formatCurrency and formatUSD from context
 
   const shouldSuggest = useMemo(() => {
     if (!microInvestingEnabled || weeklyBudgetTarget <= 0) return false;
@@ -64,10 +64,10 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
         suggestedAsset.symbol,
         suggestedAsset.coingeckoId
       );
-      toast.success(`Invested ${formatCurrency(suggestedInvestmentAmount)} into ${suggestedAsset.name}!`);
+      toast.success(`Invested ${formatUSD(suggestedInvestmentAmount)} into ${suggestedAsset.name}!`); // Use formatUSD
       onDismiss(); // Dismiss after investing
     }
-  }, [suggestedInvestmentAmount, suggestedAsset, onInvest, onDismiss, formatCurrency]);
+  }, [suggestedInvestmentAmount, suggestedAsset, onInvest, onDismiss, formatUSD]); // Use formatUSD
 
   if (!shouldSuggest || suggestedInvestmentAmount <= 0) {
     return null;
@@ -83,7 +83,7 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
               You have <span className="text-emerald font-semibold">{formatCurrency(weeklyRemainingBudget)}</span> left this week.
             </p>
             <p className="text-sm text-muted-foreground">
-              Consider investing <span className="text-primary font-semibold">{formatCurrency(suggestedInvestmentAmount)}</span> into {suggestedAsset.name}.
+              Consider investing <span className="text-primary font-semibold">{formatUSD(suggestedInvestmentAmount)}</span> into {suggestedAsset.name}. {/* Use formatUSD */}
             </p>
           </div>
         </div>

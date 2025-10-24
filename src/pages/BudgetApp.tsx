@@ -447,7 +447,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         <BarChart data={netWorthTrend}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
-          <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+          <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} tickFormatter={(value) => formatCurrency(Number(value))} />
           <Tooltip
             contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
             formatter={(value) => formatCurrency(Number(value))}

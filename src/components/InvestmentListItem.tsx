@@ -6,6 +6,7 @@ import { TrendingUp, TrendingDown, DollarSign, Bitcoin, Edit, AlertTriangle } fr
 import { cn } from '@/lib/utils'; // Import cn for conditional class merging
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 
 interface InvestmentListItemProps {
   investment: Investment;
@@ -15,7 +16,7 @@ interface InvestmentListItemProps {
 }
 
 const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onEdit, priceChangeStatus, isAlerted }) => {
-  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const { formatCurrency, formatUSD, selectedCurrency } = useCurrency(); // Use formatCurrency, formatUSD, selectedCurrency from context
 
   const invested = investment.quantity * investment.buyPrice;
   const currentValue = investment.quantity * investment.currentPrice;
@@ -39,6 +40,12 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
     none: '',
   };
 
+  // Converted value for tooltip
+  const convertedValue = useMemo(() => {
+    if (selectedCurrency.code === 'USD') return null; // No need to convert if already USD
+    return formatCurrency(currentValue);
+  }, [currentValue, selectedCurrency, formatCurrency]);
+
   return (
     <div className={cn(
       "flex items-center justify-between p-4 bg-card rounded-lg shadow-sm border border-border/50 hover:bg-muted/50 transition-colors active:bg-muted backdrop-blur-lg animate-in fade-in slide-in-from-bottom-2 duration-300",
@@ -52,16 +59,25 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-foreground text-sm truncate">{investment.name}</p>
-          <p className="text-xs text-muted-foreground truncate">
-            {investment.type} • {formatCurrency(currentValue)}
-            <span className="ml-2 text-arrowUp text-xs font-medium flex items-center">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-arrowUp/40 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-arrowUp"></span>
-              </span>
-              <span className="ml-1">Live</span>
-            </span>
-          </p>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <p className="text-xs text-muted-foreground truncate cursor-help">
+                {investment.type} • {formatUSD(currentValue)} {/* Display in USD */}
+                <span className="ml-2 text-arrowUp text-xs font-medium flex items-center">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-arrowUp/40 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-arrowUp"></span>
+                  </span>
+                  <span className="ml-1">Live</span>
+                </span>
+              </p>
+            </TooltipTrigger>
+            {convertedValue && (
+              <TooltipContent className="bg-tooltip-bg border-tooltip-border-color text-tooltip-text-color">
+                <p>Value in {selectedCurrency.code}: {convertedValue}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
         </div>
       </div>
       <div className="text-right ml-2 flex-shrink-0">
@@ -78,7 +94,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
             <AlertTriangle className="w-3 h-3 mr-1" /> Alert!
           </p>
         )}
-        <p className={`text-xs ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(gainLoss)}</p>
+        <p className={`text-xs ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatUSD(gainLoss)}</p>
       </div>
       <Button variant="ghost" size="icon" onClick={() => onEdit(investment)} className="ml-2 flex-shrink-0 text-muted-foreground hover:bg-muted/50">
         <Edit className="h-4 w-4" />

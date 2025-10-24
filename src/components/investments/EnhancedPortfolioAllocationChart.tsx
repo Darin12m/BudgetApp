@@ -97,7 +97,7 @@ const CustomLegend: React.FC<any> = ({ payload, totalValue, formatCurrency }) =>
 
 
 const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChartProps> = ({ title, data, emptyMessage, totalPortfolioValue }) => {
-  const { formatCurrency } = useCurrency(); // Call useCurrency here
+  const { formatUSD } = useCurrency(); // Call useCurrency here, use formatUSD
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const onPieEnter = useCallback((_: any, index: number) => {
@@ -129,7 +129,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
               <PieChart>
                 <Pie
                   activeIndex={activeIndex !== null ? activeIndex : undefined}
-                  activeShape={<CustomActiveShape formatCurrency={formatCurrency} />} // Pass formatCurrency
+                  activeShape={<CustomActiveShape formatCurrency={formatUSD} />} // Pass formatUSD
                   data={chartData}
                   cx="50%"
                   cy="50%"
@@ -158,12 +158,12 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                     color: 'hsl(var(--tooltip-text-color))'
                   }}
                   formatter={(value: number, name: string, props: any) => [
-                    formatCurrency(value),
+                    formatUSD(value), // Use formatUSD here
                     `${props.payload.name} (${props.payload.percentage.toFixed(0)}%)`
                   ]}
                 />
                 <Legend
-                  content={<CustomLegend totalValue={totalPortfolioValue} formatCurrency={formatCurrency} />} // Pass formatCurrency
+                  content={<CustomLegend totalValue={totalPortfolioValue} formatCurrency={formatUSD} />} // Pass formatUSD
                   wrapperStyle={{ paddingTop: '16px' }}
                 />
               </PieChart>
@@ -172,7 +172,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <p className="text-xl font-bold text-foreground">
-                  {totalPortfolioValue > 0 ? formatCurrency(totalPortfolioValue) : '100%'}
+                  {totalPortfolioValue > 0 ? formatUSD(totalPortfolioValue) : '100%'}
                 </p>
                 <p className="text-xs text-muted-foreground">Allocated</p>
               </div>

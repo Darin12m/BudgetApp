@@ -21,7 +21,7 @@ interface InvestmentFormProps {
 }
 
 const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onDelete, onClose }) => {
-  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const { formatCurrency, formatUSD } = useCurrency(); // Use formatCurrency and formatUSD from context
   const [name, setName] = useState(investment?.name || '');
   const [type, setType] = useState<'Stock' | 'Crypto'>(investment?.type || 'Stock');
   const [quantity, setQuantity] = useState(investment?.quantity.toString() || '');

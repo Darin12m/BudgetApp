@@ -22,7 +22,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
     { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app?view=budget' },
     { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app?view=goals' },
     { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
-    // Settings and Notifications are moved to the bottom
   ];
 
   return (

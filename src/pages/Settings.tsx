@@ -211,15 +211,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="main-currency" className="text-base">Main Currency</Label>
-                  <Input
-                    id="main-currency"
-                    value="USD ($)"
-                    readOnly
-                    className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 cursor-not-allowed"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="secondary-currency" className="text-base">Secondary Currency</Label>
                   <Select value={selectedCurrency.code} onValueChange={setCurrency}>
                     <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
                       <SelectValue placeholder="Select a currency" />

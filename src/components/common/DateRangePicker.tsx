@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"; // Import ChevronLeft and ChevronRight
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, addMonths, subWeeks, addWeeks, startOfDay, endOfDay } from "date-fns";
 import { DateRange } from "react-day-picker";
 
@@ -16,7 +16,7 @@ interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function DateRangePicker({ className }: DateRangePickerProps) {
-  const { selectedRange, setRange, setQuickPeriod } = useDateRange();
+  const { selectedRange, setRange, setQuickPeriod, goToPreviousPeriod, goToNextPeriod } = useDateRange(); // Destructure new functions
   const [calendarMonth, setCalendarMonth] = React.useState<Date>(selectedRange.from || new Date());
 
   // Update calendar month when selectedRange.from changes
@@ -61,7 +61,15 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
   };
 
   return (
-    <div className={cn("grid gap-2", className)}>
+    <div className={cn("flex items-center space-x-2", className)}> {/* Changed to flex for buttons */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={goToPreviousPeriod}
+        className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98"
+      >
+        <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+      </Button>
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -96,6 +104,14 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
           </div>
         </PopoverContent>
       </Popover>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={goToNextPeriod}
+        className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98"
+      >
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </Button>
     </div>
   );
 }
