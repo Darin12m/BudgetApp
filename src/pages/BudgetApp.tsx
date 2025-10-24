@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search, Lightbulb, Zap, LucideIcon, Edit, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useFinanceData } from '@/hooks/use-finance-data';
+import { useFinanceData, Goal } from '@/hooks/use-finance-data'; // Import Goal from use-finance-data
 import { formatDate } from '@/lib/utils';
 import RemainingBudgetCard from '@/components/RemainingBudgetCard';
 import QuickAddTransactionModal from '@/components/QuickAddTransactionModal';
@@ -28,6 +28,7 @@ import {
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
 import { DateRangePicker } from '@/components/common/DateRangePicker';
+import { toast } from 'sonner'; // Import toast
 
 // TypeScript Interfaces (moved to use-finance-data.tsx for centralized management)
 interface Transaction {
@@ -57,16 +58,6 @@ interface Account {
   balance: number;
   type: 'checking' | 'savings' | 'credit' | 'investment';
   lastUpdated: string;
-  ownerUid: string;
-}
-
-interface Goal {
-  id: string;
-  name: string;
-  target: number;
-  current: number;
-  color: string;
-  targetDate: string; // YYYY-MM-DD
   ownerUid: string;
 }
 
@@ -301,6 +292,7 @@ interface DashboardViewProps {
   transactions: Transaction[];
   categories: Category[];
   formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
+  netWorthTrend: NetWorthData[]; // Added netWorthTrend prop
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
@@ -324,6 +316,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   transactions,
   categories,
   formatCurrency,
+  netWorthTrend, // Destructure netWorthTrend
 }) => (
   <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
     <RemainingBudgetCard
@@ -797,14 +790,14 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({
   const filteredTransactions = useMemo(() => {
     const lowerCaseSearchTerm = transactionSearchTerm.toLowerCase();
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1); // Renamed local variable
 
     return transactions.filter(txn => {
       const matchesSearch = txn.merchant.toLowerCase().includes(lowerCaseSearchTerm) ||
                             txn.category.toLowerCase().includes(lowerCaseSearchTerm);
 
       const transactionDate = new Date(txn.date);
-      const matchesPeriod = transactionFilterPeriod === 'all' || transactionDate >= startOfMonth;
+      const matchesPeriod = transactionFilterPeriod === 'all' || transactionDate >= startOfCurrentMonth;
 
       return matchesSearch && matchesPeriod;
     });
@@ -1272,6 +1265,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   transactions={transactions}
                   categories={categories}
                   formatCurrency={formatCurrency}
+                  netWorthTrend={netWorthTrend} // Pass netWorthTrend
                 />
               )}
               {activeView === 'budget' && (

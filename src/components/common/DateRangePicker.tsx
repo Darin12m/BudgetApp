@@ -37,8 +37,8 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
       // If only 'from' is selected, treat as single day
       setRange({
         from: startOfDay(newRange.from),
-        to: endOfDay(newRage.from),
-        label: generateLabel(newRage.from, newRage.from),
+        to: endOfDay(newRange.from),
+        label: generateLabel(newRange.from, newRange.from),
       });
     } else {
       setRange({ from: undefined, to: undefined, label: 'Select Date Range' });

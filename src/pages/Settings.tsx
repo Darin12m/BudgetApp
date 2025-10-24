@@ -18,6 +18,7 @@ import Sidebar from '@/components/layout/Sidebar'; // Import Sidebar
 import { format } from 'date-fns'; // Import format for date display
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
 import { useCurrency, CURRENCIES } from '@/context/CurrencyContext'; // Import useCurrency and CURRENCIES
+import { useDateRange } from '@/context/DateRangeContext'; // Import useDateRange
 
 interface SettingsPageProps {
   userUid: string | null;
@@ -31,7 +32,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
   const [priceAlertThresholdInput, setPriceAlertThresholdInput] = useState<string>('5');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false); // State for sidebar
 
-  const { budgetSettings, updateDocument, loading: financeLoading } = useFinanceData(userUid);
+  const { selectedRange } = useDateRange(); // Get selectedRange from context
+  const { budgetSettings, updateDocument, loading: financeLoading } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
   const { selectedCurrency, setCurrency } = useCurrency(); // Use the currency context
   const navigate = useNavigate();
 

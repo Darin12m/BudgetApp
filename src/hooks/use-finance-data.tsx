@@ -3,7 +3,7 @@ import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { isTransactionInCurrentWeek, isTransactionInPreviousWeek, isTransactionInCurrentMonth, getStartOfCurrentWeek, getEndOfCurrentWeek, getStartOfPreviousWeek, getEndOfPreviousWeek } from '@/lib/utils';
-import { format, parseISO, getDaysInMonth, isWithinInterval, startOfDay, endOfDay, startOfWeek, endOfWeek, subWeeks } from 'date-fns'; // Added startOfWeek, endOfWeek, subWeeks
+import { format, parseISO, getDaysInMonth, isWithinInterval, startOfDay, endOfDay, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth } from 'date-fns'; // Added startOfMonth, endOfMonth
 
 // TypeScript Interfaces (re-defined for clarity within the hook context)
 interface Transaction {
@@ -36,12 +36,13 @@ interface Account {
   ownerUid: string;
 }
 
-interface Goal {
+export interface Goal { // Exported for use in other files
   id: string;
   name: string;
   target: number;
   current: number;
   color: string;
+  targetDate: string; // YYYY-MM-DD
   ownerUid: string;
 }
 
@@ -153,7 +154,7 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       }
     }, (err) => {
       console.error("Error fetching budget settings:", err.code, err.message); // Enhanced error logging
-      toast.error(`Failed to load budget settings. Error: ${err.message}`); // More specific error message
+      toast.error(`Failed to load budget settings. Error: ${err.code} - ${err.message}`); // More specific error message
     });
     unsubscribes.push(unsubscribeBudgetSettings);
 
