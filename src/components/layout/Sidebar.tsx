@@ -21,19 +21,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
     { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app?view=budget' },
     { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app?view=goals' },
     { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
+    { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
+    { id: 'notifications', label: 'Notifications', icon: Bell, onClick: () => { toast.info("Notifications feature coming soon!"); onClose(); } },
   ];
-
-  const handleNotificationsClick = () => {
-    toast.info("Notifications feature coming soon!");
-    onClose(); // Close sidebar after action
-  };
 
   return (
     <>
       {/* Sidebar */}
       <aside className={`fixed left-0 top-0 h-full bg-card backdrop-blur-lg border-r border-border transition-transform duration-300 ease-in-out z-50 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } w-64 sm:w-72 card-shadow`}> {/* Removed sm:translate-x-0 sm:static sm:h-auto sm:border-r-0 sm:shadow-none */}
+      } w-64 sm:w-72 card-shadow`}>
         <div className="flex flex-col h-full">
           <div className="p-5 sm:p-6 border-b border-border">
             <div className="flex items-center justify-between mb-6">
@@ -56,10 +53,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
             </div>
           </div>
 
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          <nav className="p-4 space-y-1"> {/* Removed flex-1 and overflow-y-auto */}
             {navItems.map(item => {
               const Icon = item.icon;
               const isActive = (item.path === location.pathname + location.search) || (item.id === 'dashboard' && location.pathname === '/');
+
+              if (item.id === 'notifications') {
+                return (
+                  <button
+                    key={item.id}
+                    onClick={item.onClick}
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted/50 transition-colors active:bg-muted"
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              }
 
               return (
                 <Link
@@ -81,24 +91,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
               );
             })}
           </nav>
-
-          <div className="p-4 border-t border-border">
-            <div className="space-y-1">
-              <Link to="/settings" onClick={onClose} className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted/50 transition-colors active:bg-muted">
-                <Settings className="w-5 h-5" />
-                <span>Settings</span>
-              </Link>
-              <button onClick={handleNotificationsClick} className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted/50 transition-colors active:bg-muted">
-                <Bell className="w-5 h-5" />
-                <span>Notifications</span>
-              </button>
-            </div>
-
-            <div className="mt-4 p-4 bg-gradient-to-br from-primary/5 dark:from-primary/10 to-lilac/50 dark:to-lilac/10 rounded-xl">
-              <p className="text-sm font-semibold text-foreground mb-1">💡 Pro Tip</p>
-              <p className="text-xs text-muted-foreground">Review your transactions daily to stay on top of your spending!</p>
-            </div>
-          </div>
         </div>
       </aside>
 
