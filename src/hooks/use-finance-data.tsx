@@ -80,6 +80,8 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
 
   // New ref to track if default budget settings have been attempted to be created
   const hasCreatedDefaultBudgetSettings = useRef(false);
+  // New ref to track if default categories have been attempted to be created
+  const hasCreatedDefaultCategories = useRef(false);
 
   useEffect(() => {
     if (!userUid) {
@@ -106,6 +108,29 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setState(data as any[]);
         setLoading(false);
+
+        // Special handling for categories: add defaults if empty
+        if (collectionName === 'categories' && snapshot.empty && !hasCreatedDefaultCategories.current) {
+          hasCreatedDefaultCategories.current = true; // Mark immediately to prevent re-entry
+          const defaultCategories = [
+            { name: 'Groceries', budgeted: 300, spent: 0, color: 'hsl(var(--emerald))', emoji: '🛒', ownerUid: userUid, createdAt: serverTimestamp() },
+            { name: 'Rent', budgeted: 1200, spent: 0, color: 'hsl(var(--blue))', emoji: '🏠', ownerUid: userUid, createdAt: serverTimestamp() },
+            { name: 'Utilities', budgeted: 150, spent: 0, color: 'hsl(var(--lilac))', emoji: '💡', ownerUid: userUid, createdAt: serverTimestamp() },
+            { name: 'Transportation', budgeted: 100, spent: 0, color: '#f59e0b', emoji: '🚗', ownerUid: userUid, createdAt: serverTimestamp() },
+            { name: 'Entertainment', budgeted: 80, spent: 0, color: '#ef4444', emoji: '🎉', ownerUid: userUid, createdAt: serverTimestamp() },
+            { name: 'Uncategorized', budgeted: 0, spent: 0, color: '#6B7280', emoji: '🏷️', ownerUid: userUid, createdAt: serverTimestamp() },
+          ];
+
+          defaultCategories.forEach(async (cat) => {
+            try {
+              await addDoc(collection(db, "categories"), cat);
+            } catch (e) {
+              console.error("Error adding default category:", e);
+              toast.error("Failed to add default category data.");
+              hasCreatedDefaultCategories.current = false; // Reset if creation failed
+            }
+          });
+        }
       }, (err) => {
         console.error(`Error fetching ${collectionName}:`, err.code, err.message); // Enhanced error logging
         setError(`Failed to load ${collectionName}. Error: ${err.message}`); // More specific error message
