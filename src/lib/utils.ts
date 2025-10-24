@@ -96,3 +96,14 @@ export const isTransactionInCurrentMonth = (transactionDateString: string, refer
   const transactionDate = parseISO(transactionDateString);
   return isSameMonth(transactionDate, referenceDate);
 };
+
+/**
+ * Formats a date string or Date object into a readable string.
+ * @param dateInput The date string (YYYY-MM-DD) or Date object.
+ * @param formatString The format string (e.g., 'MMM dd, yyyy'). Defaults to 'MMM dd, yyyy'.
+ * @returns Formatted date string.
+ */
+export const formatDate = (dateInput: string | Date, formatString: string = 'MMM dd, yyyy'): string => {
+  const date = typeof dateInput === 'string' ? parseISO(dateInput) : dateInput;
+  return format(date, formatString);
+};

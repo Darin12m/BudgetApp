@@ -1,16 +1,30 @@
 import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search, Lightbulb, Zap, LucideIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search, Lightbulb, Zap, LucideIcon, Edit, Trash2 } from 'lucide-react'; // Added Edit, Trash2
 import { Link, useLocation } from 'react-router-dom';
 import { useFinanceData } from '@/hooks/use-finance-data';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils'; // Added formatDate
 import RemainingBudgetCard from '@/components/RemainingBudgetCard';
 import QuickAddTransactionModal from '@/components/QuickAddTransactionModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format, addDays } from 'date-fns'; // Import addDays
-import Sidebar from '@/components/layout/Sidebar'; // Import the new Sidebar component
+import { format, addDays } from 'date-fns';
+import Sidebar from '@/components/layout/Sidebar';
+import AddEditCategoryModal from '@/components/budget/AddEditCategoryModal'; // New import
+import AddEditGoalModal from '@/components/goals/AddEditGoalModal'; // New import
+import AddFundsModal from '@/components/goals/AddFundsModal'; // New import
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // For delete confirmation
 
 // TypeScript Interfaces (moved to use-finance-data.tsx for centralized management)
 interface Transaction {
@@ -49,6 +63,7 @@ interface Goal {
   target: number;
   current: number;
   color: string;
+  targetDate: string; // YYYY-MM-DD
   ownerUid: string;
 }
 
@@ -118,9 +133,20 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState<boolean>(false);
-  const [selectedMonth, setSelectedMonth] = useState<string>(format(new Date(), 'MMMM yyyy')); // Make it dynamic
+  const [selectedMonth, setSelectedMonth] = useState<string>(format(new Date(), 'MMMM yyyy'));
   const [transactionSearchTerm, setTransactionSearchTerm] = useState<string>('');
   const [transactionFilterPeriod, setTransactionFilterPeriod] = useState<'all' | 'thisMonth'>('thisMonth');
+
+  // State for Category Modals
+  const [isAddEditCategoryModalOpen, setIsAddEditCategoryModalOpen] = useState(false);
+  const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
+
+  // State for Goal Modals
+  const [isAddEditGoalModalOpen, setIsAddEditGoalModalOpen] = useState(false);
+  const [goalToEdit, setGoalToEdit] = useState<Goal | null>(null);
+  const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
+  const [goalToFund, setGoalToFund] = useState<Goal | null>(null);
+
 
   useEffect(() => {
     if (location.pathname === '/budget-app') {
@@ -319,6 +345,89 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     });
   }, [addDocument, accounts]);
 
+  // --- Category Handlers ---
+  const handleAddCategory = useCallback(() => {
+    setCategoryToEdit(null);
+    setIsAddEditCategoryModalOpen(true);
+  }, []);
+
+  const handleEditCategory = useCallback((category: Category) => {
+    setCategoryToEdit(category);
+    setIsAddEditCategoryModalOpen(true);
+  }, []);
+
+  const handleSaveCategory = useCallback(async (categoryData: Omit<Category, 'spent' | 'ownerUid'>) => {
+    if (!userUid) {
+      toast.error("User not authenticated.");
+      return;
+    }
+    if (categoryToEdit) {
+      await updateDocument('categories', categoryToEdit.id, categoryData);
+    } else {
+      await addDocument('categories', { ...categoryData, spent: 0 }); // New categories start with 0 spent
+    }
+    setIsAddEditCategoryModalOpen(false);
+    setCategoryToEdit(null);
+  }, [userUid, categoryToEdit, addDocument, updateDocument]);
+
+  const handleDeleteCategory = useCallback(async (categoryId: string) => {
+    if (!userUid) {
+      toast.error("User not authenticated.");
+      return;
+    }
+    await deleteDocument('categories', categoryId);
+  }, [userUid, deleteDocument]);
+
+  // --- Goal Handlers ---
+  const handleAddGoal = useCallback(() => {
+    setGoalToEdit(null);
+    setIsAddEditGoalModalOpen(true);
+  }, []);
+
+  const handleEditGoal = useCallback((goal: Goal) => {
+    setGoalToEdit(goal);
+    setIsAddEditGoalModalOpen(true);
+  }, []);
+
+  const handleSaveGoal = useCallback(async (goalData: Omit<Goal, 'ownerUid'>) => {
+    if (!userUid) {
+      toast.error("User not authenticated.");
+      return;
+    }
+    if (goalToEdit) {
+      await updateDocument('goals', goalToEdit.id, goalData);
+    } else {
+      await addDocument('goals', goalData);
+    }
+    setIsAddEditGoalModalOpen(false);
+    setGoalToEdit(null);
+  }, [userUid, goalToEdit, addDocument, updateDocument]);
+
+  const handleDeleteGoal = useCallback(async (goalId: string) => {
+    if (!userUid) {
+      toast.error("User not authenticated.");
+      return;
+    }
+    await deleteDocument('goals', goalId);
+  }, [userUid, deleteDocument]);
+
+  const handleOpenAddFunds = useCallback((goal: Goal) => {
+    setGoalToFund(goal);
+    setIsAddFundsModalOpen(true);
+  }, []);
+
+  const handleAddFundsToGoal = useCallback(async (amount: number) => {
+    if (!userUid || !goalToFund) {
+      toast.error("User not authenticated or no goal selected.");
+      return;
+    }
+    const newCurrentAmount = goalToFund.current + amount;
+    await updateDocument('goals', goalToFund.id, { current: newCurrentAmount });
+    setIsAddFundsModalOpen(false);
+    setGoalToFund(null);
+  }, [userUid, goalToFund, updateDocument]);
+
+
   const LoadingSpinner: React.FC = memo(() => (
     <div className="flex items-center justify-center p-8">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -407,7 +516,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     );
   });
 
-  const CategoryCard: React.FC<{ category: Category }> = memo(({ category }) => {
+  const CategoryCard: React.FC<{ category: Category; onEdit: (category: Category) => void; onDelete: (id: string) => void }> = memo(({ category, onEdit, onDelete }) => {
     const percentage = (category.spent / category.budgeted) * 100;
     const health = getHealthStatus(category.spent, category.budgeted);
 
@@ -423,11 +532,33 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
               </p>
             </div>
           </div>
-          <div className="text-right ml-2 flex-shrink-0">
+          <div className="text-right ml-2 flex-shrink-0 flex items-center space-x-2">
             <p className={`font-semibold text-sm sm:text-base ${health.color}`}>
               {formatCurrency(category.budgeted - category.spent)}
             </p>
             <p className="text-xs sm:text-sm text-muted-foreground">{Math.round(percentage)}%</p>
+            <Button variant="ghost" size="icon" onClick={() => onEdit(category)} className="h-8 w-8 text-muted-foreground hover:bg-muted/50">
+              <Edit className="h-4 w-4" />
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50 backdrop-blur-lg">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the category "{category.name}" and all associated data.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDelete(category.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
         <div className="relative">
@@ -680,25 +811,25 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         <div className="p-4 sm:p-6 border-b border-border">
           <div className="flex items-center justify-between">
             <h3 className="text-base sm:text-lg font-semibold text-foreground">Budget Categories</h3>
-            <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80">
+            <Button onClick={handleAddCategory} className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80">
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Category</span>
               <span className="sm:hidden">Add</span>
-            </button>
+            </Button>
           </div>
         </div>
 
         <div className="divide-y divide-border">
           {categories.length > 0 ? (
             categories.map((cat) => (
-              <CategoryCard key={cat.id} category={cat} />
+              <CategoryCard key={cat.id} category={cat} onEdit={handleEditCategory} onDelete={handleDeleteCategory} />
             ))
           ) : (
             <div className="p-6 text-center text-muted-foreground">
               <PiggyBank className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg font-semibold">No categories set up yet!</p>
               <p className="text-sm mt-2">Start by adding your first budget category to track your spending.</p>
-              <Button className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
+              <Button onClick={handleAddCategory} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
                 Add First Category
               </Button>
             </div>
@@ -712,17 +843,18 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-bold text-foreground">Savings Goals</h2>
-        <button className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80">
+        <Button onClick={handleAddGoal} className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80">
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">New Goal</span>
           <span className="sm:hidden">New</span>
-        </button>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {goals.length > 0 ? (
           goals.map((goal) => {
             const percentage = (goal.current / goal.target) * 100;
+            const daysToGo = Math.ceil((new Date(goal.targetDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
             return (
               <div key={goal.id} className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
@@ -750,12 +882,36 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                     />
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
-                    {formatCurrency(goal.target - goal.current)} to go
+                    {formatCurrency(goal.target - goal.current)} to go • Due {formatDate(goal.targetDate, 'MMM dd, yyyy')}
                   </p>
                 </div>
-                <Button className="w-full mt-4 bg-muted/50 hover:bg-muted text-foreground transition-transform hover:scale-[1.02] active:scale-98">
-                  Add Funds
-                </Button>
+                <div className="flex gap-2 mt-4">
+                  <Button onClick={() => handleOpenAddFunds(goal)} className="flex-1 bg-muted/50 hover:bg-muted text-foreground transition-transform hover:scale-[1.02] active:scale-98">
+                    Add Funds
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleEditGoal(goal)} className="h-10 w-10 text-muted-foreground hover:bg-muted/50">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50 backdrop-blur-lg">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the goal "{goal.name}".
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteGoal(goal.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             );
           })
@@ -764,7 +920,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-lg font-semibold text-foreground">No savings goals set up yet!</p>
             <p className="text-sm mt-2 text-muted-foreground">Start saving for your dreams by creating a new goal.</p>
-            <Button className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
+            <Button onClick={handleAddGoal} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
               Create First Goal
             </Button>
           </div>
@@ -949,6 +1105,31 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         onClose={() => setIsQuickAddModalOpen(false)}
         onSave={handleQuickAddTransaction}
       />
+
+      <AddEditCategoryModal
+        isOpen={isAddEditCategoryModalOpen}
+        onClose={() => setIsAddEditCategoryModalOpen(false)}
+        onSave={handleSaveCategory}
+        categoryToEdit={categoryToEdit}
+      />
+
+      <AddEditGoalModal
+        isOpen={isAddEditGoalModalOpen}
+        onClose={() => setIsAddEditGoalModalOpen(false)}
+        onSave={handleSaveGoal}
+        goalToEdit={goalToEdit}
+      />
+
+      {goalToFund && (
+        <AddFundsModal
+          isOpen={isAddFundsModalOpen}
+          onClose={() => setIsAddFundsModalOpen(false)}
+          onAddFunds={handleAddFundsToGoal}
+          goalName={goalToFund.name}
+          currentAmount={goalToFund.current}
+          targetAmount={goalToFund.target}
+        />
+      )}
     </div>
   );
 };
