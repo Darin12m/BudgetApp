@@ -474,7 +474,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                 <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} />
                 <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} tickFormatter={(value) => formatCurrency(Number(value))} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                  contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
                   formatter={(value) => formatCurrency(Number(value))}
                 />
                 <Line type="monotone" dataKey="actual" stroke="hsl(var(--primary))" strokeWidth={2} name="Actual Spent" dot={false} />
@@ -529,7 +529,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
               <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
               <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
               <Tooltip
-                contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
                 formatter={(value) => formatCurrency(Number(value))}
               />
               <Line type="monotone" dataKey="spent" stroke="hsl(var(--primary))" strokeWidth={2} name="Spent" dot={false} />
@@ -556,7 +556,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ fontSize: '12px' }} />
+                <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -571,7 +571,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
             <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
             <Tooltip
-              contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+              contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
               formatter={(value) => formatCurrency(Number(value))}
             />
             <Bar dataKey="value" fill="hsl(var(--emerald))" radius={[8, 8, 0, 0]} />
@@ -785,7 +785,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
             <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
             <Tooltip
-              contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+              contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
               formatter={(value) => formatCurrency(Number(value))}
             />
             <Legend wrapperStyle={{ fontSize: '12px' }} />

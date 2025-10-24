@@ -343,7 +343,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                     tickFormatter={(value) => formatCurrency(Number(value))}
                   />
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                    contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
                     formatter={(value) => formatCurrency(Number(value))}
                     labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                   />
