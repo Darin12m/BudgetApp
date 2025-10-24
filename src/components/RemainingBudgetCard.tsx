@@ -40,7 +40,7 @@ const CustomActiveShape: React.FC<CustomActiveShapeProps> = (props) => {
         endAngle={endAngle}
         fill={fill}
         className="transition-all duration-150 ease-out"
-        style={{ filter: `drop-shadow(0 0 12px ${fill}80)` }} // Increased glow intensity
+        style={{ filter: `drop-shadow(0 0 8px ${fill}80)` }} // Enhanced glow
       />
     </g>
   );
