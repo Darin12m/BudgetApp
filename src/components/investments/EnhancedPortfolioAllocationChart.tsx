@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Sector } from 'recharts';
+import React, { useState, useCallback, useMemo } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 interface AllocationData {
   name: string;
   value: number;
-  color: string; // This color will be overridden by the internal palette
+  color?: string; // Color will be assigned internally
 }
 
 interface EnhancedPortfolioAllocationChartProps {
@@ -35,76 +35,61 @@ const CHART_PALETTE = [
 
 // Custom Active Shape for hover effect
 const CustomActiveShape: React.FC<any> = (props) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
 
   return (
     <g>
-      <text x={cx} y={cy} dy={8} textAnchor="middle" fill="hsl(var(--foreground))" className="text-sm font-semibold">
-        {payload.name}
-      </text>
       <Sector
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 8} // More pronounced scale on hover
+        outerRadius={outerRadius + 8} // Slightly larger on hover
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
         className="transition-all duration-150 ease-out"
         style={{ filter: `drop-shadow(0 0 8px ${fill}80)` }} // Enhanced glow
       />
-      <Sector
-        cx={cx}
-        cy={cy}
-        innerRadius={innerRadius}
-        outerRadius={outerRadius}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        fill={fill}
-      />
     </g>
   );
 };
 
-// Custom Label for percentages
-const CustomizedLabel: React.FC<any> = ({ cx, cy, midAngle, outerRadius, percent, index, name }) => {
-  const RADIAN = Math.PI / 180;
-  const radius = outerRadius * 0.65; // Position slightly further inside the slice
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+interface AllocationLegendListProps {
+  chartData: (AllocationData & { percentage: number; color: string })[];
+  activeIndex: number | null;
+  setActiveIndex: (index: number | null) => void;
+  formatUSD: (value: number) => string;
+  totalPortfolioValue: number;
+}
 
-  if (percent < 0.05) return null; // Don't show label for very small slices
-
+const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
+  chartData,
+  activeIndex,
+  setActiveIndex,
+  formatUSD,
+}) => {
   return (
-    <text
-      x={x}
-      y={y}
-      fill="hsl(var(--primary-foreground))" // White text for contrast on colored slices
-      textAnchor={x > cx ? 'start' : 'end'}
-      dominantBaseline="central"
-      className="text-xs font-semibold"
-    >
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-};
-
-// Custom Legend component
-const CustomLegend: React.FC<any> = ({ payload, totalValue, formatCurrency }) => {
-  if (!payload || payload.length === 0) return null;
-
-  return (
-    <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4 text-sm">
-      {payload.map((entry: any, index: number) => {
-        const percentage = totalValue > 0 ? (entry.value / totalValue) * 100 : 0;
-        return (
-          <div key={`item-${index}`} className="flex items-center space-x-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className="text-muted-foreground">{entry.name}</span>
-            <span className="font-semibold text-foreground">{percentage.toFixed(0)}%</span>
+    <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
+      {chartData.map((entry, index) => (
+        <div
+          key={`legend-item-${index}`}
+          className={cn(
+            "flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors",
+            activeIndex === index ? "bg-muted/50" : "hover:bg-muted/20"
+          )}
+          onMouseEnter={() => setActiveIndex(index)}
+          onMouseLeave={() => setActiveIndex(null)}
+        >
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+            <span className="text-sm text-foreground truncate">{entry.name}</span>
           </div>
-        );
-      })}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">{entry.percentage.toFixed(0)}%</span>
+            <span className="text-sm font-semibold text-foreground">{formatUSD(entry.value)}</span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
@@ -131,14 +116,16 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
     }));
   }, [data]);
 
+  const activeItem = activeIndex !== null ? chartData[activeIndex] : null;
+
   return (
     <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="h-[250px] flex flex-col items-center justify-center">
+      <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
         {chartData.length > 0 ? (
-          <div className="relative w-full h-full">
+          <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <defs>
@@ -151,7 +138,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                 </defs>
                 <Pie
                   activeIndex={activeIndex !== null ? activeIndex : undefined}
-                  activeShape={<CustomActiveShape formatCurrency={formatUSD} />}
+                  activeShape={<CustomActiveShape />}
                   data={chartData}
                   cx="50%"
                   cy="50%"
@@ -164,7 +151,6 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                   onMouseEnter={onPieEnter}
                   onMouseLeave={onPieLeave}
                   labelLine={false}
-                  label={CustomizedLabel}
                 >
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={`url(#color-${index})`} stroke={entry.color} strokeWidth={1} />
@@ -183,24 +169,31 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                     `${props.payload.name} (${props.payload.percentage.toFixed(0)}%)`
                   ]}
                 />
-                <Legend
-                  content={<CustomLegend totalValue={totalPortfolioValue} formatCurrency={formatUSD} />}
-                  wrapperStyle={{ paddingTop: '16px' }}
-                />
               </PieChart>
             </ResponsiveContainer>
             {/* Center Label */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <p className="text-xl font-bold text-foreground">
-                  {totalPortfolioValue > 0 ? formatUSD(totalPortfolioValue) : '100%'}
+                  {activeItem ? formatUSD(activeItem.value) : formatUSD(totalPortfolioValue)}
                 </p>
-                <p className="text-xs text-muted-foreground">Allocated</p>
+                <p className="text-xs text-muted-foreground">
+                  {activeItem ? `${activeItem.name} (${activeItem.percentage.toFixed(0)}%)` : 'Total Allocated'}
+                </p>
               </div>
             </div>
           </div>
         ) : (
-          <p className="text-muted-foreground">{emptyMessage}</p>
+          <p className="text-muted-foreground w-full text-center">{emptyMessage}</p>
+        )}
+        {chartData.length > 0 && (
+          <AllocationLegendList
+            chartData={chartData}
+            activeIndex={activeIndex}
+            setActiveIndex={setActiveIndex}
+            formatUSD={formatUSD}
+            totalPortfolioValue={totalPortfolioValue}
+          />
         )}
       </CardContent>
     </Card>
