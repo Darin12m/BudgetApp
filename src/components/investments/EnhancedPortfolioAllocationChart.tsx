@@ -52,32 +52,12 @@ const CustomActiveShape: React.FC<any> = (props) => {
   );
 };
 
-// Custom Label for animated percentages
+// Custom Label for percentages (without animation to avoid hook call error)
 const CustomizedLabel: React.FC<any> = ({ cx, cy, midAngle, outerRadius, percent, index, name }) => {
   const RADIAN = Math.PI / 180;
   const radius = outerRadius * 0.7; // Position inside the slice
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  const [animatedPercent, setAnimatedPercent] = useState(0);
-
-  useEffect(() => {
-    let start: number | null = null;
-    const duration = 800; // Animation duration in ms
-
-    const animate = (timestamp: number) => {
-      if (!start) start = timestamp;
-      const progress = timestamp - start;
-      const easedProgress = Math.min(progress / duration, 1); // Easing function (linear for now)
-      setAnimatedPercent(parseFloat((percent * easedProgress * 100).toFixed(0)));
-
-      if (progress < duration) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }, [percent]);
 
   if (percent < 0.05) return null; // Don't show label for very small slices
 
@@ -90,7 +70,7 @@ const CustomizedLabel: React.FC<any> = ({ cx, cy, midAngle, outerRadius, percent
       dominantBaseline="central"
       className="text-xs font-semibold"
     >
-      {`${animatedPercent}%`}
+      {`${(percent * 100).toFixed(0)}%`}
     </text>
   );
 };
@@ -163,7 +143,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                   onMouseEnter={onPieEnter}
                   onMouseLeave={onPieLeave}
                   labelLine={false}
-                  label={CustomizedLabel} // Animated percentage labels
+                  label={CustomizedLabel} // Percentage labels (without animation)
                 >
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
