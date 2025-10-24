@@ -21,8 +21,7 @@ interface EnhancedPortfolioAllocationChartProps {
 
 // Custom Active Shape for hover effect
 const CustomActiveShape: React.FC<any> = (props) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
-  const { formatCurrency } = useCurrency();
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value, formatCurrency } = props;
 
   return (
     <g>
@@ -97,8 +96,7 @@ const CustomizedLabel: React.FC<any> = ({ cx, cy, midAngle, outerRadius, percent
 };
 
 // Custom Legend component
-const CustomLegend: React.FC<any> = ({ payload, totalValue }) => {
-  const { formatCurrency } = useCurrency();
+const CustomLegend: React.FC<any> = ({ payload, totalValue, formatCurrency }) => {
   if (!payload || payload.length === 0) return null;
 
   return (
@@ -119,7 +117,7 @@ const CustomLegend: React.FC<any> = ({ payload, totalValue }) => {
 
 
 const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChartProps> = ({ title, data, emptyMessage, totalPortfolioValue }) => {
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency } = useCurrency(); // Call useCurrency here
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const onPieEnter = useCallback((_: any, index: number) => {
@@ -151,7 +149,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
               <PieChart>
                 <Pie
                   activeIndex={activeIndex !== null ? activeIndex : undefined}
-                  activeShape={CustomActiveShape}
+                  activeShape={<CustomActiveShape formatCurrency={formatCurrency} />} // Pass formatCurrency
                   data={chartData}
                   cx="50%"
                   cy="50%"
@@ -185,7 +183,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                   ]}
                 />
                 <Legend
-                  content={<CustomLegend totalValue={totalPortfolioValue} />}
+                  content={<CustomLegend totalValue={totalPortfolioValue} formatCurrency={formatCurrency} />} // Pass formatCurrency
                   wrapperStyle={{ paddingTop: '16px' }}
                 />
               </PieChart>
