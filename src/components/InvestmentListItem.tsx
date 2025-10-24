@@ -26,7 +26,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
 
   // 24h change styling
   const change24hPercent = investment.change24hPercent;
-  const isPositive24h = change24hPercent !== null && change24hPercent >= 0;
+  const isPositive24h = typeof change24hPercent === 'number' && change24hPercent >= 0;
   const change24hColor = isPositive24h ? 'text-arrowUp' : 'text-arrowDown';
   const Change24hIcon = isPositive24h ? TrendingUp : TrendingDown;
 
@@ -63,7 +63,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
         </div>
       </div>
       <div className="text-right ml-2 flex-shrink-0">
-        {change24hPercent !== null && (
+        {typeof change24hPercent === 'number' && (
           <div className={`flex items-center justify-end rounded-full px-2 py-1 ${isPositive24h ? 'bg-arrowUp/10' : 'bg-arrowDown/10'} ${priceChangeClasses[priceChangeStatus]} animate-float-up-down`}>
             {Change24hIcon && <Change24hIcon className={`w-3 h-3 mr-1 ${change24hColor}`} />}
             <p className={`font-semibold text-sm ${change24hColor}`}>
