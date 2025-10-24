@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, Palette, Zap } from 'lucide-react'; // Added ChevronLeft icon
+import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, ChevronRight, Palette, Zap } from 'lucide-react'; // Added ChevronRight icon
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
