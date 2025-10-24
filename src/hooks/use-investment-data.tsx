@@ -106,8 +106,8 @@ export const useInvestmentData = (userUid: string | null) => {
     for (const inv of latestInvestments.current) {
       updates.push((async () => {
         let updatedPrice = inv.currentPrice;
-        let priceSource: 'CoinGecko' | 'Finnhub' | undefined;
-        let fetchedName: string | null | undefined = inv.companyName;
+        let priceSource: 'CoinGecko' | 'Finnhub' | null = null; // Initialize as null
+        let fetchedName: string | null = inv.companyName || null; // Initialize as null
         let change24hPercent: number | null = null;
 
         if (inv.type === 'Stock' && inv.symbol) {
@@ -156,17 +156,27 @@ export const useInvestmentData = (userUid: string | null) => {
           newAlertedInvestments.set(inv.id, false);
         }
 
-        // Update Firestore with the new currentPrice, companyName, lastPrice, priceSource, lastUpdated, and change24hPercent
+        // Build update payload, only including defined values
+        const updatePayload: { [key: string]: any } = {
+          currentPrice: updatedPrice,
+          lastPrice: updatedPrice,
+          lastUpdated: new Date().toISOString(),
+          updatedAt: serverTimestamp(),
+        };
+
+        if (fetchedName !== null) {
+          updatePayload.companyName = fetchedName;
+        }
+        if (priceSource !== null) {
+          updatePayload.priceSource = priceSource;
+        }
+        if (change24hPercent !== null) {
+          updatePayload.change24hPercent = change24hPercent;
+        }
+
+        // Only update if there's a change in relevant fields
         if (updatedPrice !== inv.currentPrice || fetchedName !== inv.companyName || change24hPercent !== inv.change24hPercent) {
-          await updateDoc(doc(db, "investments", inv.id), {
-            currentPrice: updatedPrice,
-            companyName: fetchedName,
-            lastPrice: updatedPrice,
-            priceSource: priceSource,
-            lastUpdated: new Date().toISOString(),
-            change24hPercent: change24hPercent,
-            updatedAt: serverTimestamp(),
-          });
+          await updateDoc(doc(db, "investments", inv.id), updatePayload);
         }
       })());
     }
