@@ -571,18 +571,24 @@ const BudgetView: React.FC<BudgetViewProps> = ({
           </div>
         )}
       </div>
-      <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-4">
-        <div>
-          <p className="text-muted-foreground text-xs sm:text-sm">Budget</p>
-          <p className="text-xl sm:text-3xl font-bold">{formatCurrency(totalBudgeted)}</p>
+      <div className="flex flex-wrap justify-between items-end gap-x-4 gap-y-3 mb-4">
+        <div className="flex flex-col items-center text-center w-full sm:w-auto flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 sm:items-start sm:text-left">
+          <p className="text-muted-foreground text-xs sm:text-sm mb-1">Budget</p>
+          <p className="text-xl sm:text-2xl lg:text-3xl font-bold overflow-hidden text-ellipsis whitespace-nowrap">
+            {formatCurrency(totalBudgeted)}
+          </p>
         </div>
-        <div>
-          <p className="text-muted-foreground text-xs sm:text-sm">Spent</p>
-          <p className="text-xl sm:text-2xl font-semibold">{formatCurrency(totalSpent)}</p>
+        <div className="flex flex-col items-center text-center w-full sm:w-auto flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 sm:items-start sm:text-left">
+          <p className="text-muted-foreground text-xs sm:text-sm mb-1">Spent</p>
+          <p className="text-xl sm:text-2xl font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
+            {formatCurrency(totalSpent)}
+          </p>
         </div>
-        <div>
-          <p className="text-muted-foreground text-xs sm:text-sm">Left</p>
-          <p className="text-xl sm:text-2xl font-semibold">{formatCurrency(remainingBudget)}</p>
+        <div className="flex flex-col items-center text-center w-full sm:w-auto flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 sm:items-start sm:text-left">
+          <p className="text-muted-foreground text-xs sm:text-sm mb-1">Left</p>
+          <p className="text-xl sm:text-2xl font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
+            {formatCurrency(remainingBudget)}
+          </p>
         </div>
       </div>
       {budgetSettings.rolloverEnabled && budgetSettings.previousMonthLeftover > 0 && (
