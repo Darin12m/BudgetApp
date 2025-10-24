@@ -6,8 +6,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { PiggyBank, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '@/context/CurrencyContext';
-import { Progress } from '@/components/ui/progress'; // Import Progress component
-import { cn } from '@/lib/utils'; // Import cn for conditional class merging
+import { cn } from '@/lib/utils';
+import { CustomProgress } from '@/components/common/CustomProgress'; // Import CustomProgress
 
 interface Category {
   id: string;
@@ -129,7 +129,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
                         <span className="text-muted-foreground"> / {formatCurrency(cat.budgeted)}</span>
                       </div>
                     </div>
-                    <Progress value={Math.min(categorySpentPercentage, 100)} className="h-2" indicatorColor={cat.color} />
+                    <CustomProgress value={Math.min(categorySpentPercentage, 100)} className="h-2" indicatorColor={cat.color} />
                   </div>
                 );
               })

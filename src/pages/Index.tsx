@@ -23,6 +23,7 @@ import { useDateRange } from '@/context/DateRangeContext';
 import { DateRangePicker } from '@/components/common/DateRangePicker';
 import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
 import CategoryOverviewCard from '@/components/dashboard/CategoryOverviewCard'; // Import the new component
+import { toast } from 'sonner'; // Import toast from sonner
 
 interface IndexPageProps {
   userUid: string | null;

@@ -66,7 +66,7 @@ interface RecurringTransaction {
 interface AddEditTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (transaction: Omit<Transaction, 'id' | 'ownerUid'>, isRecurring: boolean, recurringDetails?: Omit<RecurringTransaction, 'id' | 'ownerUid' | 'emoji'>) => void;
+  onSave: (transaction: Omit<Transaction, 'id' | 'ownerUid'>, isRecurring: boolean, recurringDetails?: Omit<RecurringTransaction, 'id' | 'ownerUid'>) => void; // Removed 'emoji' from Omit
   onDelete: (id: string) => void;
   transactionToEdit?: Transaction | null;
   categories: Category[];
@@ -172,7 +172,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       account: selectedAccount,
     };
 
-    let recurringPayload: Omit<RecurringTransaction, 'id' | 'ownerUid' | 'emoji'> | undefined = undefined;
+    let recurringPayload: Omit<RecurringTransaction, 'id' | 'ownerUid'> | undefined = undefined; // Removed 'emoji' from Omit
     if (isRecurring && nextDate) {
       const categoryEmoji = categories.find(cat => cat.name === selectedCategory)?.emoji || '💳';
       recurringPayload = {

@@ -41,7 +41,7 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
   const [error, setError] = useState<string | null>(null);
   const [livePrices, setLivePrices] = useState<Map<string, number>>(new Map());
   const [priceChange, setPriceChange] = useState<Map<string, 'up' | 'down' | 'none'>>(new Map());
-  const [alertedInvestments, setAlertedInvestments] = new Map(); // New state for alerts
+  const [alertedInvestments, setAlertedInvestments] = useState<Map<string, boolean>>(new Map()); // New state for alerts
 
   const { budgetSettings } = useFinanceData(userUid, startDate, endDate); // Get budget settings for alert threshold
 

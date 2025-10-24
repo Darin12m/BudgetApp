@@ -6,6 +6,8 @@ import { PiggyBank, TrendingUp, TrendingDown, LucideIcon, AlertTriangle } from '
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge'; // Import Badge component
+import { PieSectorDataItem } from 'recharts/types/polar/Pie'; // Import PieSectorDataItem
+import { CustomProgress } from '@/components/common/CustomProgress'; // Import CustomProgress
 
 interface RemainingBudgetCardProps {
   totalBudgeted: number;
@@ -18,8 +20,13 @@ interface RemainingBudgetCardProps {
   smartSummary: string;
 }
 
+// Define props interface for CustomActiveShape
+interface CustomActiveShapeProps extends PieSectorDataItem {
+  // Add any other props you might be passing or that recharts provides
+}
+
 // Custom Active Shape for hover effect on Donut Chart
-const CustomActiveShape: React.FC<any> = (props) => {
+const CustomActiveShape: React.FC<CustomActiveShapeProps> = (props) => {
   const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
 
   return (

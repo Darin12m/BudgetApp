@@ -13,6 +13,7 @@ import ColorPicker from '@/components/common/ColorPicker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns'; // Import format
 import {
   AlertDialog,
   AlertDialogAction,
