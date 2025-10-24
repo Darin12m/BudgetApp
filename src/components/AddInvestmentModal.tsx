@@ -3,7 +3,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"; // Import Drawer components
-import { Card } from "@/components/ui/card";
 import { Investment } from '@/hooks/use-investment-data';
 import InvestmentForm from './investments/InvestmentForm';
 import { useDeviceDetection } from '@/hooks/use-device-detection'; // Import the new hook
@@ -30,7 +29,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
   }, [onDelete, onClose]);
 
   const ModalContent = (
-    <Card className="bg-card text-foreground card-shadow border border-border/50 p-6 backdrop-blur-lg">
+    <> {/* Removed Card wrapper */}
       <DialogHeader> {/* Using DialogHeader for consistent styling, works with Drawer too */}
         <DialogTitle>{investmentToEdit ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
       </DialogHeader>
@@ -40,7 +39,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
         onDelete={handleDelete}
         onClose={onClose}
       />
-    </Card>
+    </>
   );
 
   if (isMobile) {
@@ -65,7 +64,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="z-[1000] sm:max-w-[425px]" onPointerDown={(e) => e.stopPropagation()}>
+      <DialogContent className="z-[1000] sm:max-w-[425px] bg-card text-foreground card-shadow border border-border/50 p-6 backdrop-blur-lg" onPointerDown={(e) => e.stopPropagation()}> {/* Added styling directly to DialogContent */}
         {ModalContent}
       </DialogContent>
     </Dialog>

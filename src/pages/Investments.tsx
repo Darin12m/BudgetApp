@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, ChevronLeft, Menu } from 'lucide-react';
+import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, ChevronLeft, Menu, Calendar } from 'lucide-react'; // Added Calendar
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns'; // Import format for date display
 
 import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
 import { calculateGainLoss, formatCurrency } from '@/lib/utils';
@@ -224,10 +225,9 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   }, []);
 
   const handleViewChange = useCallback((view: string) => {
-    // This function is passed to Sidebar, but InvestmentsPage doesn't directly change its 'view' state
-    // It navigates to different routes. So, we can just navigate.
     if (view === 'dashboard') navigate('/');
     else if (view === 'investments') navigate('/investments');
+    else if (view === 'settings') navigate('/settings');
     else navigate(`/budget-app?view=${view}`);
   }, [navigate]);
 
@@ -241,18 +241,33 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 
       <div className={`flex flex-col flex-1 min-w-0 ${sidebarOpen ? 'sm:ml-72' : 'sm:ml-0'} transition-all duration-300 ease-in-out`}>
         <header className="bg-card backdrop-blur-lg border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
-          <div className="flex items-center px-4 sm:px-6 py-3 sm:py-4">
-            <button
-              onClick={handleSidebarToggle}
-              className="p-2 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted flex-shrink-0 mr-2 sm:mr-4"
-            >
-              <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
-            </button>
-            <h1 className="text-lg sm:text-xl font-bold">Investments</h1>
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+            <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+              <button
+                onClick={handleSidebarToggle}
+                className="p-2 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted flex-shrink-0"
+              >
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
+              </button>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground capitalize truncate">Investments</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Track your portfolio performance.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+              <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-muted/50 rounded-lg">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">{format(new Date(), 'MMMM yyyy')}</span>
+              </div>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                JD
+              </div>
+            </div>
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 pb-24 sm:pb-6">
+        <main className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 pb-24 sm:pb-6 w-full">
           {error && <ErrorMessage message={error} />}
 
           {/* Overall Portfolio Overview */}
@@ -385,24 +400,16 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               )}
             </CardContent>
           </Card>
-        </div>
+        </main>
 
         {/* Add/Edit Investment Modal */}
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="z-[1000] sm:max-w-[425px]" onPointerDown={(e) => e.stopPropagation()}>
-            <Card className="bg-card text-foreground card-shadow border border-border/50 p-6 backdrop-blur-lg">
-              <DialogHeader>
-                <DialogTitle>{editingInvestment ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
-              </DialogHeader>
-              <InvestmentForm
-                investment={editingInvestment}
-                onSave={handleSaveInvestment}
-                onDelete={handleDeleteInvestment}
-                onClose={() => setIsModalOpen(false)}
-              />
-            </Card>
-          </DialogContent>
-        </Dialog>
+        <AddInvestmentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveInvestment}
+          onDelete={handleDeleteInvestment}
+          investmentToEdit={editingInvestment}
+        />
 
         {/* Fixed Add Button for Mobile (now above BottomNavBar) */}
         <Button
