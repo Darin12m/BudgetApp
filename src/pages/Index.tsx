@@ -21,7 +21,8 @@ import { format } from 'date-fns';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
 import { DateRangePicker } from '@/components/common/DateRangePicker';
-import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart'; // Import the new component
+import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
+import CategoryOverviewCard from '@/components/dashboard/CategoryOverviewCard'; // Import the new component
 
 interface IndexPageProps {
   userUid: string | null;
@@ -30,7 +31,7 @@ interface IndexPageProps {
 const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))', '#f59e0b', '#ef4444', '#06b6d4'];
 
 const Index: React.FC<IndexPageProps> = ({ userUid }) => {
-  const { formatCurrency, formatUSD } = useCurrency(); // Use formatUSD
+  const { formatCurrency, formatUSD } = useCurrency();
   const { selectedRange } = useDateRange();
 
   const {
@@ -72,7 +73,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   const remainingBudget = remainingBudgetMonthly;
 
   const today = new Date();
-  const endOfCurrentMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Renamed local variable
+  const endOfCurrentMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
   const daysLeft = Math.ceil((endOfCurrentMonthDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   const remainingPerDay = useMemo(() =>
     remainingBudget / daysLeft,
@@ -130,16 +131,42 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   }, [investments]);
 
   // --- Handlers ---
-  const handleQuickAddTransaction = useCallback(async (amount: number, note: string, date: string) => {
-    await addDocument('transactions', {
+  const handleQuickAddTransaction = useCallback(async (amount: number, note: string, date: string, categoryName: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => {
+    if (!userUid) {
+      toast.error("You must be logged in to save data.");
+      return;
+    }
+
+    const transactionPayload = {
       date: date,
       merchant: note || 'Quick Add',
       amount: amount,
-      category: 'Uncategorized',
+      category: categoryName,
       status: 'pending',
       account: transactions.length > 0 ? transactions[0].account : 'Default Account',
-    });
-  }, [addDocument, transactions]);
+    };
+
+    try {
+      await addDocument('transactions', transactionPayload);
+      toast.success("Transaction added successfully!");
+
+      if (isRecurring && frequency && nextDate) {
+        const categoryEmoji = categories.find(cat => cat.name === categoryName)?.emoji || '💳';
+        await addDocument('recurringTransactions', {
+          name: note || 'Quick Add',
+          amount: amount,
+          category: categoryName,
+          frequency,
+          nextDate,
+          emoji: categoryEmoji,
+        });
+        toast.success("Recurring transaction also added!");
+      }
+    } catch (e: any) {
+      console.error("Error adding transaction:", e.code, e.message);
+      toast.error(`Failed to add transaction: ${e.message}`);
+    }
+  }, [addDocument, transactions, userUid, categories]);
 
   const handleSaveNewInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
     await addInvestment(newInvestment);
@@ -273,6 +300,13 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                 smartSummary="Your budget at a glance."
               />
 
+              {/* Category Overview Card */}
+              <CategoryOverviewCard
+                categories={categories}
+                totalBudgetedMonthly={totalBudgetedMonthly}
+                totalSpentMonthly={totalSpentMonthly}
+              />
+
               {/* Total Investment Portfolio Card */}
               <Card className="card-shadow border-none bg-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
                 <CardContent className="p-6">
@@ -368,6 +402,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
         isOpen={isQuickAddModalOpen}
         onClose={() => setIsQuickAddModalOpen(false)}
         onSave={handleQuickAddTransaction}
+        categories={categories}
       />
 
       <AddInvestmentModal

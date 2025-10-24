@@ -2,10 +2,11 @@ import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, AlertCircle, Calendar, PiggyBank, Menu, X, Plus, ArrowRight, Settings, Bell, Home, List, BarChart3, ChevronRight, Wallet, Search, Lightbulb, Zap, LucideIcon, Edit, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useFinanceData, Goal } from '@/hooks/use-finance-data'; // Import Goal from use-finance-data
+import { useFinanceData, Goal } from '@/hooks/use-finance-data';
 import { formatDate } from '@/lib/utils';
 import RemainingBudgetCard from '@/components/RemainingBudgetCard';
 import QuickAddTransactionModal from '@/components/QuickAddTransactionModal';
+import AddEditTransactionModal from '@/components/transactions/AddEditTransactionModal'; // Import new modal
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -28,12 +29,12 @@ import {
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
 import { DateRangePicker } from '@/components/common/DateRangePicker';
-import { toast } from 'sonner'; // Import toast
+import { toast } from 'sonner';
 
 // TypeScript Interfaces (moved to use-finance-data.tsx for centralized management)
 interface Transaction {
   id: string;
-  date: string;
+  date: string; // YYYY-MM-DD
   merchant: string;
   amount: number;
   category: string;
@@ -140,7 +141,7 @@ interface StatsCardProps {
   color: string;
   bgColor: string;
   trend?: { value: string; color: string };
-  accounts: Account[]; // Added accounts prop
+  accounts: Account[];
 }
 
 const StatsCard: React.FC<StatsCardProps> = memo(({ title, value, subtitle, icon: Icon, color, bgColor, trend, accounts }) => (
@@ -176,9 +177,10 @@ interface TransactionCardProps {
   transaction: Transaction;
   categories: Category[];
   formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
+  onEdit: (transaction: Transaction) => void; // Added onEdit prop
 }
 
-const TransactionCard: React.FC<TransactionCardProps> = memo(({ transaction, categories, formatCurrency }) => {
+const TransactionCard: React.FC<TransactionCardProps> = memo(({ transaction, categories, formatCurrency, onEdit }) => {
   const category = categories.find(c => c.name === transaction.category);
   return (
     <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted">
@@ -193,10 +195,13 @@ const TransactionCard: React.FC<TransactionCardProps> = memo(({ transaction, cat
           <p className="text-xs text-muted-foreground truncate">{category?.name || 'Uncategorized'}</p>
         </div>
       </div>
-      <div className="text-right ml-2 flex-shrink-0">
+      <div className="text-right ml-2 flex-shrink-0 flex items-center space-x-2"> {/* Added flex items-center space-x-2 */}
         <p className={`font-semibold text-sm ${transaction.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>
           {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
         </p>
+        <Button variant="ghost" size="icon" onClick={() => onEdit(transaction)} className="h-8 w-8 text-muted-foreground hover:bg-muted/50">
+          <Edit className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );
@@ -277,7 +282,7 @@ interface DashboardViewProps {
   remainingBudget: number;
   remainingPerDay: number;
   daysLeft: number;
-  budgetSettings: any; // Consider refining this type
+  budgetSettings: any;
   smartSummary: string;
   runOutIcon: LucideIcon;
   runOutColor: string;
@@ -292,7 +297,7 @@ interface DashboardViewProps {
   transactions: Transaction[];
   categories: Category[];
   formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
-  netWorthTrend: NetWorthData[]; // Added netWorthTrend prop
+  netWorthTrend: NetWorthData[];
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
@@ -316,7 +321,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   transactions,
   categories,
   formatCurrency,
-  netWorthTrend, // Destructure netWorthTrend
+  netWorthTrend,
 }) => (
   <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
     <RemainingBudgetCard
@@ -428,7 +433,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 outerRadius={80}
                 paddingAngle={2}
                 dataKey="value"
-                // Removed label prop to prevent overlap
               >
                 {categoryData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -535,7 +539,7 @@ interface BudgetViewProps {
   remainingBudget: number;
   remainingPerDay: number;
   daysLeft: number;
-  budgetSettings: any; // Consider refining this type
+  budgetSettings: any;
   formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
   categories: Category[];
   handleAddCategory: () => void;
@@ -774,6 +778,7 @@ interface TransactionsViewProps {
   transactionFilterPeriod: 'all' | 'thisMonth';
   setTransactionFilterPeriod: (period: 'all' | 'thisMonth') => void;
   setIsQuickAddModalOpen: (isOpen: boolean) => void;
+  handleEditTransaction: (transaction: Transaction) => void; // Added handleEditTransaction
   formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
 }
 
@@ -785,12 +790,13 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({
   transactionFilterPeriod,
   setTransactionFilterPeriod,
   setIsQuickAddModalOpen,
+  handleEditTransaction, // Destructure handleEditTransaction
   formatCurrency,
 }) => {
   const filteredTransactions = useMemo(() => {
     const lowerCaseSearchTerm = transactionSearchTerm.toLowerCase();
     const now = new Date();
-    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1); // Renamed local variable
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     return transactions.filter(txn => {
       const matchesSearch = txn.merchant.toLowerCase().includes(lowerCaseSearchTerm) ||
@@ -842,30 +848,13 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({
         <div className="divide-y divide-border">
           {filteredTransactions.length > 0 ? (
             filteredTransactions.map(txn => (
-              <div key={txn.id} className="p-4 active:bg-muted/50 transition-colors">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <span className="text-2xl flex-shrink-0">
-                      {txn.amount > 0 ? '💰' : categories.find(c => c.name === txn.category)?.emoji || '💳'}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-foreground text-sm truncate">{txn.merchant}</p>
-                      <p className="text-xs text-muted-foreground">{categories.find(c => c.name === txn.category)?.name || 'Uncategorized'}</p>
-                    </div>
-                  </div>
-                  <p className={`font-bold text-sm ml-2 flex-shrink-0 ${txn.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>
-                    {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{txn.date}</span>
-                  <span className={`px-2 py-0.5 rounded-full font-medium ${
-                    txn.status === 'pending' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400'
-                  }`}>
-                    {txn.status}
-                  </span>
-                </div>
-              </div>
+              <TransactionCard
+                key={txn.id}
+                transaction={txn}
+                categories={categories}
+                formatCurrency={formatCurrency}
+                onEdit={handleEditTransaction} // Pass handleEditTransaction
+              />
             ))
           ) : (
             <div className="p-6 text-center text-muted-foreground">
@@ -890,7 +879,7 @@ interface BudgetAppProps {
 const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const location = useLocation();
   const { formatCurrency } = useCurrency();
-  const { selectedRange } = useDateRange(); // Removed goToPreviousPeriod, goToNextPeriod
+  const { selectedRange } = useDateRange();
 
   const {
     transactions,
@@ -921,6 +910,10 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const [goalToEdit, setGoalToEdit] = useState<Goal | null>(null);
   const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
   const [goalToFund, setGoalToFund] = useState<Goal | null>(null);
+
+  // State for Transaction Modals
+  const [isAddEditTransactionModalOpen, setIsAddEditTransactionModalOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
 
 
   useEffect(() => {
@@ -978,7 +971,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   );
 
   const today = new Date();
-  const endOfCurrentMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Renamed local variable
+  const endOfCurrentMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
   const daysLeft = Math.ceil((endOfCurrentMonthDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   const remainingPerDay = useMemo(() =>
     remainingBudget / daysLeft,
@@ -1012,7 +1005,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const currentMonthYearForForecast = useMemo(() => format(currentMonthDate, 'MMMM yyyy'), [currentMonthDate]);
 
   const filteredTransactionsForForecast = useMemo(() => {
-    // Filter transactions based on the current month, not the selectedRange
     return transactions.filter(txn => {
       const txnDate = parseISO(txn.date);
       return isWithinInterval(txnDate, { start: startOfMonth(currentMonthDate), end: endOfMonth(currentMonthDate) });
@@ -1113,16 +1105,42 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     setSidebarOpen(false);
   }, []);
 
-  const handleQuickAddTransaction = useCallback(async (amount: number, note: string, date: string) => {
-    await addDocument('transactions', {
+  const handleQuickAddTransaction = useCallback(async (amount: number, note: string, date: string, categoryName: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => {
+    if (!userUid) {
+      toast.error("You must be logged in to save data.");
+      return;
+    }
+
+    const transactionPayload = {
       date: date,
       merchant: note || 'Quick Add',
       amount: amount,
-      category: 'Uncategorized',
+      category: categoryName,
       status: 'pending',
       account: accounts.length > 0 ? accounts[0].name : 'Default Account',
-    });
-  }, [addDocument, accounts]);
+    };
+
+    try {
+      await addDocument('transactions', transactionPayload);
+      toast.success("Transaction added successfully!");
+
+      if (isRecurring && frequency && nextDate) {
+        const categoryEmoji = categories.find(cat => cat.name === categoryName)?.emoji || '💳';
+        await addDocument('recurringTransactions', {
+          name: note || 'Quick Add',
+          amount: amount,
+          category: categoryName,
+          frequency,
+          nextDate,
+          emoji: categoryEmoji,
+        });
+        toast.success("Recurring transaction also added!");
+      }
+    } catch (e: any) {
+      console.error("Error adding transaction:", e.code, e.message);
+      toast.error(`Failed to add transaction: ${e.message}`);
+    }
+  }, [addDocument, accounts, userUid, categories]);
 
   // --- Category Handlers ---
   const handleAddCategory = useCallback(() => {
@@ -1143,7 +1161,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     if (categoryToEdit) {
       await updateDocument('categories', categoryToEdit.id, categoryData);
     } else {
-      await addDocument('categories', { ...categoryData, spent: 0 }); // New categories start with 0 spent
+      await addDocument('categories', { ...categoryData, spent: 0 });
     }
     setIsAddEditCategoryModalOpen(false);
     setCategoryToEdit(null);
@@ -1206,6 +1224,108 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     setGoalToFund(null);
   }, [userUid, goalToFund, updateDocument]);
 
+  // --- Transaction Handlers ---
+  const handleEditTransaction = useCallback((transaction: Transaction) => {
+    setTransactionToEdit(transaction);
+    setIsAddEditTransactionModalOpen(true);
+  }, []);
+
+  const handleSaveTransaction = useCallback(async (transactionData: Omit<Transaction, 'id' | 'ownerUid'>, isRecurring: boolean, recurringDetails?: Omit<RecurringTransaction, 'id' | 'ownerUid' | 'emoji'>) => {
+    if (!userUid) {
+      toast.error("User not authenticated.");
+      return;
+    }
+
+    try {
+      if (transactionToEdit) {
+        await updateDocument('transactions', transactionToEdit.id, transactionData);
+        toast.success("Transaction updated successfully!");
+
+        // Handle recurring status change
+        const wasRecurring = recurringTransactions.some(rt =>
+          rt.name === transactionToEdit.merchant &&
+          rt.amount === transactionToEdit.amount &&
+          rt.category === transactionToEdit.category
+        );
+
+        if (isRecurring && recurringDetails) {
+          if (wasRecurring) {
+            // Update existing recurring transaction
+            const existingRecurring = recurringTransactions.find(rt =>
+              rt.name === transactionToEdit.merchant &&
+              rt.amount === transactionToEdit.amount &&
+              rt.category === transactionToEdit.category
+            );
+            if (existingRecurring) {
+              await updateDocument('recurringTransactions', existingRecurring.id, recurringDetails);
+              toast.success("Recurring transaction updated!");
+            }
+          } else {
+            // Add new recurring transaction
+            await addDocument('recurringTransactions', { ...recurringDetails, ownerUid: userUid });
+            toast.success("New recurring transaction added!");
+          }
+        } else if (wasRecurring && !isRecurring) {
+          // Remove from recurring transactions
+          const existingRecurring = recurringTransactions.find(rt =>
+            rt.name === transactionToEdit.merchant &&
+            rt.amount === transactionToEdit.amount &&
+            rt.category === transactionToEdit.category
+          );
+          if (existingRecurring) {
+            await deleteDocument('recurringTransactions', existingRecurring.id);
+            toast.success("Recurring transaction removed!");
+          }
+        }
+      } else {
+        // Add new transaction
+        await addDocument('transactions', transactionData);
+        toast.success("Transaction added successfully!");
+
+        if (isRecurring && recurringDetails) {
+          await addDocument('recurringTransactions', { ...recurringDetails, ownerUid: userUid });
+          toast.success("Recurring transaction also added!");
+        }
+      }
+      setIsAddEditTransactionModalOpen(false);
+      setTransactionToEdit(null);
+    } catch (e: any) {
+      console.error("Error saving transaction:", e.code, e.message);
+      toast.error(`Failed to save transaction: ${e.message}`);
+    }
+  }, [userUid, transactionToEdit, addDocument, updateDocument, deleteDocument, recurringTransactions, categories]);
+
+  const handleDeleteTransaction = useCallback(async (transactionId: string) => {
+    if (!userUid) {
+      toast.error("User not authenticated.");
+      return;
+    }
+    try {
+      await deleteDocument('transactions', transactionId);
+      toast.success("Transaction deleted successfully!");
+
+      // Also check and delete if it's a recurring transaction
+      const transactionToDelete = transactions.find(t => t.id === transactionId);
+      if (transactionToDelete) {
+        const matchingRecurring = recurringTransactions.find(rt =>
+          rt.name === transactionToDelete.merchant &&
+          rt.amount === transactionToDelete.amount &&
+          rt.category === transactionToDelete.category
+        );
+        if (matchingRecurring) {
+          await deleteDocument('recurringTransactions', matchingRecurring.id);
+          toast.success("Associated recurring transaction also deleted!");
+        }
+      }
+      setIsAddEditTransactionModalOpen(false);
+      setTransactionToEdit(null);
+    } catch (e: any) {
+      console.error("Error deleting transaction:", e.code, e.message);
+      toast.error(`Failed to delete transaction: ${e.message}`);
+    }
+  }, [userUid, deleteDocument, transactions, recurringTransactions]);
+
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} onViewChange={handleViewChange} userUid={userUid} />
@@ -1227,9 +1347,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              {/* Removed previous period button */}
               <DateRangePicker />
-              {/* Removed next period button */}
               <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 JD
               </div>
@@ -1265,7 +1383,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   transactions={transactions}
                   categories={categories}
                   formatCurrency={formatCurrency}
-                  netWorthTrend={netWorthTrend} // Pass netWorthTrend
+                  netWorthTrend={netWorthTrend}
                 />
               )}
               {activeView === 'budget' && (
@@ -1302,6 +1420,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   transactionFilterPeriod={transactionFilterPeriod}
                   setTransactionFilterPeriod={setTransactionFilterPeriod}
                   setIsQuickAddModalOpen={setIsQuickAddModalOpen}
+                  handleEditTransaction={handleEditTransaction} // Pass handleEditTransaction
                   formatCurrency={formatCurrency}
                 />
               )}
@@ -1314,6 +1433,18 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         isOpen={isQuickAddModalOpen}
         onClose={() => setIsQuickAddModalOpen(false)}
         onSave={handleQuickAddTransaction}
+        categories={categories} // Pass categories
+      />
+
+      <AddEditTransactionModal
+        isOpen={isAddEditTransactionModalOpen}
+        onClose={() => setIsAddEditTransactionModalOpen(false)}
+        onSave={handleSaveTransaction}
+        onDelete={handleDeleteTransaction}
+        transactionToEdit={transactionToEdit}
+        categories={categories}
+        accounts={accounts}
+        recurringTransactions={recurringTransactions}
       />
 
       <AddEditCategoryModal
