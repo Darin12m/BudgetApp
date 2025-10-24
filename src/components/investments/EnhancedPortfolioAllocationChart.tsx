@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 interface AllocationData {
   name: string;
   value: number;
-  color: string;
+  color: string; // This color will be overridden by the internal palette
 }
 
 interface EnhancedPortfolioAllocationChartProps {
@@ -19,9 +19,23 @@ interface EnhancedPortfolioAllocationChartProps {
   totalPortfolioValue: number;
 }
 
+// Define a new, high-contrast color palette for the chart
+const CHART_PALETTE = [
+  'hsl(var(--primary))',     // Electric Cyan
+  'hsl(var(--emerald))',     // Green
+  'hsl(var(--lilac))',       // Lilac
+  'hsl(25 95% 53%)',         // A vibrant orange
+  'hsl(220 70% 50%)',        // A distinct blue
+  'hsl(340 80% 60%)',        // A strong pink/magenta
+  'hsl(175 70% 40%)',        // A deep teal
+  'hsl(60 90% 50%)',         // A bright yellow
+  'hsl(280 50% 70%)',        // A softer purple
+  'hsl(10 80% 60%)',         // A warm red-orange
+];
+
 // Custom Active Shape for hover effect
 const CustomActiveShape: React.FC<any> = (props) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value, formatCurrency } = props;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
 
   return (
     <g>
@@ -65,7 +79,7 @@ const CustomizedLabel: React.FC<any> = ({ cx, cy, midAngle, outerRadius, percent
     <text
       x={x}
       y={y}
-      fill="hsl(var(--primary-foreground))" // White text for contrast
+      fill="hsl(var(--primary-foreground))" // White text for contrast on colored slices
       textAnchor={x > cx ? 'start' : 'end'}
       dominantBaseline="central"
       className="text-xs font-semibold"
@@ -110,9 +124,10 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
 
   const chartData = useMemo(() => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
-    return data.map(item => ({
+    return data.map((item, index) => ({
       ...item,
       percentage: total > 0 ? (item.value / total) * 100 : 0,
+      color: CHART_PALETTE[index % CHART_PALETTE.length], // Assign color from new palette
     }));
   }, [data]);
 
