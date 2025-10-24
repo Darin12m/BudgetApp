@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, Menu } from 'lucide-react'; // Removed Calendar, ChevronRight, ChevronLeft
+import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, Menu } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,12 +20,13 @@ import { DateRangePicker } from '@/components/common/DateRangePicker';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import OverallPortfolioSummaryCard from '@/components/investments/OverallPortfolioSummaryCard';
-import InvestmentAllocationChart from '@/components/investments/InvestmentAllocationChart';
+import InvestmentAllocationChart from '@/components/investments/InvestmentAllocationChart'; // Keep for section-specific charts
 import InvestmentHoldingsList from '@/components/investments/InvestmentHoldingsList';
 import InvestmentForm from '@/components/investments/InvestmentForm';
 import BottomNavBar from '@/components/BottomNavBar';
 import Sidebar from '@/components/layout/Sidebar';
 import AddInvestmentModal from '@/components/AddInvestmentModal';
+import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart'; // Import the new component
 
 // --- Interfaces ---
 interface PortfolioSummary {
@@ -54,7 +55,7 @@ interface InvestmentsPageProps {
 
 const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   const { formatCurrency } = useCurrency();
-  const { selectedRange } = useDateRange(); // Removed goToPreviousPeriod, goToNextPeriod
+  const { selectedRange } = useDateRange();
 
   const {
     investments,
@@ -263,9 +264,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              {/* Removed previous period button */}
               <DateRangePicker />
-              {/* Removed next period button */}
               <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 JD
               </div>
@@ -291,10 +290,11 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
             </TabsList>
 
             <TabsContent value="all" className="mt-6 space-y-6">
-              <InvestmentAllocationChart
+              <EnhancedPortfolioAllocationChart
                 title="Overall Allocation"
                 data={overallAllocationData}
                 emptyMessage="No data to display."
+                totalPortfolioValue={overallPortfolioSummary.currentValue}
               />
               <InvestmentHoldingsList
                 title="All Holdings"

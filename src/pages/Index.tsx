@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Plus, TrendingUp, TrendingDown, DollarSign, Wallet, List, LucideIcon, Menu } from 'lucide-react'; // Removed Calendar, ChevronLeft, ChevronRight
+import { Plus, TrendingUp, TrendingDown, DollarSign, Wallet, List, LucideIcon, Menu } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -19,8 +19,9 @@ import SmartFinancialCoachCard from '@/components/SmartFinancialCoachCard';
 import Sidebar from '@/components/layout/Sidebar';
 import { format } from 'date-fns';
 import { useCurrency } from '@/context/CurrencyContext';
-import { useDateRange } from '@/context/DateRangeContext'; // Import useDateRange
+import { useDateRange } from '@/context/DateRangeContext';
 import { DateRangePicker } from '@/components/common/DateRangePicker';
+import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart'; // Import the new component
 
 interface IndexPageProps {
   userUid: string | null;
@@ -30,7 +31,7 @@ const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(-
 
 const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   const { formatCurrency } = useCurrency();
-  const { selectedRange } = useDateRange(); // Removed goToPreviousPeriod, goToNextPeriod
+  const { selectedRange } = useDateRange();
 
   const {
     transactions,
@@ -213,9 +214,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              {/* Removed previous period button */}
               <DateRangePicker />
-              {/* Removed next period button */}
               <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 JD
               </div>
@@ -352,35 +351,12 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
               )}
 
               {/* Overall Allocation Chart Preview */}
-              {overallAllocationData.length > 0 && (
-                <Card className="card-shadow border-none bg-card animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold">Portfolio Allocation</CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-[200px] flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={overallAllocationData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={50}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          labelLine={false}
-                          // Removed label prop to prevent overlap
-                        >
-                          {overallAllocationData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              )}
+              <EnhancedPortfolioAllocationChart
+                title="Portfolio Allocation"
+                data={overallAllocationData}
+                emptyMessage="No data to display."
+                totalPortfolioValue={overallPortfolioSummary.currentValue}
+              />
             </div>
           )}
         </main>
