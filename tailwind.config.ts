@@ -58,6 +58,9 @@ export default {
         lilac: "hsl(var(--lilac))",     // Keeping for existing usage
         arrowUp: "hsl(var(--arrow-up-color))",
         arrowDown: "hsl(var(--arrow-down-color))",
+        amber: { // Adding amber for warning state
+          "500": "hsl(var(--amber-500))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)", // Now 12px
@@ -101,6 +104,16 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-2px)" },
         },
+        "pulse-red-glow": { // New keyframe for pulsing red glow
+          "0%, 100%": {
+            "box-shadow": "0 0 0px rgba(229, 57, 53, 0.4)", /* Destructive color with opacity */
+            "border-color": "hsl(var(--destructive))"
+          },
+          "50%": {
+            "box-shadow": "0 0 15px rgba(229, 57, 53, 0.8)", /* More intense glow */
+            "border-color": "hsl(var(--destructive))"
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -110,6 +123,7 @@ export default {
         "fade-in": "fade-in 0.5s ease-out forwards",
         "slide-in-from-bottom": "slide-in-from-bottom 0.5s ease-out forwards",
         "float-up-down": "float-up-down 1.5s ease-in-out infinite",
+        "pulse-red-glow": "pulse-red-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", // New animation
       },
     },
   },
