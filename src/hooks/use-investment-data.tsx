@@ -51,6 +51,9 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
     latestInvestments.current = investments;
   }, [investments]);
 
+  // New ref to track if default investments have been attempted to be created
+  const hasCreatedDefaultInvestments = useRef(false);
+
   // Fetch investments from Firestore
   useEffect(() => {
     if (!userUid) {
@@ -66,6 +69,52 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
       const fetchedInvestments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Investment[];
       setInvestments(fetchedInvestments);
       setLoading(false);
+
+      // If no investments exist for the user, add some default ones
+      if (snapshot.empty && !hasCreatedDefaultInvestments.current) {
+        hasCreatedDefaultInvestments.current = true; // Mark immediately to prevent re-entry
+        const defaultInvestments = [
+          {
+            name: 'Apple Inc.',
+            type: 'Stock',
+            quantity: 5,
+            buyPrice: 150.00,
+            currentPrice: 170.00, // Placeholder, will be updated by live fetch
+            datePurchased: format(new Date(), 'yyyy-MM-dd'),
+            symbol: 'AAPL',
+            companyName: 'Apple Inc.',
+            priceSource: 'Finnhub',
+            lastPrice: 170.00,
+            lastUpdated: new Date().toISOString(),
+            ownerUid: userUid,
+            createdAt: serverTimestamp(),
+          },
+          {
+            name: 'Bitcoin',
+            type: 'Crypto',
+            quantity: 0.05,
+            buyPrice: 30000.00,
+            currentPrice: 60000.00, // Placeholder, will be updated by live fetch
+            datePurchased: format(new Date(), 'yyyy-MM-dd'),
+            coingeckoId: 'bitcoin',
+            priceSource: 'CoinGecko',
+            lastPrice: 60000.00,
+            lastUpdated: new Date().toISOString(),
+            ownerUid: userUid,
+            createdAt: serverTimestamp(),
+          },
+        ];
+
+        defaultInvestments.forEach(async (inv) => {
+          try {
+            await addDoc(collection(db, "investments"), inv);
+          } catch (e) {
+            console.error("Error adding default investment:", e);
+            toast.error("Failed to add default investment data.");
+            hasCreatedDefaultInvestments.current = false; // Reset if creation failed
+          }
+        });
+      }
     }, (err) => {
       console.error("Error fetching investments:", err);
       setError("Failed to load investments. Please check your internet connection and Firebase rules.");
