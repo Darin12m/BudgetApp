@@ -1,9 +1,10 @@
 "use client";
 
-import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line } from 'recharts'; // Added LineChart, Line
-import { PiggyBank, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react';
-import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import React, { useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { TrendingUp, TrendingDown, Lightbulb, Zap, LucideIcon } from 'lucide-react';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface RemainingBudgetCardProps {
   totalBudgeted: number;
@@ -26,101 +27,134 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   previousMonthLeftover,
   smartSummary,
 }) => {
-  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const { formatCurrency } = useCurrency();
 
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
-  const remainingPercentage = 100 - spentPercentage;
 
-  const data = [
-    { name: 'Spent', value: totalSpent, color: 'hsl(var(--primary))' }, // Use primary accent for spent
-    { name: 'Remaining', value: remainingBudget > 0 ? remainingBudget : 0, color: 'hsl(var(--emerald))' }, // Use emerald for remaining
-  ];
+  const pieChartData = useMemo(() => {
+    const data = [];
+    if (totalSpent > 0) {
+      data.push({ name: 'Spent', value: totalSpent, color: 'hsl(var(--primary))' });
+    }
+    if (remainingBudget > 0) {
+      data.push({ name: 'Remaining', value: remainingBudget, color: 'hsl(var(--emerald))' });
+    } else if (totalBudgeted > 0 && totalSpent > 0) {
+      // If over budget, show the overspent amount as part of 'spent'
+      data.push({ name: 'Overspent', value: Math.abs(remainingBudget), color: 'hsl(var(--destructive))' });
+    }
+    return data.length > 0 ? data : [{ name: 'No Data', value: 1, color: 'hsl(var(--muted))' }];
+  }, [totalBudgeted, totalSpent, remainingBudget]);
 
-  const isOverBudget = remainingBudget < 0;
-  const summaryColor = isOverBudget ? 'text-arrowDown' : 'text-arrowUp';
-  const SummaryIcon: LucideIcon = isOverBudget ? TrendingDown : TrendingUp;
+  const getBudgetStatus = useMemo(() => {
+    let icon: LucideIcon = Lightbulb;
+    let colorClass = 'text-muted-foreground';
+    let message = smartSummary;
 
-  // Placeholder data for sparkline chart
-  const sparklineData = [
-    { name: 'Day 1', value: 1000 },
-    { name: 'Day 2', value: 950 },
-    { name: 'Day 3', value: 800 },
-    { name: 'Day 4', value: 750 },
-    { name: 'Day 5', value: 600 },
-    { name: 'Day 6', value: 550 },
-    { name: 'Day 7', value: 400 },
-  ];
+    if (totalBudgeted === 0) {
+      icon = Lightbulb;
+      colorClass = 'text-muted-foreground';
+      message = "Set up your budget to get insights!";
+    } else if (remainingBudget < 0) {
+      icon = TrendingDown;
+      colorClass = 'text-destructive';
+      message = `You are ${formatCurrency(Math.abs(remainingBudget))} over budget!`;
+    } else if (spentPercentage >= 80) {
+      icon = Zap;
+      colorClass = 'text-amber-500';
+      message = `You've spent ${Math.round(spentPercentage)}% of your budget. Be careful!`;
+    } else if (remainingBudget > 0 && daysLeft > 0) {
+      icon = TrendingUp;
+      colorClass = 'text-emerald';
+      message = `${formatCurrency(remainingBudget)} left for ${daysLeft} days. On track!`;
+    } else {
+      icon = Lightbulb;
+      colorClass = 'text-muted-foreground';
+      message = "On track to stay under budget this month.";
+    }
+    return { icon, colorClass, message };
+  }, [totalBudgeted, totalSpent, remainingBudget, daysLeft, smartSummary, formatCurrency, spentPercentage]);
+
+  const { icon: StatusIcon, colorClass: statusColorClass, message: statusMessage } = getBudgetStatus;
 
   return (
-    <div className="bg-card rounded-xl sm:rounded-2xl p-6 card-shadow animate-in fade-in slide-in-from-top-2 duration-300 border border-border/50 backdrop-blur-lg">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <p className="text-sm text-muted-foreground mb-1">Remaining Budget</p>
-          <p className={`text-5xl font-bold ${isOverBudget ? 'text-destructive' : 'text-foreground'}`}>{formatCurrency(remainingBudget)}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {formatCurrency(remainingPerDay)} left per day • {daysLeft} days left
-          </p>
+    <Card className="card-shadow border-none bg-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-lg font-semibold flex items-center">
+          <StatusIcon className={`w-5 h-5 mr-2 ${statusColorClass}`} /> Monthly Budget
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col sm:flex-row items-center justify-between p-6 pt-0">
+        <div className="w-full sm:w-1/2 h-[150px] relative flex items-center justify-center mb-4 sm:mb-0">
+          {totalBudgeted > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieChartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={40}
+                  outerRadius={60}
+                  fill="#8884d8"
+                  dataKey="value"
+                  labelLine={false}
+                  isAnimationActive={true}
+                  animationDuration={500}
+                >
+                  {pieChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value, name) => [`${formatCurrency(Number(value))}`, name]} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-center text-muted-foreground">
+              <p className="text-sm">No budget data yet.</p>
+            </div>
+          )}
+          {totalBudgeted > 0 && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xl font-bold text-foreground">
+                {`${Math.round(spentPercentage)}%`}
+              </span>
+            </div>
+          )}
         </div>
-        <div className="w-28 h-28 relative">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={60}
-                startAngle={90}
-                endAngle={-270}
-                paddingAngle={0}
-                dataKey="value"
-                isAnimationActive={true}
-                animationDuration={500}
-                // Removed label prop to prevent overlap
-              >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value, name) => [`${formatCurrency(Number(value))}`, name]} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xl font-bold text-foreground">
-              {totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
+        <div className="w-full sm:w-1/2 space-y-2">
+          <p className={`text-sm font-medium ${statusColorClass}`}>{statusMessage}</p>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Total Budgeted</span>
+            <span className="font-semibold text-foreground">{formatCurrency(totalBudgeted)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Total Spent</span>
+            <span className="font-semibold text-foreground">{formatCurrency(totalSpent)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Remaining</span>
+            <span className={`font-semibold ${remainingBudget >= 0 ? 'text-emerald' : 'text-destructive'}`}>
+              {formatCurrency(remainingBudget)}
             </span>
           </div>
-        </div>
-      </div>
-
-      {/* Sparkline Chart Placeholder */}
-      <div className="mt-6">
-        <p className="text-sm font-semibold text-foreground mb-2">Spending Trend</p>
-        <ResponsiveContainer width="100%" height={60}>
-          <LineChart data={sparklineData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-            <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-            <Tooltip contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      {rolloverEnabled && previousMonthLeftover > 0 && (
-        <div className="bg-muted/50 rounded-lg p-3 mt-4 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Previous month rollover</span>
-            <span className="font-semibold text-foreground">+{formatCurrency(previousMonthLeftover)}</span>
+          <div className="w-full bg-muted rounded-full h-2 overflow-hidden mt-3">
+            <div
+              className="bg-primary h-full transition-all duration-500"
+              style={{ width: `${Math.min(spentPercentage, 100)}%` }}
+            />
           </div>
+          {daysLeft > 0 && remainingBudget > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              You can spend up to {formatCurrency(remainingPerDay)} per day for the rest of the month.
+            </p>
+          )}
+          {rolloverEnabled && previousMonthLeftover > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Includes {formatCurrency(previousMonthLeftover)} rolled over from last month.
+            </p>
+          )}
         </div>
-      )}
-
-      <div className="flex items-center justify-between text-sm bg-muted/50 rounded-lg p-3 mt-4">
-        <div className="flex items-center space-x-2">
-          {SummaryIcon && <SummaryIcon className={`w-4 h-4 ${summaryColor}`} />}
-          <span className={`font-medium ${summaryColor}`}>{smartSummary}</span>
-        </div>
-        <span className="text-muted-foreground">Total Spent: {formatCurrency(totalSpent)}</span>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
