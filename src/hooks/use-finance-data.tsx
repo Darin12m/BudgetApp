@@ -3,7 +3,7 @@ import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { isTransactionInCurrentWeek, isTransactionInPreviousWeek, isTransactionInCurrentMonth, getStartOfCurrentWeek, getEndOfCurrentWeek, getStartOfPreviousWeek, getEndOfPreviousWeek } from '@/lib/utils';
-import { format, parseISO, getDaysInMonth, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { format, parseISO, getDaysInMonth, isWithinInterval, startOfDay, endOfDay, startOfWeek, endOfWeek, subWeeks } from 'date-fns'; // Added startOfWeek, endOfWeek, subWeeks
 
 // TypeScript Interfaces (re-defined for clarity within the hook context)
 interface Transaction {
