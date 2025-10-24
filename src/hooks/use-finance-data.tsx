@@ -110,26 +110,35 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
         setLoading(false);
 
         // Special handling for categories: add defaults if empty
-        if (collectionName === 'categories' && snapshot.empty && !hasCreatedDefaultCategories.current) {
-          hasCreatedDefaultCategories.current = true; // Mark immediately to prevent re-entry
-          const defaultCategories = [
-            { name: 'Groceries', budgeted: 300, spent: 0, color: 'hsl(var(--emerald))', emoji: '🛒', ownerUid: userUid, createdAt: serverTimestamp() },
-            { name: 'Rent', budgeted: 1200, spent: 0, color: 'hsl(var(--blue))', emoji: '🏠', ownerUid: userUid, createdAt: serverTimestamp() },
-            { name: 'Utilities', budgeted: 150, spent: 0, color: 'hsl(var(--lilac))', emoji: '💡', ownerUid: userUid, createdAt: serverTimestamp() },
-            { name: 'Transportation', budgeted: 100, spent: 0, color: '#f59e0b', emoji: '🚗', ownerUid: userUid, createdAt: serverTimestamp() },
-            { name: 'Entertainment', budgeted: 80, spent: 0, color: '#ef4444', emoji: '🎉', ownerUid: userUid, createdAt: serverTimestamp() },
-            { name: 'Uncategorized', budgeted: 0, spent: 0, color: '#6B7280', emoji: '🏷️', ownerUid: userUid, createdAt: serverTimestamp() },
-          ];
+        if (collectionName === 'categories') {
+          if (snapshot.empty && !hasCreatedDefaultCategories.current) {
+            // Only create defaults if the collection is truly empty AND we haven't tried before.
+            hasCreatedDefaultCategories.current = true; // Mark immediately to prevent re-entry
+            const defaultCategories = [
+              { name: 'Groceries', budgeted: 300, spent: 0, color: 'hsl(var(--emerald))', emoji: '🛒', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Rent', budgeted: 1200, spent: 0, color: 'hsl(var(--blue))', emoji: '🏠', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Utilities', budgeted: 150, spent: 0, color: 'hsl(var(--lilac))', emoji: '💡', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Transportation', budgeted: 100, spent: 0, color: '#f59e0b', emoji: '🚗', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Entertainment', budgeted: 80, spent: 0, color: '#ef4444', emoji: '🎉', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Uncategorized', budgeted: 0, spent: 0, color: '#6B7280', emoji: '🏷️', ownerUid: userUid, createdAt: serverTimestamp() },
+            ];
 
-          defaultCategories.forEach(async (cat) => {
-            try {
-              await addDoc(collection(db, "categories"), cat);
-            } catch (e) {
-              console.error("Error adding default category:", e);
-              toast.error("Failed to add default category data.");
-              hasCreatedDefaultCategories.current = false; // Reset if creation failed
-            }
-          });
+            defaultCategories.forEach(async (cat) => {
+              try {
+                await addDoc(collection(db, "categories"), cat);
+              } catch (e) {
+                console.error("Error adding default category:", e);
+                toast.error("Failed to add default category data.");
+                // If adding fails, we might want to reset the flag to allow a retry,
+                // but this could lead to multiple attempts if there's a persistent issue.
+                // For now, let's keep it true to avoid infinite loops.
+              }
+            });
+          } else if (!snapshot.empty) {
+            // If there are categories (even if they were just added or existed before),
+            // ensure the flag is set to true so defaults are not added later.
+            hasCreatedDefaultCategories.current = true;
+          }
         }
       }, (err) => {
         console.error(`Error fetching ${collectionName}:`, err.code, err.message); // Enhanced error logging
@@ -229,7 +238,6 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       toast.error("Authentication required to delete data.");
       return;
     }
-    // Removed the native confirm() call here, as the UI components (CategoryCard, GoalsView) now handle it.
     try {
       await deleteDoc(doc(db, collectionName, id));
       toast.success(`${collectionName.slice(0, -1)} deleted successfully!`);
