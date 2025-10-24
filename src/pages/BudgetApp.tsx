@@ -978,8 +978,8 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   );
 
   const today = new Date();
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  const daysLeft = Math.ceil((endOfMonth.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const endOfCurrentMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Renamed local variable
+  const daysLeft = Math.ceil((endOfCurrentMonthDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   const remainingPerDay = useMemo(() =>
     remainingBudget / daysLeft,
     [remainingBudget, daysLeft]
