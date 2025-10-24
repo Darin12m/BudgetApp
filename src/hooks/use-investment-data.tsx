@@ -39,9 +39,9 @@ export const useInvestmentData = (userUid: string | null) => {
   const [portfolioSnapshots, setPortfolioSnapshots] = useState<PortfolioSnapshot[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [livePrices, setLivePrices] = new Map<string, number>();
-  const [priceChange, setPriceChange] = new Map<string, 'up' | 'down' | 'none'>();
-  const [alertedInvestments, setAlertedInvestments] = new Map<string, boolean>(); // New state for alerts
+  const [livePrices, setLivePrices] = useState<Map<string, number>>(new Map());
+  const [priceChange, setPriceChange] = useState<Map<string, 'up' | 'down' | 'none'>>(new Map());
+  const [alertedInvestments, setAlertedInvestments] = useState<Map<string, boolean>>(new Map()); // New state for alerts
 
   const { budgetSettings } = useFinanceData(userUid); // Get budget settings for alert threshold
 
