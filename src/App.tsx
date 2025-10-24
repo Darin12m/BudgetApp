@@ -9,7 +9,7 @@ import BudgetApp from "./pages/BudgetApp";
 import InvestmentsPage from "./pages/Investments";
 import SettingsPage from "./pages/Settings";
 import LoginPage from "./pages/Login";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLayoutEffect } from "react"; // Import useLayoutEffect
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, User, setPersistence, browserLocalPersistence } from "firebase/auth";
 
@@ -34,16 +34,26 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Global theme initialization
-  useEffect(() => {
+  // Theme initialization using useLayoutEffect to prevent FOUC
+  useLayoutEffect(() => {
     const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const htmlElement = document.documentElement;
+
     if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
+      htmlElement.classList.add('dark');
     } else if (savedTheme === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      // If no theme is saved, use system preference
-      document.documentElement.classList.add('dark');
+      htmlElement.classList.remove('dark');
+    } else {
+      // If no theme is saved, default to dark and save it
+      if (prefersDark) {
+        htmlElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        // If system prefers light or no preference, default to dark and save it
+        htmlElement.classList.add('dark'); // Default to dark as per requirement
+        localStorage.setItem('theme', 'dark');
+      }
     }
   }, []); // Run once on mount
 
