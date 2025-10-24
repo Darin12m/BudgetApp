@@ -19,8 +19,7 @@ interface RemainingBudgetCardProps {
 
 // Custom Active Shape for hover effect
 const CustomActiveShape: React.FC<any> = (props) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
-  const { name, value } = payload;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
 
   return (
     <g>
@@ -33,7 +32,7 @@ const CustomActiveShape: React.FC<any> = (props) => {
         endAngle={endAngle}
         fill={fill}
         className="transition-all duration-150 ease-out"
-        style={{ filter: `drop-shadow(0 0 8px ${fill}80)` }} // Enhanced glow
+        style={{ filter: `drop-shadow(0 0 10px ${fill}80)` }} // Increased glow intensity
       />
     </g>
   );
@@ -129,7 +128,8 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
             {formatCurrency(remainingPerDay)} left per day • {daysLeft} days left
           </p>
         </div>
-        <div className="w-28 h-28 relative">
+        {/* Increased container size for the chart to prevent clipping */}
+        <div className="w-36 h-36 relative flex-shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart onMouseEnter={onPieEnter} onMouseLeave={onPieLeave}>
               <defs>
@@ -143,8 +143,8 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                 data={backgroundPieData}
                 cx="50%"
                 cy="50%"
-                innerRadius={50}
-                outerRadius={60}
+                innerRadius={55} // Adjusted radius
+                outerRadius={65} // Adjusted radius
                 fill="hsl(var(--muted)/50%)"
                 dataKey="value"
                 isAnimationActive={false}
@@ -157,8 +157,8 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                 data={pieChartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={50}
-                outerRadius={60}
+                innerRadius={55} // Adjusted radius
+                outerRadius={65} // Adjusted radius
                 startAngle={90}
                 endAngle={-270}
                 paddingAngle={0}
@@ -175,7 +175,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                   <Cell
                     key={`cell-${index}`}
                     fill={entry.color}
-                    style={{ filter: `drop-shadow(0 0 4px ${entry.color}40)` }} // Soft glow
+                    style={{ filter: `drop-shadow(0 0 6px ${entry.color}60)` }} // Soft glow
                   />
                 ))}
               </Pie>
