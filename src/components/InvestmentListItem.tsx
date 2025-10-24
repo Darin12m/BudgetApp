@@ -30,7 +30,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
   };
 
   return (
-    <div className="flex items-center justify-between p-4 bg-card rounded-lg shadow-sm border border-border/50 hover:bg-muted/50 transition-colors active:bg-muted animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="flex items-center justify-between p-4 bg-card rounded-lg shadow-sm border border-border/50 hover:bg-muted/50 transition-colors active:bg-muted backdrop-blur-lg animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex items-center space-x-3 flex-1 min-w-0">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
           investment.type === 'Stock' ? 'bg-blue/10 text-blue' : 'bg-lilac/10 text-lilac' // Using new color variables

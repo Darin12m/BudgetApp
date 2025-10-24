@@ -81,7 +81,7 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
   // --- End Smart Forecast Calculations ---
 
   return (
-    <Card className="card-shadow border-none bg-card border border-border/50 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <Card className="card-shadow border-none bg-card border border-border/50 animate-in fade-in slide-in-from-bottom-2 duration-500 backdrop-blur-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold flex items-center">
           <Lightbulb className="w-5 h-5 mr-2 text-primary" /> Smart Financial Coach

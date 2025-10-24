@@ -19,7 +19,7 @@ interface InvestmentAllocationChartProps {
 
 const InvestmentAllocationChart: React.FC<InvestmentAllocationChartProps> = ({ title, data, emptyMessage }) => {
   return (
-    <Card className="card-shadow border-none bg-card border border-border/50">
+    <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold">{title}</CardTitle>
       </CardHeader>

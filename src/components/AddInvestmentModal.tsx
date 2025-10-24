@@ -30,7 +30,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
   }, [onDelete, onClose]);
 
   const ModalContent = (
-    <Card className="bg-card text-foreground card-shadow border border-border/50 p-6">
+    <Card className="bg-card text-foreground card-shadow border border-border/50 p-6 backdrop-blur-lg">
       <DialogHeader> {/* Using DialogHeader for consistent styling, works with Drawer too */}
         <DialogTitle>{investmentToEdit ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
       </DialogHeader>
@@ -46,7 +46,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="safe-top safe-bottom"> {/* Apply safe area padding */}
+        <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg"> {/* Apply glassmorphism to drawer content */}
           <DrawerHeader className="text-left">
             <DrawerTitle>{investmentToEdit ? 'Edit Investment' : 'Add New Investment'}</DrawerTitle>
           </DrawerHeader>

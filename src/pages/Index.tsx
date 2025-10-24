@@ -228,7 +228,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
             />
 
             {/* Total Investment Portfolio Card */}
-            <Card className="card-shadow border-none bg-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+            <Card className="card-shadow border-none bg-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-muted-foreground">Total Investment Portfolio</p>
@@ -262,7 +262,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
             {/* Top 3 Performing Assets */}
             {topPerformers.length > 0 && (
-              <Card className="card-shadow border-none bg-card animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+              <Card className="card-shadow border-none bg-card animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold">Top 3 Performers</CardTitle>
                 </CardHeader>
@@ -310,7 +310,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
             {/* Overall Allocation Chart Preview */}
             {overallAllocationData.length > 0 && (
-              <Card className="card-shadow border-none bg-card animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+              <Card className="card-shadow border-none bg-card animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold">Portfolio Allocation</CardTitle>
                 </CardHeader>

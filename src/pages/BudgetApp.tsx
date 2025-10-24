@@ -354,7 +354,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     bgColor: string;
     trend?: { value: string; color: string };
   }> = memo(({ title, value, subtitle, icon: Icon, color, bgColor, trend }) => (
-    <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+    <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
       <div className="flex items-center justify-between mb-2">
         <div className="flex-1">
           <p className="text-xs sm:text-sm text-muted-foreground mb-1">{title}</p>
@@ -385,7 +385,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const TransactionCard: React.FC<{ transaction: Transaction; categories: Category[] }> = memo(({ transaction, categories }) => {
     const category = categories.find(c => c.name === transaction.category);
     return (
-      <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted">
         <div className="flex items-center space-x-3 flex-1 min-w-0">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
             transaction.amount > 0 ? 'bg-emerald/10 text-emerald' : 'bg-muted/50 text-foreground'
@@ -411,7 +411,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     const health = getHealthStatus(category.spent, category.budgeted);
 
     return (
-      <div className="p-4 sm:p-6 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="p-4 sm:p-6 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             <span className="text-2xl flex-shrink-0">{category.emoji}</span>
@@ -458,7 +458,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       />
 
       {/* Smart Forecast Card */}
-      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
         <div className="flex items-center space-x-3 mb-3">
           {RunOutIcon && <RunOutIcon className={`w-5 h-5 ${runOutColor}`} />}
           <h3 className={`text-base sm:text-lg font-semibold ${runOutColor}`}>Smart Forecast</h3>
@@ -521,7 +521,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
           <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Spending Trend</h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={spendingTrend}>
@@ -538,7 +538,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
           <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Spending by Category</h3>
           <div className="flex items-center justify-center">
             <ResponsiveContainer width="100%" height={200}>
@@ -563,7 +563,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
       </div>
 
-      <div className="hidden sm:block bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+      <div className="hidden sm:block bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
         <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Net Worth Growth</h3>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={netWorthTrend}>
@@ -579,7 +579,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </ResponsiveContainer>
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-base sm:text-lg font-semibold text-foreground">Upcoming Recurring Bills</h3>
@@ -611,7 +611,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base sm:text-lg font-semibold text-foreground">Recent Transactions</h3>
           <Link to="/budget-app?view=transactions" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:text-primary/90 font-medium flex items-center">
@@ -630,7 +630,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
 
   const BudgetView: React.FC = () => (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
-      <div className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 text-foreground card-shadow border border-border/50">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 text-foreground card-shadow border border-border/50 backdrop-blur-lg">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl sm:text-2xl font-bold">October Budget</h2>
           {budgetSettings.rolloverEnabled && (
@@ -674,7 +674,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+      <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
         <div className="p-4 sm:p-6 border-b border-border">
           <div className="flex items-center justify-between">
             <h3 className="text-base sm:text-lg font-semibold text-foreground">Budget Categories</h3>
@@ -723,7 +723,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             const percentage = (goal.current / goal.target) * 100;
 
             return (
-              <div key={goal.id} className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+              <div key={goal.id} className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
                 <div className="flex items-center justify-between mb-4">
                   <Target className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: goal.color }} />
                   <span className="text-sm font-medium text-muted-foreground">{Math.round(percentage)}%</span>
@@ -758,7 +758,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             );
           })
         ) : (
-          <div className="col-span-full bg-card rounded-xl sm:rounded-2xl p-6 text-center card-shadow border border-border/50">
+          <div className="col-span-full bg-card rounded-xl sm:rounded-2xl p-6 text-center card-shadow border border-border/50 backdrop-blur-lg">
             <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-lg font-semibold text-foreground">No savings goals set up yet!</p>
             <p className="text-sm mt-2 text-muted-foreground">Start saving for your dreams by creating a new goal.</p>
@@ -769,7 +769,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         )}
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
         <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Goal Progress Over Time</h3>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={[
@@ -826,7 +826,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           </Button>
         </div>
 
-        <div className="sticky top-[64px] sm:top-[72px] bg-background z-10 py-2 -mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-border card-shadow">
+        <div className="sticky top-[64px] sm:top-[72px] bg-card z-10 py-2 -mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-border card-shadow backdrop-blur-lg">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -850,7 +850,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           </div>
         </div>
 
-        <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50">
+        <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
           <div className="divide-y divide-border">
             {filteredTransactions.length > 0 ? (
               filteredTransactions.map(txn => (
@@ -897,7 +897,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
 
   return (
     <div className="min-h-screen bg-background">
-      <aside className={`fixed left-0 top-0 h-full bg-card/90 backdrop-blur-md border-r border-border transition-transform duration-300 z-50 ${
+      <aside className={`fixed left-0 top-0 h-full bg-card backdrop-blur-lg border-r border-border transition-transform duration-300 z-50 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } w-64 sm:w-72 card-shadow`}>
         <div className="flex flex-col h-full">
@@ -975,7 +975,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       </aside>
 
       <div className="flex flex-col min-h-screen">
-        <header className="bg-card/90 backdrop-blur-md border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
+        <header className="bg-card backdrop-blur-lg border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
               <button

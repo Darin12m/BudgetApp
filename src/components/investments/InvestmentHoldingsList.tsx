@@ -38,7 +38,7 @@ const InvestmentHoldingsList: React.FC<InvestmentHoldingsListProps> = ({
   emptyButtonText,
 }) => {
   return (
-    <Card className="card-shadow border-none bg-card border border-border/50">
+    <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold">{title}</CardTitle>
         <div className="flex items-center space-x-2">

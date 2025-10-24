@@ -120,7 +120,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20 sm:pb-0 animate-in fade-in duration-500">
-      <header className="bg-card/90 backdrop-blur-md border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
+      <header className="bg-card backdrop-blur-lg border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
         <div className="flex items-center px-4 sm:px-6 py-3 sm:py-4">
           <Button
             variant="ghost"
@@ -136,7 +136,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
 
       <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
         {/* Theme Settings */}
-        <Card className="card-shadow border-none bg-card border border-border/50">
+        <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <Palette className="w-5 h-5 mr-2 text-muted-foreground" /> Theme
@@ -158,7 +158,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
         </Card>
 
         {/* Budget Settings */}
-        <Card className="card-shadow border-none bg-card border border-border/50">
+        <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <DollarSign className="w-5 h-5 mr-2 text-muted-foreground" /> Budget
@@ -185,7 +185,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
         </Card>
 
         {/* Micro-Investing Settings */}
-        <Card className="card-shadow border-none bg-card border border-border/50">
+        <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <Zap className="w-5 h-5 mr-2 text-muted-foreground" /> Micro-Investing
@@ -225,7 +225,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
         </Card>
 
         {/* Account Settings */}
-        <Card className="card-shadow border-none bg-card border border-border/50">
+        <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <User className="w-5 h-5 mr-2 text-muted-foreground" /> Account
@@ -247,7 +247,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
         </Card>
 
         {/* API Integrations (Placeholder) */}
-        <Card className="card-shadow border-none bg-card border border-border/50">
+        <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <Key className="w-5 h-5 mr-2 text-muted-foreground" /> API Integrations

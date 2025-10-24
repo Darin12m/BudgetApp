@@ -50,7 +50,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   ];
 
   return (
-    <div className="bg-card rounded-xl sm:rounded-2xl p-6 card-shadow animate-in fade-in slide-in-from-top-2 duration-300 border border-border/50">
+    <div className="bg-card rounded-xl sm:rounded-2xl p-6 card-shadow animate-in fade-in slide-in-from-top-2 duration-300 border border-border/50 backdrop-blur-lg">
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-sm text-muted-foreground mb-1">Remaining Budget</p>

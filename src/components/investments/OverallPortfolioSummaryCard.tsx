@@ -19,7 +19,7 @@ const OverallPortfolioSummaryCard: React.FC<OverallPortfolioSummaryCardProps> = 
   const Icon: LucideIcon = isPositive ? TrendingUp : TrendingDown;
 
   return (
-    <Card className="card-shadow border-none bg-card text-foreground border border-border/50">
+    <Card className="card-shadow border-none bg-card text-foreground border border-border/50 backdrop-blur-lg">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm text-muted-foreground">Total Portfolio Value</p>

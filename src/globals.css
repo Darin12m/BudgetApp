@@ -5,10 +5,10 @@
 @layer base {
   :root {
     /* Light Theme */
-    --background: 0 0% 100%; /* Placeholder, actual background is gradient */
+    --background: 0 0% 100%; /* Base white, body gets gradient */
     --foreground: 210 2% 20%; /* #333333 */
 
-    --card: 0 0% 100%; /* #FFFFFF */
+    --card: 0 0% 100% / 0.6; /* #FFFFFF with 60% opacity for glassmorphism */
     --card-foreground: 210 2% 20%;
 
     --popover: 0 0% 100%;
@@ -29,7 +29,7 @@
     --accent: 210 40% 96.1%; /* Light gray for accents */
     --accent-foreground: 210 2% 20%;
 
-    --border: 214.3 31.8% 91.4%; /* Light gray border */
+    --border: 0 0% 0% / 0.05; /* Black with 5% opacity for light theme glass border */
     --input: 214.3 31.8% 91.4%;
     --ring: 195 100% 50%; /* Primary accent for ring focus */
 
@@ -50,7 +50,7 @@
     --background: 240 18% 10%; /* #121212 */
     --foreground: 0 0% 100%; /* #FFFFFF */
 
-    --card: 240 15% 12%; /* #1E1E1E */
+    --card: 240 15% 12% / 0.4; /* #1E1E1E with 40% opacity for glassmorphism */
     --card-foreground: 0 0% 100%;
 
     --popover: 240 15% 12%;
@@ -71,7 +71,7 @@
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
+    --border: 0 0% 100% / 0.1; /* White with 10% opacity for dark theme glass border */
     --input: 217.2 32.6% 17.5%;
     --ring: 195 100% 50%; /* Dark mode primary accent for ring focus */
 
@@ -106,21 +106,21 @@
 
 /* Custom shadow for cards */
 .card-shadow {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Light theme shadow */
   transition: all 0.2s ease-in-out;
 }
 
 .card-shadow:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.09), 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
   transform: translateY(-1px);
 }
 
 .dark .card-shadow {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Dark theme shadow */
 }
 
 .dark .card-shadow:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
 
