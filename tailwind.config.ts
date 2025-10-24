@@ -19,6 +19,7 @@ export default {
     },
     extend: {
       colors: {
+        // Light Theme (default)
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

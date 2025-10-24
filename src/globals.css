@@ -5,45 +5,39 @@
 @layer base {
   :root {
     /* Light Theme */
-    --background: 0 0% 100%; /* Base white, body gets gradient */
-    --foreground: 210 2% 20%; /* #333333 */
+    --background: 210 17% 98%; /* #F9FAFB */
+    --foreground: 240 15% 12%; /* #1E1E1E */
 
-    --card: 0 0% 100% / 0.6; /* #FFFFFF with 60% opacity for glassmorphism */
-    --card-foreground: 210 2% 20%;
+    --card: 0 0% 100% / 0.55; /* #FFFFFF with 55% opacity for glassmorphism */
+    --card-foreground: 240 15% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 2% 20%;
+    --popover-foreground: 240 15% 12%;
 
-    --primary: 195 100% 50%; /* #00C2FF (electric cyan) */
+    --primary: 210 100% 50%; /* #007BFF (blue accent) */
     --primary-foreground: 0 0% 100%; /* White text on primary */
 
-    --secondary: 210 40% 96.1%; /* Light gray for muted backgrounds */
-    --secondary-foreground: 210 2% 33%; /* #555555 */
+    --secondary: 217 10% 90%; /* Light gray for muted backgrounds */
+    --secondary-foreground: 217 10% 46%; /* #6B7280 */
 
     --destructive: 359 77% 56%; /* #E53935 (red) */
     --destructive-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%; /* Light gray for muted backgrounds */
-    --muted-foreground: 210 2% 33%; /* #555555 */
+    --muted: 217 10% 90%; /* Light gray for muted backgrounds */
+    --muted-foreground: 217 10% 46%; /* #6B7280 */
 
-    --accent: 210 40% 96.1%; /* Light gray for accents */
-    --accent-foreground: 210 2% 20%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 2% 20%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 210 2% 20%;
+    --accent: 217 10% 90%; /* Light gray for accents */
+    --accent-foreground: 240 15% 12%;
 
     --border: 0 0% 0% / 0.05; /* Black with 5% opacity for light theme glass border */
     --input: 214.3 31.8% 91.4%;
-    --ring: 195 100% 50%; /* Primary accent for ring focus */
+    --ring: 210 100% 50%; /* Primary accent for ring focus */
 
     --radius: 0.75rem; /* 12px rounded corners */
 
     /* Custom accent colors for gradients and highlights */
     --emerald: 123 50% 49%; /* #4CAF50 (green for up arrow) */
-    --blue: 195 100% 50%;       /* #00C2FF (electric cyan for accent) */
+    --blue: 195 100% 50%;       /* #00C2FF (electric cyan for accent) - Keeping for existing usage */
     --lilac: 270 60% 70%;     /* Keeping for existing usage */
 
     /* Arrow specific colors */
@@ -59,36 +53,30 @@
   .dark {
     /* Dark Theme */
     --background: 240 18% 10%; /* #121212 */
-    --foreground: 0 0% 100%; /* #FFFFFF */
+    --foreground: 0 0% 96%; /* #F5F5F5 */
 
-    --card: 240 15% 12% / 0.4; /* #1E1E1E with 40% opacity for glassmorphism */
-    --card-foreground: 0 0% 100%;
+    --card: 240 15% 12% / 0.55; /* #1E1E1E with 55% opacity for glassmorphism */
+    --card-foreground: 0 0% 96%;
 
     --popover: 240 15% 12%;
-    --popover-foreground: 0 0% 100%;
+    --popover-foreground: 0 0% 96%;
 
-    --primary: 195 100% 50%; /* #00C2FF (electric cyan) */
+    --primary: 195 100% 50%; /* #00BFFF (electric blue / cyan) */
     --primary-foreground: 240 18% 10%; /* Dark text on primary */
 
-    --secondary: 217.2 32.6% 17.5%; /* Muted dark gray */
-    --secondary-foreground: 0 0% 69%; /* #B0B0B0 */
+    --secondary: 217 10% 20%; /* Muted dark gray */
+    --secondary-foreground: 216 10% 64%; /* #9CA3AF */
 
     --destructive: 359 77% 56%; /* #E53935 (red) */
     --destructive-foreground: 0 0% 100%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 0 0% 69%; /* #B0B0B0 */
+    --muted: 217 10% 20%;
+    --muted-foreground: 216 10% 64%; /* #9CA3AF */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 217 10% 20%;
+    --accent-foreground: 0 0% 96%;
 
-    --popover: 240 15% 12%;
-    --popover-foreground: 0 0% 100%;
-
-    --card: 240 15% 12%;
-    --card-foreground: 0 0% 100%;
-
-    --border: 0 0% 100% / 0.1; /* White with 10% opacity for dark theme glass border */
+    --border: 0 0% 100% / 0.05; /* White with 5% opacity for dark theme glass border */
     --input: 217.2 32.6% 17.5%;
     --ring: 195 100% 50%; /* Dark mode primary accent for ring focus */
 
@@ -121,7 +109,13 @@
 
   /* Light theme gradient background */
   body:not(.dark) {
-    background-image: linear-gradient(to bottom right, #F8F9FB, #ECEFF2);
+    background-image: linear-gradient(to bottom right, hsl(210 17% 98%), hsl(210 10% 95%)); /* #F9FAFB to #ECEFF2 */
+    background-attachment: fixed;
+  }
+
+  /* Dark theme gradient background */
+  .dark body {
+    background-image: linear-gradient(to bottom right, hsl(240 18% 10%), hsl(220 10% 10%)); /* #121212 to #181A1B */
     background-attachment: fixed;
   }
 }
