@@ -287,7 +287,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
               </Card>
 
               {/* Quick Action Buttons */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4"> {/* Changed grid-cols-3 to grid-cols-2 */}
                 <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
                   <Plus className="w-5 h-5 mb-1" />
                   <span className="text-xs font-medium">Add Expense</span>
@@ -296,10 +296,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                   <DollarSign className="w-5 h-5 mb-1" />
                   <span className="text-xs font-medium">Add Investment</span>
                 </Button>
-                <Link to="/budget-app?view=transactions" className="flex flex-col h-auto py-4 items-center justify-center text-center bg-muted/50 hover:bg-muted text-foreground rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
-                  <List className="w-5 h-5 mb-1" />
-                  <span className="text-xs font-medium">View Activity</span>
-                </Link>
+                {/* Removed the "View Activity" Link component */}
               </div>
 
               {/* Top 3 Performing Assets */}
