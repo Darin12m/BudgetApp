@@ -20,7 +20,7 @@
     --secondary: 217 10% 90%; /* Light gray for muted backgrounds */
     --secondary-foreground: 217 10% 46%; /* #6B7280 */
 
-    --destructive: 0 84% 60%; /* #DC2626 (muted red for light theme) */
+    --destructive: 359 77% 56%; /* #E53935 (red) */
     --destructive-foreground: 0 0% 100%;
 
     --muted: 217 10% 90%; /* Light gray for muted backgrounds */
@@ -42,7 +42,7 @@
 
     /* Arrow specific colors */
     --arrow-up-color: 123 50% 49%; /* #4CAF50 */
-    --arrow-down-color: 0 84% 60%; /* #DC2626 */
+    --arrow-down-color: 359 77% 56%; /* #E53935 */
 
     /* Tooltip specific colors (always dark for consistency as requested) */
     --tooltip-bg: 240 15% 12%; /* #1e1e1e */
@@ -67,7 +67,7 @@
     --secondary: 217 10% 20%; /* Muted dark gray */
     --secondary-foreground: 216 10% 64%; /* #9CA3AF */
 
-    --destructive: 355 65% 70%; /* #F87171 (soft red for dark theme) */
+    --destructive: 359 77% 56%; /* #E53935 (red) */
     --destructive-foreground: 0 0% 100%;
 
     --muted: 217 10% 20%;
@@ -87,7 +87,7 @@
 
     /* Arrow specific colors */
     --arrow-up-color: 123 50% 49%; /* #4CAF50 */
-    --arrow-down-color: 355 65% 70%; /* #F87171 */
+    --arrow-down-color: 359 77% 56%; /* #E53935 */
 
     /* Tooltip specific colors (always dark for consistency as requested) */
     --tooltip-bg: 240 15% 20%; /* Slightly lighter dark gray for better contrast */

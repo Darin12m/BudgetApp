@@ -297,6 +297,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                 daysLeft={daysLeft}
                 rolloverEnabled={budgetSettings.rolloverEnabled}
                 previousMonthLeftover={budgetSettings.previousMonthLeftover}
+                smartSummary="Your budget at a glance."
               />
 
               {/* Category Overview Card */}
