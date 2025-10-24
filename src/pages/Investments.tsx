@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, ChevronLeft } from 'lucide-react'; // Added ChevronLeft
+import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Added CardHeader, CardTitle, CardContent
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'; // Import Recharts components
 
 import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
 import { calculateGainLoss, formatCurrency } from '@/lib/utils';
@@ -19,7 +18,6 @@ import OverallPortfolioSummaryCard from '@/components/investments/OverallPortfol
 import InvestmentAllocationChart from '@/components/investments/InvestmentAllocationChart';
 import InvestmentHoldingsList from '@/components/investments/InvestmentHoldingsList';
 import InvestmentForm from '@/components/investments/InvestmentForm';
-import BottomNavBar from '@/components/BottomNavBar'; // Import BottomNavBar
 
 // --- Interfaces ---
 interface PortfolioSummary {
@@ -49,14 +47,14 @@ interface InvestmentsPageProps {
 const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   const {
     investments,
-    portfolioSnapshots,
+    portfolioSnapshots, // Get portfolio snapshots
     loading,
     error,
     addInvestment,
     updateInvestment,
     deleteInvestment,
     priceChange,
-    alertedInvestments,
+    alertedInvestments, // Get alerted investments
   } = useInvestmentData(userUid);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,7 +62,6 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'stocks' | 'crypto'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'gainLossPercentage' | 'totalValue'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const navigate = useNavigate(); // Initialize useNavigate
 
   // --- Computed Portfolio Summary (Overall) ---
   const overallPortfolioSummary: PortfolioSummary = useMemo(() => {
@@ -218,27 +215,13 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20 sm:pb-0 animate-in fade-in duration-500">
-      <header className="bg-card backdrop-blur-lg border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
-        <div className="flex items-center px-4 sm:px-6 py-3 sm:py-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)} // Go back to the previous page
-            className="mr-2 sm:mr-4 text-muted-foreground hover:bg-muted/50"
-          >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-          </Button>
-          <h1 className="text-lg sm:text-xl font-bold">Investments</h1>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 pb-24 sm:pb-6"> {/* Added pb-24 for mobile bottom nav */}
+    <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 animate-in fade-in duration-500">
+      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-24 sm:pb-6">
         {error && <ErrorMessage message={error} />}
 
-        {/* Header (moved to top of component) */}
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl sm:text-3xl font-bold sr-only">Investments</h1> {/* Hidden as it's in the header now */}
+          <h1 className="text-2xl sm:text-3xl font-bold">Investments</h1>
           <Button onClick={handleAddInvestment} className="flex items-center space-x-2 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98">
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Investment</span>
@@ -279,7 +262,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               emptyMessage="No investments found."
               emptyIcon={Wallet}
               emptyButtonText="Add First Investment"
-              alertedInvestments={alertedInvestments}
+              alertedInvestments={alertedInvestments} // Pass alerts
             />
           </TabsContent>
 
@@ -306,7 +289,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               emptyMessage="No stock investments found."
               emptyIcon={DollarSign}
               emptyButtonText="Add First Stock"
-              alertedInvestments={alertedInvestments}
+              alertedInvestments={alertedInvestments} // Pass alerts
             />
           </TabsContent>
 
@@ -333,7 +316,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               emptyMessage="No crypto investments found."
               emptyIcon={Bitcoin}
               emptyButtonText="Add First Crypto"
-              alertedInvestments={alertedInvestments}
+              alertedInvestments={alertedInvestments} // Pass alerts
             />
           </TabsContent>
         </Tabs>
@@ -395,15 +378,13 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Fixed Add Button for Mobile (adjusted position to be above BottomNavBar) */}
+      {/* Fixed Add Button for Mobile */}
       <Button
-        className="fixed bottom-[calc(5rem+1rem)] right-4 sm:hidden rounded-full p-3 shadow-lg bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground z-30 animate-in fade-in zoom-in duration-300 transition-transform hover:scale-[1.05] active:scale-95"
+        className="fixed bottom-20 right-4 sm:hidden rounded-full p-3 shadow-lg bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground z-30 animate-in fade-in zoom-in duration-300 transition-transform hover:scale-[1.05] active:scale-95"
         onClick={handleAddInvestment}
       >
         <Plus className="w-6 h-6" />
       </Button>
-
-      <BottomNavBar /> {/* Render BottomNavBar */}
     </div>
   );
 };
