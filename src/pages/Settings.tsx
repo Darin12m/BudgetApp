@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, ChevronRight, Palette, Zap } from 'lucide-react'; // Added ChevronRight icon
+import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, ChevronRight, Palette, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -13,40 +13,30 @@ import BottomNavBar from '@/components/BottomNavBar';
 import { useFinanceData } from '@/hooks/use-finance-data';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 
 interface SettingsPageProps {
   userUid: string | null;
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false); // State will be managed by toggleTheme
   const [monthlyBudgetInput, setMonthlyBudgetInput] = useState<string>('');
   const [microInvestingEnabled, setMicroInvestingEnabled] = useState<boolean>(true);
   const [microInvestingPercentage, setMicroInvestingPercentage] = useState<string>('30');
 
   const { budgetSettings, updateDocument, loading: financeLoading } = useFinanceData(userUid);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
+  // Initialize isDarkMode state based on the current document class
   useEffect(() => {
-    // Initialize dark mode state from localStorage or system preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else if (savedTheme === 'light') {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove('dark');
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
+    setIsDarkMode(document.documentElement.classList.contains('dark'));
   }, []);
 
   useEffect(() => {
     if (budgetSettings && budgetSettings.id) {
       setMonthlyBudgetInput(budgetSettings.totalBudgeted?.toString() || '');
-      setMicroInvestingEnabled(budgetSettings.microInvestingEnabled ?? true); // Default to true
+      setMicroInvestingEnabled(budgetSettings.microInvestingEnabled ?? true);
       setMicroInvestingPercentage(budgetSettings.microInvestingPercentage?.toString() || '30');
     }
   }, [budgetSettings]);
@@ -110,8 +100,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
     try {
       await signOut(auth);
       toast.success("Signed out successfully!");
-      // Optionally redirect to a login page or home
-      window.location.href = '/'; // Reloads the app, triggering anonymous sign-in
+      window.location.href = '/';
     } catch (error) {
       console.error("Error signing out:", error);
       toast.error("Failed to sign out.");
@@ -125,7 +114,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(-1)} // Go back to the previous page
+            onClick={() => navigate(-1)}
             className="mr-2 sm:mr-4 text-muted-foreground hover:bg-muted/50"
           >
             <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -135,7 +124,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
       </header>
 
       <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
-        {/* Theme Settings */}
         <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -157,7 +145,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
           </CardContent>
         </Card>
 
-        {/* Budget Settings */}
         <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -180,11 +167,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                 Save Monthly Budget
               </Button>
             </div>
-            {/* Add other budget settings here, e.g., rollover toggle */}
           </CardContent>
         </Card>
 
-        {/* Micro-Investing Settings */}
         <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -224,7 +209,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
           </CardContent>
         </Card>
 
-        {/* Account Settings */}
         <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -246,7 +230,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
           </CardContent>
         </Card>
 
-        {/* API Integrations (Placeholder) */}
         <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">

@@ -11,7 +11,7 @@ import SettingsPage from "./pages/Settings";
 import LoginPage from "./pages/Login";
 import { useEffect, useState } from "react";
 import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, User, setPersistence, browserLocalPersistence } from "firebase/auth"; // Import setPersistence and browserLocalPersistence
+import { onAuthStateChanged, User, setPersistence, browserLocalPersistence } from "firebase/auth";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +33,19 @@ const App = () => {
   const [userUid, setUserUid] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState(true);
+
+  // Global theme initialization
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (savedTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      // If no theme is saved, use system preference
+      document.documentElement.classList.add('dark');
+    }
+  }, []); // Run once on mount
 
   useEffect(() => {
     const setupAuth = async () => {
@@ -65,9 +78,9 @@ const App = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background"> {/* Changed to bg-background */}
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        <span className="ml-4 text-lg text-muted-foreground">Loading application...</span> {/* Changed to text-muted-foreground */}
+        <span className="ml-4 text-lg text-muted-foreground">Loading application...</span>
       </div>
     );
   }
@@ -112,7 +125,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
