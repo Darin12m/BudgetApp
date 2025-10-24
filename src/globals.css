@@ -134,11 +134,11 @@
 }
 
 .dark .card-shadow {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Dark theme shadow */
+  box-shadow: var(--tw-shadow-glass); /* Use the new glass shadow */
 }
 
 .dark .card-shadow:hover {
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.2); /* Slightly more intense on hover */
   transform: translateY(-1px);
 }
 

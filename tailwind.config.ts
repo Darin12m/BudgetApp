@@ -125,6 +125,9 @@ export default {
         "float-up-down": "float-up-down 1.5s ease-in-out infinite",
         "pulse-red-glow": "pulse-red-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", // New animation
       },
+      boxShadow: {
+        glass: '0 8px 32px 0 rgba(0, 0, 0, 0.15)', // Soft, diffused shadow for glassmorphism
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
