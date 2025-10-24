@@ -6,6 +6,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { PiggyBank, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '@/context/CurrencyContext';
+import { Progress } from '@/components/ui/progress'; // Import Progress component
+import { cn } from '@/lib/utils'; // Import cn for conditional class merging
 
 interface Category {
   id: string;
@@ -29,14 +31,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
 }) => {
   const { formatCurrency } = useCurrency();
 
-  const chartData = categories
-    .filter(cat => cat.spent > 0) // Only show categories with spending
-    .map(cat => ({
-      name: cat.name,
-      value: cat.spent,
-      color: cat.color,
-    }));
-
+  // Data for the overall budget pie chart
   const remainingBudget = totalBudgetedMonthly - totalSpentMonthly;
   const spentPercentage = totalBudgetedMonthly > 0 ? (totalSpentMonthly / totalBudgetedMonthly) * 100 : 0;
 
@@ -56,56 +51,91 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
           <ChevronRight className="w-4 h-4 ml-1" />
         </Link>
       </CardHeader>
-      <CardContent className="flex flex-col sm:flex-row items-center justify-between p-6 pt-0">
-        <div className="w-full sm:w-1/2 h-[150px] flex items-center justify-center mb-4 sm:mb-0">
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieChartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={60}
-                  fill="#8884d8"
-                  dataKey="value"
-                  labelLine={false}
-                  isAnimationActive={true}
-                  animationDuration={500}
-                >
-                  {pieChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value, name) => [`${formatCurrency(Number(value))}`, name]} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-center text-muted-foreground">
-              <p className="text-sm">No spending data yet.</p>
+      <CardContent className="p-6 pt-0">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
+          <div className="w-full sm:w-1/2 h-[150px] flex items-center justify-center mb-4 sm:mb-0">
+            {pieChartData.some(d => d.value > 0) ? ( // Only show chart if there's data
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieChartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={60}
+                    fill="#8884d8"
+                    dataKey="value"
+                    labelLine={false}
+                    isAnimationActive={true}
+                    animationDuration={500}
+                  >
+                    {pieChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value, name) => [`${formatCurrency(Number(value))}`, name]} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center text-muted-foreground">
+                <p className="text-sm">No spending data yet.</p>
+              </div>
+            )}
+          </div>
+          <div className="w-full sm:w-1/2 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Total Budgeted</span>
+              <span className="font-semibold text-foreground">{formatCurrency(totalBudgetedMonthly)}</span>
             </div>
-          )}
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Total Spent</span>
+              <span className="font-semibold text-foreground">{formatCurrency(totalSpentMonthly)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Remaining</span>
+              <span className={`font-semibold ${remainingBudget >= 0 ? 'text-emerald' : 'text-destructive'}`}>
+                {formatCurrency(remainingBudget)}
+              </span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden mt-3">
+              <div
+                className="bg-primary h-full transition-all duration-500"
+                style={{ width: `${Math.min(spentPercentage, 100)}%` }}
+              />
+            </div>
+          </div>
         </div>
-        <div className="w-full sm:w-1/2 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Total Budgeted</span>
-            <span className="font-semibold text-foreground">{formatCurrency(totalBudgetedMonthly)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Total Spent</span>
-            <span className="font-semibold text-foreground">{formatCurrency(totalSpentMonthly)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Remaining</span>
-            <span className={`font-semibold ${remainingBudget >= 0 ? 'text-emerald' : 'text-destructive'}`}>
-              {formatCurrency(remainingBudget)}
-            </span>
-          </div>
-          <div className="w-full bg-muted rounded-full h-2 overflow-hidden mt-3">
-            <div
-              className="bg-primary h-full transition-all duration-500"
-              style={{ width: `${Math.min(spentPercentage, 100)}%` }}
-            />
+
+        {/* List of Categories */}
+        <div className="mt-4 border-t border-border pt-4">
+          <h3 className="text-base font-semibold text-foreground mb-3">Your Categories</h3>
+          <div className="space-y-3">
+            {categories.length > 0 ? (
+              categories.map((cat) => {
+                const categorySpentPercentage = cat.budgeted > 0 ? (cat.spent / cat.budgeted) * 100 : 0;
+                const isCategoryOverBudget = cat.spent > cat.budgeted;
+
+                return (
+                  <div key={cat.id} className="flex flex-col space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg">{cat.emoji}</span>
+                        <span className="font-medium text-foreground text-sm">{cat.name}</span>
+                      </div>
+                      <div className="text-sm text-right">
+                        <span className={cn("font-semibold", isCategoryOverBudget ? "text-destructive" : "text-foreground")}>
+                          {formatCurrency(cat.spent)}
+                        </span>
+                        <span className="text-muted-foreground"> / {formatCurrency(cat.budgeted)}</span>
+                      </div>
+                    </div>
+                    <Progress value={Math.min(categorySpentPercentage, 100)} className="h-2" indicatorColor={cat.color} />
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-muted-foreground text-sm text-center">No categories defined yet. Go to the Budget tab to add some!</p>
+            )}
           </div>
         </div>
       </CardContent>
