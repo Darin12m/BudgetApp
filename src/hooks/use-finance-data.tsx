@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { isTransactionInCurrentWeek, isTransactionInPreviousWeek, isTransactionInCurrentMonth, getStartOfCurrentWeek, getEndOfCurrentWeek, getStartOfPreviousWeek, getEndOfPreviousWeek } from '@/lib/utils';
-import { format, parseISO, getDaysInMonth } from 'date-fns';
+import { format, parseISO, getDaysInMonth, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 
 // TypeScript Interfaces (re-defined for clarity within the hook context)
 interface Transaction {
   id: string;
-  date: string;
+  date: string; // YYYY-MM-DD
   merchant: string;
   amount: number;
   category: string;
@@ -67,7 +67,7 @@ interface BudgetSettings {
   priceAlertThreshold?: number; // New: Price alert threshold
 }
 
-export const useFinanceData = (userUid: string | null) => {
+export const useFinanceData = (userUid: string | null, startDate: Date | undefined, endDate: Date | undefined) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -91,8 +91,16 @@ export const useFinanceData = (userUid: string | null) => {
 
     const unsubscribes: (() => void)[] = [];
 
-    const fetchData = (collectionName: string, setState: (data: any[]) => void) => {
-      const q = query(collection(db, collectionName), where("ownerUid", "==", userUid));
+    const fetchData = (collectionName: string, setState: (data: any[]) => void, applyDateFilter: boolean = false) => {
+      let q = query(collection(db, collectionName), where("ownerUid", "==", userUid));
+
+      if (applyDateFilter && startDate && endDate) {
+        // Assuming 'date' field in Firestore is 'YYYY-MM-DD' string
+        const formattedStartDate = format(startDate, 'yyyy-MM-dd');
+        const formattedEndDate = format(endDate, 'yyyy-MM-dd');
+        q = query(q, where("date", ">=", formattedStartDate), where("date", "<=", formattedEndDate));
+      }
+
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setState(data as any[]);
@@ -106,7 +114,9 @@ export const useFinanceData = (userUid: string | null) => {
       unsubscribes.push(unsubscribe);
     };
 
-    fetchData('transactions', setTransactions);
+    // Apply date filter to transactions
+    fetchData('transactions', setTransactions, true);
+    // Categories, accounts, goals, recurring transactions are typically not date-filtered in this manner
     fetchData('categories', setCategories);
     fetchData('accounts', setAccounts);
     fetchData('goals', setGoals);
@@ -151,7 +161,7 @@ export const useFinanceData = (userUid: string | null) => {
     return () => {
       unsubscribes.forEach(unsub => unsub());
     };
-  }, [userUid]);
+  }, [userUid, startDate, endDate]); // Add startDate and endDate to dependencies
 
   const addDocument = useCallback(async (collectionName: string, data: any) => {
     if (!userUid) {
@@ -205,18 +215,35 @@ export const useFinanceData = (userUid: string | null) => {
   }, [userUid]);
 
   // --- Derived Financial Data ---
-
+  // These now operate on the transactions filtered by the global date range
   const currentMonthTransactions = useMemo(() => {
-    return transactions.filter(txn => txn.amount < 0 && isTransactionInCurrentMonth(txn.date));
-  }, [transactions]);
+    if (!startDate || !endDate) return [];
+    const now = new Date();
+    return transactions.filter(txn => {
+      const txnDate = parseISO(txn.date);
+      return isWithinInterval(txnDate, { start: startOfMonth(now), end: endOfMonth(now) });
+    });
+  }, [transactions, startDate, endDate]);
 
   const currentWeekTransactions = useMemo(() => {
-    return transactions.filter(txn => txn.amount < 0 && isTransactionInCurrentWeek(txn.date));
-  }, [transactions]);
+    if (!startDate || !endDate) return [];
+    const now = new Date();
+    return transactions.filter(txn => {
+      const txnDate = parseISO(txn.date);
+      return isWithinInterval(txnDate, { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) });
+    });
+  }, [transactions, startDate, endDate]);
 
   const previousWeekTransactions = useMemo(() => {
-    return transactions.filter(txn => txn.amount < 0 && isTransactionInPreviousWeek(txn.date));
-  }, [transactions]);
+    if (!startDate || !endDate) return [];
+    const now = new Date();
+    const prevWeekStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+    const prevWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+    return transactions.filter(txn => {
+      const txnDate = parseISO(txn.date);
+      return isWithinInterval(txnDate, { start: prevWeekStart, end: prevWeekEnd });
+    });
+  }, [transactions, startDate, endDate]);
 
   const currentWeekSpending = useMemo(() => {
     return currentWeekTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0);

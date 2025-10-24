@@ -4,7 +4,7 @@ import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { fetchSingleCryptoPrice, fetchStockPrice, fetchCompanyProfile, getCoingeckoId } from '@/lib/api';
 import { useFinanceData } from './use-finance-data'; // Import useFinanceData to get budgetSettings
-import { format, isSameDay, parseISO } from 'date-fns';
+import { format, isSameDay, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 // TypeScript Interfaces
 export interface Investment {
@@ -34,7 +34,7 @@ interface PortfolioSnapshot {
   createdAt: any; // Firebase Timestamp
 }
 
-export const useInvestmentData = (userUid: string | null) => {
+export const useInvestmentData = (userUid: string | null, startDate: Date | undefined, endDate: Date | undefined) => {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [portfolioSnapshots, setPortfolioSnapshots] = useState<PortfolioSnapshot[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -43,7 +43,7 @@ export const useInvestmentData = (userUid: string | null) => {
   const [priceChange, setPriceChange] = useState<Map<string, 'up' | 'down' | 'none'>>(new Map());
   const [alertedInvestments, setAlertedInvestments] = useState<Map<string, boolean>>(new Map()); // New state for alerts
 
-  const { budgetSettings } = useFinanceData(userUid); // Get budget settings for alert threshold
+  const { budgetSettings } = useFinanceData(userUid, startDate, endDate); // Get budget settings for alert threshold
 
   // Ref to store the latest investments to avoid stale closures in setInterval
   const latestInvestments = useRef<Investment[]>([]);
@@ -76,11 +76,20 @@ export const useInvestmentData = (userUid: string | null) => {
     return () => unsubscribe(); // Clean up the listener
   }, [userUid]);
 
-  // Fetch portfolio snapshots from Firestore
+  // Fetch portfolio snapshots from Firestore, filtered by date range
   useEffect(() => {
     if (!userUid) return;
 
-    const q = query(collection(db, "portfolioSnapshots"), where("ownerUid", "==", userUid), orderBy("date", "asc"));
+    let q = query(collection(db, "portfolioSnapshots"), where("ownerUid", "==", userUid));
+
+    if (startDate && endDate) {
+      const formattedStartDate = format(startOfDay(startDate), 'yyyy-MM-dd');
+      const formattedEndDate = format(endOfDay(endDate), 'yyyy-MM-dd');
+      q = query(q, where("date", ">=", formattedStartDate), where("date", "<=", formattedEndDate));
+    }
+
+    q = query(q, orderBy("date", "asc"));
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetchedSnapshots = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PortfolioSnapshot[];
       setPortfolioSnapshots(fetchedSnapshots);
@@ -91,7 +100,7 @@ export const useInvestmentData = (userUid: string | null) => {
     });
 
     return () => unsubscribe();
-  }, [userUid]);
+  }, [userUid, startDate, endDate]); // Add startDate and endDate to dependencies
 
   // Fetch live prices and update investments
   const fetchAndApplyLivePrices = useCallback(async () => {
@@ -289,7 +298,7 @@ export const useInvestmentData = (userUid: string | null) => {
 
   const updateInvestment = useCallback(async (id: string, data: Partial<Omit<Investment, 'id' | 'ownerUid' | 'previousPrice' | 'change24hPercent'>>) => {
     if (!userUid) {
-      toast.error("Authentication required to update investment.");
+      toast.error("Authentication required to update data.");
       return;
     }
     try {

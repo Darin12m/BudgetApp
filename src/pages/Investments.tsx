@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, ChevronLeft, Menu, Calendar } from 'lucide-react'; // Added Calendar
+import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, ChevronLeft, Menu, Calendar, ChevronRight } from 'lucide-react'; // Added Calendar, ChevronRight
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +13,8 @@ import { format } from 'date-fns'; // Import format for date display
 import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
 import { calculateGainLoss } from '@/lib/utils'; // Removed formatCurrency from here
 import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import { useDateRange } from '@/context/DateRangeContext'; // Import useDateRange
+import { DateRangePicker } from '@/components/common/DateRangePicker'; // Import DateRangePicker
 
 // New modular components
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -52,6 +54,7 @@ interface InvestmentsPageProps {
 
 const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const { selectedRange, goToPreviousPeriod, goToNextPeriod } = useDateRange(); // Use date range context
 
   const {
     investments,
@@ -63,7 +66,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     deleteInvestment,
     priceChange,
     alertedInvestments,
-  } = useInvestmentData(userUid);
+  } = useInvestmentData(userUid, selectedRange.from, selectedRange.to); // Pass selected range to useInvestmentData
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
@@ -260,10 +263,13 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-muted/50 rounded-lg">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">{format(new Date(), 'MMMM yyyy')}</span>
-              </div>
+              <Button variant="ghost" size="icon" onClick={goToPreviousPeriod} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
+                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+              </Button>
+              <DateRangePicker /> {/* Use the new DateRangePicker component */}
+              <Button variant="ghost" size="icon" onClick={goToNextPeriod} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
               <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 JD
               </div>
