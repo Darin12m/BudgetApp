@@ -14,7 +14,7 @@ import { toast } from 'sonner'; // Import toast from sonner
 
 interface InvestmentFormProps {
   investment: Investment | null;
-  onSave: (investment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => void;
+  onSave: (investment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice' | 'change24hPercent'>) => void; // Updated Omit type
   onDelete: (id: string) => void;
   onClose: () => void;
 }

@@ -21,6 +21,7 @@ interface InvestmentHoldingsListProps {
   emptyMessage: string;
   emptyIcon: React.ElementType;
   emptyButtonText: string;
+  alertedInvestments: Map<string, boolean>; // New prop for alert status
 }
 
 const InvestmentHoldingsList: React.FC<InvestmentHoldingsListProps> = ({
@@ -36,6 +37,7 @@ const InvestmentHoldingsList: React.FC<InvestmentHoldingsListProps> = ({
   emptyMessage,
   emptyIcon: EmptyIcon,
   emptyButtonText,
+  alertedInvestments,
 }) => {
   return (
     <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
@@ -62,7 +64,13 @@ const InvestmentHoldingsList: React.FC<InvestmentHoldingsListProps> = ({
         <div className="space-y-3">
           {investments.length > 0 ? (
             investments.map(inv => (
-              <InvestmentListItem key={inv.id} investment={inv} onEdit={onEditInvestment} priceChangeStatus={priceChange.get(inv.id) || 'none'} />
+              <InvestmentListItem
+                key={inv.id}
+                investment={inv}
+                onEdit={onEditInvestment}
+                priceChangeStatus={priceChange.get(inv.id) || 'none'}
+                isAlerted={alertedInvestments.get(inv.id) || false} // Pass alert status
+              />
             ))
           ) : (
             <div className="p-6 text-center text-muted-foreground">

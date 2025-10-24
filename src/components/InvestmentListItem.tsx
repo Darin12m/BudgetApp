@@ -2,38 +2,49 @@
 
 import React from 'react';
 import { Investment } from '@/hooks/use-investment-data';
-import { TrendingUp, TrendingDown, DollarSign, Bitcoin, Edit } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Bitcoin, Edit, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
 import { formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils'; // Import cn for conditional class merging
 
 interface InvestmentListItemProps {
   investment: Investment;
   onEdit: (investment: Investment) => void;
-  priceChangeStatus: 'up' | 'down' | 'none'; // New prop for animation
+  priceChangeStatus: 'up' | 'down' | 'none';
+  isAlerted: boolean; // New prop for alert status
 }
 
-const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onEdit, priceChangeStatus }) => {
+const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onEdit, priceChangeStatus, isAlerted }) => {
   const invested = investment.quantity * investment.buyPrice;
   const currentValue = investment.quantity * investment.currentPrice;
   const gainLoss = currentValue - invested;
   const gainLossPercentage = invested === 0 ? 0 : (gainLoss / invested) * 100;
 
-  const isPositive = gainLossPercentage >= 0;
-  const gainLossColor = isPositive ? 'text-arrowUp' : 'text-arrowDown'; // Changed to use new arrow colors
+  const isPositiveOverall = gainLossPercentage >= 0;
+  const overallGainLossColor = isPositiveOverall ? 'text-arrowUp' : 'text-arrowDown';
   const Icon = investment.type === 'Stock' ? DollarSign : Bitcoin;
+
+  // 24h change styling
+  const change24hPercent = investment.change24hPercent;
+  const isPositive24h = change24hPercent !== null && change24hPercent >= 0;
+  const change24hColor = isPositive24h ? 'text-arrowUp' : 'text-arrowDown';
+  const Change24hIcon = isPositive24h ? TrendingUp : TrendingDown;
 
   // Price change animation classes
   const priceChangeClasses = {
-    up: 'animate-pulse-green', // Custom Tailwind animation
-    down: 'animate-pulse-red', // Custom Tailwind animation
+    up: 'animate-pulse-green',
+    down: 'animate-pulse-red',
     none: '',
   };
 
   return (
-    <div className="flex items-center justify-between p-4 bg-card rounded-lg shadow-sm border border-border/50 hover:bg-muted/50 transition-colors active:bg-muted backdrop-blur-lg animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className={cn(
+      "flex items-center justify-between p-4 bg-card rounded-lg shadow-sm border border-border/50 hover:bg-muted/50 transition-colors active:bg-muted backdrop-blur-lg animate-in fade-in slide-in-from-bottom-2 duration-300",
+      isAlerted && "border-destructive ring-2 ring-destructive/50 animate-pulse-red" // Highlight for alerts
+    )}>
       <div className="flex items-center space-x-3 flex-1 min-w-0">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-          investment.type === 'Stock' ? 'bg-blue/10 text-blue' : 'bg-lilac/10 text-lilac' // Using new color variables
+          investment.type === 'Stock' ? 'bg-blue/10 text-blue' : 'bg-lilac/10 text-lilac'
         }`}>
           <Icon className="w-5 h-5" />
         </div>
@@ -52,13 +63,20 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
         </div>
       </div>
       <div className="text-right ml-2 flex-shrink-0">
-        <div className={`flex items-center justify-end rounded-full px-2 py-1 ${isPositive ? 'bg-arrowUp/10' : 'bg-arrowDown/10'} ${priceChangeClasses[priceChangeStatus]} animate-float-up-down`}>
-          {isPositive ? <TrendingUp className="w-3 h-3 mr-1 text-arrowUp" /> : <TrendingDown className="w-3 h-3 mr-1 text-arrowDown" />}
-          <p className={`font-semibold text-sm ${gainLossColor}`}>
-            {gainLossPercentage.toFixed(2)}%
+        {change24hPercent !== null && (
+          <div className={`flex items-center justify-end rounded-full px-2 py-1 ${isPositive24h ? 'bg-arrowUp/10' : 'bg-arrowDown/10'} ${priceChangeClasses[priceChangeStatus]} animate-float-up-down`}>
+            {Change24hIcon && <Change24hIcon className={`w-3 h-3 mr-1 ${change24hColor}`} />}
+            <p className={`font-semibold text-sm ${change24hColor}`}>
+              {change24hPercent.toFixed(2)}%
+            </p>
+          </div>
+        )}
+        {isAlerted && (
+          <p className="text-destructive text-xs mt-1 flex items-center justify-end">
+            <AlertTriangle className="w-3 h-3 mr-1" /> Alert!
           </p>
-        </div>
-        <p className={`text-xs ${gainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(gainLoss)}</p>
+        )}
+        <p className={`text-xs ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(gainLoss)}</p>
       </div>
       <Button variant="ghost" size="icon" onClick={() => onEdit(investment)} className="ml-2 flex-shrink-0 text-muted-foreground hover:bg-muted/50">
         <Edit className="h-4 w-4" />

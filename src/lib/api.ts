@@ -1,12 +1,12 @@
 import axios from 'axios';
 
 // Finnhub API Key provided by the user
-const FINNHUB_API_KEY = 'd3tb37pr01qigeg2akvgd3tb37pr01qigeg2al00'; 
+const FINNHUB_API_KEY = 'd3tb37pr01qigeg2akvgd3tb37pr01qeg2al00'; 
 
 interface CryptoPriceResponse {
   [id: string]: {
     usd: number;
-    usd_24h_change?: number;
+    usd_24h_change?: number; // Added 24h change
   };
 }
 
@@ -303,19 +303,17 @@ export const fetchCryptoPrices = async (ids: string[]): Promise<Map<string, numb
   }
 };
 
-export const fetchSingleCryptoPrice = async (symbolOrId: string): Promise<{ price: number | null; name: string | null; error: string | null }> => {
-  if (!symbolOrId) return { price: null, name: null, error: "Symbol or ID is required." };
+export const fetchSingleCryptoPrice = async (symbolOrId: string): Promise<{ price: number | null; name: string | null; change24hPercent: number | null; error: string | null }> => {
+  if (!symbolOrId) return { price: null, name: null, change24hPercent: null, error: "Symbol or ID is required." };
 
   const coingeckoId = getCoingeckoId(symbolOrId);
 
   try {
     const response = await axios.get<CryptoPriceResponse>(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`
+      `https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd&include_24hr_change=true` // Request 24h change
     );
     
     if (response.data[coingeckoId] && response.data[coingeckoId].usd) {
-      // Attempt to get a more readable name from CoinGecko's coins list API
-      // This is a heavier call, so we'll only do it for single fetches if needed
       let cryptoName: string | null = null;
       try {
         const coinListResponse = await axios.get(`https://api.coingecko.com/api/v3/coins/list`);
@@ -327,18 +325,23 @@ export const fetchSingleCryptoPrice = async (symbolOrId: string): Promise<{ pric
         console.warn("Could not fetch crypto name from coin list:", listError);
       }
 
-      return { price: response.data[coingeckoId].usd, name: cryptoName || coingeckoId, error: null };
+      return {
+        price: response.data[coingeckoId].usd,
+        name: cryptoName || coingeckoId,
+        change24hPercent: response.data[coingeckoId].usd_24h_change || null, // Return 24h change
+        error: null
+      };
     } else {
-      return { price: null, name: null, error: "Invalid crypto symbol or price unavailable." };
+      return { price: null, name: null, change24hPercent: null, error: "Invalid crypto symbol or price unavailable." };
     }
   } catch (error: any) {
     console.error(`Error fetching price for crypto ${symbolOrId}:`, error);
-    return { price: null, name: null, error: "Failed to fetch crypto price. Please try again." };
+    return { price: null, name: null, change24hPercent: null, error: "Failed to fetch crypto price. Please try again." };
   }
 };
 
-export const fetchStockPrice = async (symbol: string): Promise<{ price: number | null; error: string | null }> => {
-  if (!symbol || !FINNHUB_API_KEY) return { price: null, error: "Symbol and API key are required." };
+export const fetchStockPrice = async (symbol: string): Promise<{ price: number | null; previousClose: number | null; error: string | null }> => {
+  if (!symbol || !FINNHUB_API_KEY) return { price: null, previousClose: null, error: "Symbol and API key are required." };
 
   const upperSymbol = symbol.toUpperCase();
   try {
@@ -346,15 +349,14 @@ export const fetchStockPrice = async (symbol: string): Promise<{ price: number |
       `https://finnhub.io/api/v1/quote?symbol=${upperSymbol}&token=${FINNHUB_API_KEY}`
     );
     
-    // Finnhub returns c=0 for invalid tickers or market closed
     if (response.data && response.data.c > 0) {
-      return { price: response.data.c, error: null };
+      return { price: response.data.c, previousClose: response.data.pc, error: null }; // Return previous close
     } else {
-      return { price: null, error: "Invalid stock ticker or price unavailable." };
+      return { price: null, previousClose: null, error: "Invalid stock ticker or price unavailable." };
     }
   } catch (error: any) {
     console.error(`Error fetching stock price for ${upperSymbol}:`, error);
-    return { price: null, error: "Failed to fetch stock price. Please try again." };
+    return { price: null, previousClose: null, error: "Failed to fetch stock price. Please try again." };
   }
 };
 

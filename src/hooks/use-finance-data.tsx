@@ -64,6 +64,7 @@ interface BudgetSettings {
   totalBudgeted?: number;
   microInvestingEnabled?: boolean;
   microInvestingPercentage?: number;
+  priceAlertThreshold?: number; // New: Price alert threshold
 }
 
 export const useFinanceData = (userUid: string | null) => {
@@ -129,6 +130,7 @@ export const useFinanceData = (userUid: string | null) => {
             totalBudgeted: 0,
             microInvestingEnabled: true,
             microInvestingPercentage: 30,
+            priceAlertThreshold: 5, // Default price alert threshold
             createdAt: serverTimestamp(), // Add createdAt for default settings
           }).then(() => {
             // No need to set state here, onSnapshot will pick it up

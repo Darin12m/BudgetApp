@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Wallet, DollarSign, Bitcoin } from 'lucide-react';
+import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card"; // Import Card component
+import { Card } from "@/components/ui/card";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'; // Import Recharts components
 
 import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
-import { calculateGainLoss } from '@/lib/utils';
+import { calculateGainLoss, formatCurrency } from '@/lib/utils';
 
 // New modular components
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -16,7 +17,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import OverallPortfolioSummaryCard from '@/components/investments/OverallPortfolioSummaryCard';
 import InvestmentAllocationChart from '@/components/investments/InvestmentAllocationChart';
 import InvestmentHoldingsList from '@/components/investments/InvestmentHoldingsList';
-import InvestmentForm from '@/components/investments/InvestmentForm'; // Centralized form
+import InvestmentForm from '@/components/investments/InvestmentForm';
 
 // --- Interfaces ---
 interface PortfolioSummary {
@@ -32,6 +33,11 @@ interface AllocationData {
   color: string;
 }
 
+interface PortfolioSnapshotData {
+  date: string;
+  value: number;
+}
+
 const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))', '#f59e0b', '#ef4444', '#06b6d4'];
 
 interface InvestmentsPageProps {
@@ -41,12 +47,14 @@ interface InvestmentsPageProps {
 const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
   const {
     investments,
+    portfolioSnapshots, // Get portfolio snapshots
     loading,
     error,
     addInvestment,
     updateInvestment,
     deleteInvestment,
     priceChange,
+    alertedInvestments, // Get alerted investments
   } = useInvestmentData(userUid);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -159,6 +167,14 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     })).filter(item => item.value > 0);
   }, [cryptoInvestments]);
 
+  // Portfolio Growth Chart Data
+  const portfolioGrowthChartData: PortfolioSnapshotData[] = useMemo(() => {
+    return portfolioSnapshots.map(snapshot => ({
+      date: snapshot.date,
+      value: snapshot.value,
+    }));
+  }, [portfolioSnapshots]);
+
   // --- Handlers ---
   const handleAddInvestment = useCallback(() => {
     setEditingInvestment(null);
@@ -170,7 +186,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     setIsModalOpen(true);
   }, []);
 
-  const handleSaveInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
+  const handleSaveInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice' | 'change24hPercent'>) => {
     if (editingInvestment) {
       await updateInvestment(editingInvestment.id, newInvestment);
     } else {
@@ -246,6 +262,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               emptyMessage="No investments found."
               emptyIcon={Wallet}
               emptyButtonText="Add First Investment"
+              alertedInvestments={alertedInvestments} // Pass alerts
             />
           </TabsContent>
 
@@ -272,6 +289,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               emptyMessage="No stock investments found."
               emptyIcon={DollarSign}
               emptyButtonText="Add First Stock"
+              alertedInvestments={alertedInvestments} // Pass alerts
             />
           </TabsContent>
 
@@ -298,15 +316,55 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
               emptyMessage="No crypto investments found."
               emptyIcon={Bitcoin}
               emptyButtonText="Add First Crypto"
+              alertedInvestments={alertedInvestments} // Pass alerts
             />
           </TabsContent>
         </Tabs>
+
+        {/* Portfolio Growth Visualization */}
+        <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg font-semibold">Portfolio Growth</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[250px] flex items-center justify-center">
+            {portfolioGrowthChartData.length > 1 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={portfolioGrowthChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    stroke="hsl(var(--muted-foreground))"
+                    style={{ fontSize: '10px' }}
+                    tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  />
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    style={{ fontSize: '10px' }}
+                    tickFormatter={(value) => formatCurrency(Number(value))}
+                  />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                    formatter={(value) => formatCurrency(Number(value))}
+                    labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  />
+                  <Line type="monotone" dataKey="value" stroke="hsl(var(--emerald))" strokeWidth={2} name="Portfolio Value" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="p-6 text-center text-muted-foreground">
+                <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-lg font-semibold text-foreground">No sufficient growth data yet.</p>
+                <p className="text-sm mt-2">Add more investments and check back tomorrow to see your portfolio grow!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Add/Edit Investment Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="z-[1000] sm:max-w-[425px]" onPointerDown={(e) => e.stopPropagation()}>
-          <Card className="bg-card text-foreground card-shadow border border-border/50 p-6 backdrop-blur-lg"> {/* Apply card styling here */}
+          <Card className="bg-card text-foreground card-shadow border border-border/50 p-6 backdrop-blur-lg">
             <DialogHeader>
               <DialogTitle>{editingInvestment ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
             </DialogHeader>

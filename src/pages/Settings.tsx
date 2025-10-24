@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, ChevronRight, Palette, Zap } from 'lucide-react';
+import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, ChevronRight, Palette, Zap, BellRing } from 'lucide-react'; // Added BellRing icon
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -20,24 +20,36 @@ interface SettingsPageProps {
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false); // State will be managed by toggleTheme
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [monthlyBudgetInput, setMonthlyBudgetInput] = useState<string>('');
   const [microInvestingEnabled, setMicroInvestingEnabled] = useState<boolean>(true);
   const [microInvestingPercentage, setMicroInvestingPercentage] = useState<string>('30');
+  const [priceAlertThresholdInput, setPriceAlertThresholdInput] = useState<string>('5'); // New state for price alert threshold
 
   const { budgetSettings, updateDocument, loading: financeLoading } = useFinanceData(userUid);
   const navigate = useNavigate();
 
-  // Initialize isDarkMode state based on the current document class
   useEffect(() => {
-    setIsDarkMode(document.documentElement.classList.contains('dark'));
+    // Initialize dark mode state from localStorage or system preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    } else if (savedTheme === 'light') {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove('dark');
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
   }, []);
 
   useEffect(() => {
     if (budgetSettings && budgetSettings.id) {
       setMonthlyBudgetInput(budgetSettings.totalBudgeted?.toString() || '');
-      setMicroInvestingEnabled(budgetSettings.microInvestingEnabled ?? true);
+      setMicroInvestingEnabled(budgetSettings.microInvestingEnabled ?? true); // Default to true
       setMicroInvestingPercentage(budgetSettings.microInvestingPercentage?.toString() || '30');
+      setPriceAlertThresholdInput(budgetSettings.priceAlertThreshold?.toString() || '5'); // Initialize price alert threshold
     }
   }, [budgetSettings]);
 
@@ -96,11 +108,31 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
     }
   };
 
+  const handleSavePriceAlertThreshold = async () => {
+    if (!userUid || !budgetSettings?.id) {
+      toast.error("User not authenticated or budget settings not loaded.");
+      return;
+    }
+    const newThreshold = parseFloat(priceAlertThresholdInput);
+    if (isNaN(newThreshold) || newThreshold < 0) {
+      toast.error("Please enter a valid non-negative number for the price alert threshold.");
+      return;
+    }
+    try {
+      await updateDocument('budgetSettings', budgetSettings.id, { priceAlertThreshold: newThreshold });
+      toast.success("Price alert threshold updated successfully!");
+    } catch (error) {
+      console.error("Error updating price alert threshold:", error);
+      toast.error("Failed to update price alert threshold.");
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
       toast.success("Signed out successfully!");
-      window.location.href = '/';
+      // Optionally redirect to a login page or home
+      window.location.href = '/'; // Reloads the app, triggering anonymous sign-in
     } catch (error) {
       console.error("Error signing out:", error);
       toast.error("Failed to sign out.");
@@ -114,7 +146,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(-1)} // Go back to the previous page
             className="mr-2 sm:mr-4 text-muted-foreground hover:bg-muted/50"
           >
             <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -124,6 +156,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
       </header>
 
       <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
+        {/* Theme Settings */}
         <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -145,6 +178,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
           </CardContent>
         </Card>
 
+        {/* Budget Settings */}
         <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -167,9 +201,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                 Save Monthly Budget
               </Button>
             </div>
+            {/* Add other budget settings here, e.g., rollover toggle */}
           </CardContent>
         </Card>
 
+        {/* Micro-Investing Settings */}
         <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -209,6 +245,36 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
           </CardContent>
         </Card>
 
+        {/* Price Alerts Settings */}
+        <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center">
+              <BellRing className="w-5 h-5 mr-2 text-muted-foreground" /> Price Alerts
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="price-alert-threshold" className="text-base">
+                Alert Threshold (%)
+              </Label>
+              <Input
+                id="price-alert-threshold"
+                type="number"
+                step="0.1"
+                min="0"
+                value={priceAlertThresholdInput}
+                onChange={(e) => setPriceAlertThresholdInput(e.target.value)}
+                placeholder="e.g., 5 for ±5%"
+                className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
+              />
+              <Button onClick={handleSavePriceAlertThreshold} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground">
+                Save Alert Threshold
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Account Settings */}
         <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -230,6 +296,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
           </CardContent>
         </Card>
 
+        {/* API Integrations (Placeholder) */}
         <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
