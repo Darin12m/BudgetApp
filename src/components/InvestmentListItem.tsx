@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Investment } from '@/hooks/use-investment-data';
 import { TrendingUp, TrendingDown, DollarSign, Bitcoin, Edit, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
 import { cn } from '@/lib/utils'; // Import cn for conditional class merging
