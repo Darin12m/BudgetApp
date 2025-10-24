@@ -244,7 +244,7 @@ const CategoryCard: React.FC<CategoryCardProps> = memo(({ category, onEdit, onDe
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50 backdrop-blur-lg">
+            <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50"> {/* Removed backdrop-blur-lg */}
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -496,7 +496,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base sm:text-lg font-semibold text-foreground">Recent Transactions</h3>
-        <Link to="/budget-app?view=transactions" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:text-primary/90 font-medium flex items-center">
+        <Link to="/budget-app?view=transactions" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:bg-primary/90 font-medium flex items-center">
           View All
           <ChevronRight className="w-4 h-4 ml-1" />
         </Link>
@@ -712,7 +712,7 @@ const GoalsView: React.FC<GoalsViewProps> = ({
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50 backdrop-blur-lg">
+                  <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50"> {/* Removed backdrop-blur-lg */}
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                       <AlertDialogDescription>
