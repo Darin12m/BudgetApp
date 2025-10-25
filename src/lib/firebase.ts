@@ -1,25 +1,28 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore"; // Added Firestore import
-import { getAuth, GoogleAuthProvider } from "firebase/auth"; // Added Auth and GoogleAuthProvider import
+import { getFirestore } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDRPUg0bBrvSaI9A6NvnepjEOoekyVzXQY",
-  authDomain: "budgetappv2-35d9e.firebaseapp.com",
-  projectId: "budgetappv2-35d9e",
-  storageBucket: "budgetappv2-35d9e.firebasestorage.app",
-  messagingSenderId: "195381507027",
-  appId: "1:195381507027:web:9930fa2ed91a2214327526",
-  measurementId: "G-J6FXQL5BEP"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app); // Initialized Firestore
-const auth = getAuth(app); // Initialized Auth
+
+// Initialize Analytics only in a browser environment
+const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 export { app, analytics, db, auth, GoogleAuthProvider };

@@ -9,13 +9,18 @@ interface Currency {
   conversionRateToUSD: number; // How many USD 1 unit of this currency is worth (e.g., for MKD, 1 MKD = 1/57 USD)
 }
 
-// List of available currencies with placeholder conversion rates
+// IMPORTANT: These conversion rates are static placeholders.
+// For a production application, these should be fetched periodically from a reliable
+// foreign exchange (forex) API (e.g., Open Exchange Rates, Fixer.io) and stored
+// server-side (e.g., in Firebase Functions or a database) to ensure accuracy.
+// Client-side fetching of real-time rates is generally not recommended due to
+// API key exposure and rate limit management.
 const CURRENCIES: Currency[] = [
   { code: 'USD', symbol: '$', conversionRateToUSD: 1 },
-  { code: 'MKD', symbol: 'ден', conversionRateToUSD: 1 / 57 }, // 1 USD = 57 MKD
-  { code: 'EUR', symbol: '€', conversionRateToUSD: 1.08 }, // 1 EUR = 1.08 USD (placeholder)
-  { code: 'GBP', symbol: '£', conversionRateToUSD: 1.27 }, // 1 GBP = 1.27 USD (placeholder)
-  { code: 'JPY', symbol: '¥', conversionRateToUSD: 1 / 158 }, // 1 JPY = 1/158 USD (placeholder)
+  { code: 'MKD', symbol: 'ден', conversionRateToUSD: 1 / 57 }, // 1 USD = 57 MKD (placeholder rate)
+  { code: 'EUR', symbol: '€', conversionRateToUSD: 1.08 }, // 1 EUR = 1.08 USD (placeholder rate)
+  { code: 'GBP', symbol: '£', conversionRateToUSD: 1.27 }, // 1 GBP = 1.27 USD (placeholder rate)
+  { code: 'JPY', symbol: '¥', conversionRateToUSD: 1 / 158 }, // 1 JPY = 1/158 USD (placeholder rate)
 ];
 
 // Find the default USD currency object

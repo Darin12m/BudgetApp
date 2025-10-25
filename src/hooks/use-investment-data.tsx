@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { fetchSingleCryptoPrice, fetchStockPrice, fetchCompanyProfile, getCoingeckoId } from '@/lib/api';
-import { useFinanceData } from './use-finance-data'; // Import useFinanceData to get budgetSettings
+import { useBudgetSettings } from './use-budget-settings'; // Import the new lightweight hook
 import { format, isSameDay, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 // TypeScript Interfaces
@@ -40,11 +40,10 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
   const [portfolioSnapshots, setPortfolioSnapshots] = useState<PortfolioSnapshot[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [livePrices, setLivePrices] = useState<Map<string, number>>(new Map());
   const [priceChange, setPriceChange] = useState<Map<string, 'up' | 'down' | 'none'>>(new Map());
   const [alertedInvestments, setAlertedInvestments] = useState<Map<string, boolean>>(new Map()); // New state for alerts
 
-  const { budgetSettings } = useFinanceData(userUid, startDate, endDate); // Get budget settings for alert threshold
+  const { budgetSettings } = useBudgetSettings(userUid); // Use the new lightweight hook
 
   // Ref to store the latest investments to avoid stale closures in setInterval
   const latestInvestments = useRef<Investment[]>([]);
@@ -68,7 +67,51 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
     const q = query(collection(db, "investments"), where("ownerUid", "==", userUid));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetchedInvestments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Investment[];
-      setInvestments(fetchedInvestments);
+      
+      // Determine price changes for UI animation based on previous state
+      setInvestments(prevInvestments => {
+        const newPriceChange = new Map<string, 'up' | 'down' | 'none'>();
+        const newAlertedInvestments = new Map<string, boolean>();
+        const priceAlertThreshold = budgetSettings?.priceAlertThreshold || 5;
+
+        const updatedInvestments = fetchedInvestments.map(newInv => {
+          const oldInv = prevInvestments.find(p => p.id === newInv.id);
+          
+          if (oldInv && newInv.currentPrice !== oldInv.currentPrice) {
+            if (newInv.currentPrice > oldInv.currentPrice) {
+              newPriceChange.set(newInv.id, 'up');
+            } else if (newInv.currentPrice < oldInv.currentPrice) {
+              newPriceChange.set(newInv.id, 'down');
+            }
+          } else {
+            newPriceChange.set(newInv.id, 'none');
+          }
+
+          // Check for price alerts
+          if (newInv.change24hPercent !== null && Math.abs(newInv.change24hPercent || 0) >= priceAlertThreshold) {
+            newAlertedInvestments.set(newInv.id, true);
+          } else {
+            newAlertedInvestments.set(newInv.id, false);
+          }
+
+          return { ...newInv, previousPrice: oldInv?.currentPrice }; // Store old price for animation
+        });
+
+        setPriceChange(newPriceChange);
+        setAlertedInvestments(newAlertedInvestments);
+
+        // Reset price change animation after a short delay
+        setTimeout(() => {
+          setPriceChange(prev => {
+            const resetMap = new Map(prev);
+            updatedInvestments.forEach(inv => resetMap.set(inv.id, 'none'));
+            return resetMap;
+          });
+        }, 1000); // 1 second for animation
+
+        return updatedInvestments;
+      });
+
       setLoading(false);
 
       // If no investments exist for the user, add some default ones
@@ -132,7 +175,7 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
     });
 
     return () => unsubscribe(); // Clean up the listener
-  }, [userUid]);
+  }, [userUid, budgetSettings]); // Depend on budgetSettings for alert threshold
 
   // Fetch portfolio snapshots from Firestore, filtered by date range
   useEffect(() => {
@@ -160,171 +203,11 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
     return () => unsubscribe();
   }, [userUid, startDate, endDate]); // Add startDate and endDate to dependencies
 
-  // Fetch live prices and update investments
-  const fetchAndApplyLivePrices = useCallback(async () => {
-    if (!userUid || latestInvestments.current.length === 0) return;
-
-    const newLivePrices = new Map<string, number>();
-    const newPriceChange = new Map<string, 'up' | 'down' | 'none'>();
-    const newAlertedInvestments = new Map<string, boolean>();
-    const updates: Promise<void>[] = [];
-
-    const priceAlertThreshold = budgetSettings.priceAlertThreshold || 5; // Default to 5%
-
-    for (const inv of latestInvestments.current) {
-      updates.push((async () => {
-        let updatedPrice = inv.currentPrice;
-        let priceSource: 'CoinGecko' | 'Finnhub' | null = null; // Initialize as null
-        let fetchedName: string | null = inv.companyName || null; // Initialize as null
-        let change24hPercent: number | null = null;
-
-        if (inv.type === 'Stock' && inv.symbol) {
-          const [priceResult, profileResult] = await Promise.all([
-            fetchStockPrice(inv.symbol),
-            fetchCompanyProfile(inv.symbol)
-          ]);
-          if (priceResult.price !== null) {
-            updatedPrice = priceResult.price;
-            priceSource = 'Finnhub';
-            if (priceResult.previousClose !== null && priceResult.previousClose > 0) {
-              change24hPercent = ((updatedPrice - priceResult.previousClose) / priceResult.previousClose) * 100;
-            }
-          }
-          if (profileResult.name !== null) {
-            fetchedName = profileResult.name;
-          }
-        } else if (inv.type === 'Crypto' && inv.coingeckoId) {
-          const result = await fetchSingleCryptoPrice(inv.coingeckoId);
-          if (result.price !== null) {
-            updatedPrice = result.price;
-            priceSource = 'CoinGecko';
-            change24hPercent = result.change24hPercent;
-          }
-          if (result.name !== null) {
-            fetchedName = result.name;
-          }
-        }
-
-        if (updatedPrice !== inv.currentPrice) {
-          if (updatedPrice > inv.currentPrice) {
-            newPriceChange.set(inv.id, 'up');
-          } else if (updatedPrice < inv.currentPrice) {
-            newPriceChange.set(inv.id, 'down');
-          }
-        } else {
-          newPriceChange.set(inv.id, 'none');
-        }
-        
-        newLivePrices.set(inv.id, updatedPrice);
-
-        // Check for price alerts
-        if (change24hPercent !== null && Math.abs(change24hPercent) >= priceAlertThreshold) {
-          newAlertedInvestments.set(inv.id, true);
-        } else {
-          newAlertedInvestments.set(inv.id, false);
-        }
-
-        // Build update payload, only including defined values
-        const updatePayload: { [key: string]: any } = {
-          currentPrice: updatedPrice,
-          lastPrice: updatedPrice,
-          lastUpdated: new Date().toISOString(),
-          updatedAt: serverTimestamp(),
-        };
-
-        if (fetchedName !== null) {
-          updatePayload.companyName = fetchedName;
-        }
-        if (priceSource !== null) {
-          updatePayload.priceSource = priceSource;
-        }
-        if (change24hPercent !== null) {
-          updatePayload.change24hPercent = change24hPercent;
-        }
-
-        // Only update if there's a change in relevant fields
-        if (updatedPrice !== inv.currentPrice || fetchedName !== inv.companyName || change24hPercent !== inv.change24hPercent) {
-          await updateDoc(doc(db, "investments", inv.id), updatePayload);
-        }
-      })());
-    }
-
-    await Promise.all(updates); // Wait for all updates to complete
-
-    // After all Firestore updates, re-fetch from local state to ensure UI is consistent
-    setInvestments(prevInvestments => {
-      return prevInvestments.map(inv => {
-        const newPrice = newLivePrices.get(inv.id);
-        const alerted = newAlertedInvestments.get(inv.id);
-        return {
-          ...inv,
-          previousPrice: inv.currentPrice, // Store current price as previous for animation
-          currentPrice: newPrice !== undefined ? newPrice : inv.currentPrice,
-          companyName: inv.companyName, // Company name is updated directly in Firestore and will be reflected by onSnapshot
-          lastPrice: newPrice !== undefined ? newPrice : inv.currentPrice,
-          lastUpdated: new Date().toISOString(),
-          // change24hPercent is updated via onSnapshot
-          isAlerted: alerted, // Add alert status to investment object for easier access
-        };
-      });
-    });
-    setLivePrices(newLivePrices);
-    setPriceChange(newPriceChange);
-    setAlertedInvestments(newAlertedInvestments);
-
-    // Reset price change animation after a short delay
-    setTimeout(() => {
-      setPriceChange(prev => {
-        const resetMap = new Map(prev);
-        latestInvestments.current.forEach(inv => resetMap.set(inv.id, 'none'));
-        return resetMap;
-      });
-    }, 1000); // 1 second for animation
-  }, [userUid, budgetSettings.priceAlertThreshold]);
-
-  // Initial fetch and set up auto-refresh
-  useEffect(() => {
-    fetchAndApplyLivePrices(); // Initial fetch
-
-    const intervalId = setInterval(() => {
-      fetchAndApplyLivePrices();
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(intervalId); // Clean up interval
-  }, [fetchAndApplyLivePrices]);
-
-  // Effect to save portfolio snapshot daily
-  useEffect(() => {
-    if (!userUid || investments.length === 0) return;
-
-    const saveSnapshot = async () => {
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const lastSnapshot = portfolioSnapshots.length > 0 ? portfolioSnapshots[portfolioSnapshots.length - 1] : null;
-
-      if (!lastSnapshot || !isSameDay(parseISO(lastSnapshot.date), new Date())) {
-        const totalPortfolioValue = investments.reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice), 0);
-
-        try {
-          await addDoc(collection(db, "portfolioSnapshots"), {
-            ownerUid: userUid,
-            date: today,
-            value: totalPortfolioValue,
-            createdAt: serverTimestamp(),
-          });
-          console.log("Portfolio snapshot saved for", today);
-        } catch (e) {
-          console.error("Error saving portfolio snapshot:", e);
-          toast.error("Failed to save portfolio snapshot.");
-        }
-      }
-    };
-
-    // Debounce snapshot saving to avoid multiple calls on rapid page loads/updates
-    const timeoutId = setTimeout(saveSnapshot, 2000); // Wait 2 seconds after investments load
-
-    return () => clearTimeout(timeoutId);
-  }, [userUid, investments, portfolioSnapshots]);
-
+  // --- REMOVED CLIENT-SIDE PRICE POLLING ---
+  // The client will now rely on the Firestore listener for 'investments'
+  // which will be updated by the Cloud Function.
+  // The `priceChange` and `alertedInvestments` states are now updated directly
+  // within the `onSnapshot` callback for `investments`.
 
   const addInvestment = useCallback(async (data: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice' | 'change24hPercent'>) => {
     if (!userUid) {
@@ -402,7 +285,6 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
     addInvestment,
     updateInvestment,
     deleteInvestment,
-    livePrices,
     priceChange,
     alertedInvestments, // Return alerted investments
   };

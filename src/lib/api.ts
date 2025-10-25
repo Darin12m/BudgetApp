@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Finnhub API Key provided by the user
-const FINNHUB_API_KEY = 'd3tb37pr01qigeg2akvgd3tb37pr01qeg2al00'; 
+// Finnhub API Key provided via environment variable
+const FINNHUB_API_KEY = import.meta.env.VITE_FINNHUB_API_KEY; 
 
 interface CryptoPriceResponse {
   [id: string]: {
@@ -255,6 +255,26 @@ const cryptoSymbolMap: { [key: string]: string } = {
   'BSV': 'bitcoin-sv',
 };
 
+// Cache for CoinGecko coin list to avoid repeated API calls
+let coinGeckoCoinListCache: { id: string; symbol: string; name: string }[] | null = null;
+let coinGeckoCoinListCacheTimestamp: number = 0;
+const COINGECKO_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
+const fetchCoinGeckoCoinList = async () => {
+  if (coinGeckoCoinListCache && (Date.now() - coinGeckoCoinListCacheTimestamp < COINGECKO_CACHE_DURATION)) {
+    return coinGeckoCoinListCache;
+  }
+  try {
+    const response = await axios.get(`https://api.coingecko.com/api/v3/coins/list`);
+    coinGeckoCoinListCache = response.data;
+    coinGeckoCoinListCacheTimestamp = Date.now();
+    return coinGeckoCoinListCache;
+  } catch (error) {
+    console.error("Error fetching CoinGecko coin list:", error);
+    return null;
+  }
+};
+
 export const getCoingeckoId = (symbolOrId: string): string => {
   const normalizedInput = symbolOrId.toLowerCase();
   // Check if it's a common symbol first
@@ -296,14 +316,14 @@ export const fetchSingleCryptoPrice = async (symbolOrId: string): Promise<{ pric
     
     if (response.data[coingeckoId] && response.data[coingeckoId].usd) {
       let cryptoName: string | null = null;
-      try {
-        const coinListResponse = await axios.get(`https://api.coingecko.com/api/v3/coins/list`);
-        const coin = coinListResponse.data.find((c: any) => c.id === coingeckoId || c.symbol.toLowerCase() === symbolOrId.toLowerCase());
+      const coinList = await fetchCoinGeckoCoinList();
+      if (coinList) {
+        const coin = coinList.find((c: any) => c.id === coingeckoId || c.symbol.toLowerCase() === symbolOrId.toLowerCase());
         if (coin) {
           cryptoName = coin.name;
         }
-      } catch (listError) {
-        console.warn("Could not fetch crypto name from coin list:", listError);
+      } else {
+        console.warn("Could not fetch crypto name from cached coin list.");
       }
 
       return {
