@@ -30,8 +30,8 @@ const SvgDonutChart: React.FC<SvgDonutChartProps> = ({
   outerRadius,
   chartId,
   formatValue,
-  mainTextColorClass = 'text-foreground',
-  subTextColorClass = 'text-muted-foreground',
+  mainTextColorClass = 'text-white', // Changed to text-white
+  subTextColorClass = 'text-white', // Changed to text-white
   mainFontWeightClass = 'font-bold',
   subFontWeightClass = 'font-normal',
   progressColor,
