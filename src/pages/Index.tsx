@@ -41,6 +41,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
     accounts, // Destructure accounts here
     budgetSettings,
     addDocument,
+    // Removed updateDocument from here as it's not used for investments
     loading: financeLoading,
     error: financeError,
     currentWeekSpending,
@@ -56,7 +57,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   const {
     investments,
     addInvestment,
-    updateInvestment,
+    updateInvestment, // Destructure updateInvestment from useInvestmentData
     deleteInvestment,
     priceChange,
     loading: investmentsLoading,
@@ -177,8 +178,8 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   }, [deleteInvestment]);
 
   const handleEditInvestment = useCallback(async (id: string, updatedData: Partial<Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>>) => {
-    await updateDocument(id, updatedData);
-  }, [updateDocument]);
+    await updateInvestment(id, updatedData); // Corrected to use updateInvestment
+  }, [updateInvestment]);
 
   const handleMicroInvest = useCallback(async (amount: number, assetName: string, assetType: 'Stock' | 'Crypto', symbol?: string, coingeckoId?: string) => {
     const currentPrice = investments.find(inv => inv.name === assetName)?.currentPrice || 1;
