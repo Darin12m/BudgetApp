@@ -58,11 +58,11 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const { selectedRange } = useDateRange();
 
   const {
-    transactions, // Now includes merged actual and generated recurring transactions
-    categories, // Now includes dynamically calculated 'spent'
+    transactions,
+    categories,
     accounts,
     goals,
-    recurringTransactions: recurringTemplates, // Renamed for clarity
+    recurringTransactions: recurringTemplates,
     budgetSettings,
     loading,
     error,
@@ -294,7 +294,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       amount: amount,
       categoryId: categoryId,
       status: 'pending',
-      account: accounts.length > 0 ? accounts[0].name : 'Default Account',
+      // Removed account from payload
       isRecurring: isRecurring,
     };
 
@@ -316,7 +316,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       console.error("Error adding transaction:", e.code, e.message);
       toast.error(`Failed to add transaction: ${e.message}`);
     }
-  }, [addDocument, accounts, userUid, categories]);
+  }, [addDocument, userUid, categories]); // Removed accounts from dependency array
 
   const handleEditTransaction = useCallback((transaction: Transaction) => {
     setTransactionToEdit(transaction);
@@ -334,20 +334,17 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         // Update existing transaction
         await updateDocument('transactions', transactionToEdit.id, {
           ...transactionData,
-          recurringTransactionId: transactionToEdit.recurringTransactionId, // Preserve recurring link if it exists
+          recurringTransactionId: transactionToEdit.recurringTransactionId,
         });
         toast.success("Transaction updated successfully!");
 
-        // Handle recurring template updates
         const wasRecurringTemplate = recurringTemplates.some(rt => rt.id === transactionToEdit.recurringTransactionId);
 
         if (isRecurring && recurringDetails) {
           if (wasRecurringTemplate && transactionToEdit.recurringTransactionId) {
-            // Update existing recurring template
             await updateDocument('recurringTransactions', transactionToEdit.recurringTransactionId, recurringDetails);
             toast.success("Recurring template updated!");
           } else if (!wasRecurringTemplate) {
-            // Add new recurring template and link it to this transaction
             const newRecurringId = await addDocument('recurringTransactions', { ...recurringDetails, ownerUid: userUid });
             if (newRecurringId) {
               await updateDocument('transactions', transactionToEdit.id, { isRecurring: true, recurringTransactionId: newRecurringId });
@@ -355,7 +352,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
             }
           }
         } else if (wasRecurringTemplate && !isRecurring && transactionToEdit.recurringTransactionId) {
-          // Remove from recurring templates if it was one and now isn't
           await deleteDocument('recurringTransactions', transactionToEdit.recurringTransactionId);
           await updateDocument('transactions', transactionToEdit.id, { isRecurring: false, recurringTransactionId: null });
           toast.success("Recurring template removed!");
@@ -377,7 +373,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       console.error("Error saving transaction:", e.code, e.message);
       toast.error(`Failed to save transaction: ${e.message}`);
     }
-  }, [userUid, transactionToEdit, addDocument, updateDocument, deleteDocument, recurringTemplates, categories, accounts]);
+  }, [userUid, transactionToEdit, addDocument, updateDocument, deleteDocument, recurringTemplates, categories]); // Removed accounts from dependency array
 
   const handleDeleteTransaction = useCallback(async (transactionId: string) => {
     if (!userUid) {
@@ -387,11 +383,9 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     try {
       const transactionToDelete = transactions.find(t => t.id === transactionId);
       if (transactionToDelete && transactionToDelete.isRecurring && transactionToDelete.recurringTransactionId) {
-        // If it's an instance of a recurring transaction, just delete the instance
         await deleteDocument('transactions', transactionId);
         toast.success("Transaction instance deleted successfully!");
       } else {
-        // If it's a one-time transaction, delete it
         await deleteDocument('transactions', transactionId);
         toast.success("Transaction deleted successfully!");
       }
@@ -440,7 +434,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       return;
     }
     await deleteDocument('categories', categoryId);
-    setIsAddEditCategoryModalOpen(false);
   }, [userUid, deleteDocument]);
 
   // --- Goal Handlers ---
@@ -546,7 +539,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   accounts={accounts}
                   spendingTrend={spendingTrend}
                   categoryData={categoryData}
-                  recurringTransactions={recurringTemplates} // Pass templates
+                  recurringTransactions={recurringTemplates}
                   transactions={transactions}
                   categories={categories}
                   formatCurrency={formatCurrency}
@@ -586,7 +579,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   setTransactionSearchTerm={setTransactionSearchTerm}
                   transactionFilterPeriod={transactionFilterPeriod}
                   setTransactionFilterPeriod={setTransactionFilterPeriod}
-                  setIsAddEditTransactionModalOpen={setIsAddEditTransactionModalOpen} // Changed prop name
+                  setIsAddEditTransactionModalOpen={setIsAddEditTransactionModalOpen}
                   handleEditTransaction={handleEditTransaction}
                   formatCurrency={formatCurrency}
                 />
@@ -610,8 +603,8 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         onDelete={handleDeleteTransaction}
         transactionToEdit={transactionToEdit}
         categories={categories}
-        accounts={accounts}
-        recurringTemplates={recurringTemplates} // Pass templates
+        // Removed accounts prop
+        recurringTemplates={recurringTemplates}
       />
 
       <AddEditCategoryModal
@@ -619,7 +612,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         onClose={() => setIsAddEditCategoryModalOpen(false)}
         onSave={handleSaveCategory}
         categoryToEdit={categoryToEdit}
-        existingCategoryNames={categories.map(cat => cat.name)} // Pass existing names for validation
+        existingCategoryNames={categories.map(cat => cat.name)}
       />
 
       <AddEditGoalModal

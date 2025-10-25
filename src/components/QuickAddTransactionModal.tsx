@@ -29,9 +29,9 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
   const { isMobile } = useDeviceDetection();
   const { formatCurrency } = useCurrency();
   const [amount, setAmount] = useState<string>('');
-  const [merchant, setMerchant] = useState<string>(''); // Changed from note to merchant
+  const [merchant, setMerchant] = useState<string>('');
   const [date, setDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(''); // Changed to categoryId
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [isRecurring, setIsRecurring] = useState<boolean>(false);
   const [frequency, setFrequency] = useState<'Monthly' | 'Weekly' | 'Yearly'>('Monthly');
   const [nextDate, setNextDate] = useState<Date | undefined>(undefined);
@@ -54,7 +54,6 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
     if (!isOpen) {
       resetForm();
     } else {
-      // Ensure 'Uncategorized' is available or select the first category
       const uncategorized = categories.find(cat => cat.name === 'Uncategorized');
       if (uncategorized) {
         setSelectedCategoryId(uncategorized.id);
@@ -252,7 +251,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
                   <Calendar
                     mode="single"
                     selected={nextDate}
-                    onSelect={(date) => { setNextDate(date); setErrors(prev => ({ ...prev, nextDate: '' })); }}
+                    onSelect={(d) => { setNextDate(d); setErrors(prev => ({ ...prev, nextDate: '' })); }}
                     initialFocus
                   />
                 </PopoverContent>
@@ -293,7 +292,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-card text-foreground card-shadow backdrop-blur-lg" onPointerDown={(e) => e.stopPropagation()}>
+      <DialogContent className="sm:max-w-[425px]" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <Plus className="w-5 h-5 mr-2" /> Quick Add Transaction
