@@ -3,6 +3,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
 import { PieSectorDataItem } from 'recharts/types/polar/Pie';
+import { TooltipProps } from 'recharts/types/component/DefaultTooltipContent'; // Import TooltipProps
+import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'; // Import NameType, ValueType
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency for formatting
 
@@ -116,6 +118,72 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
   const mainTextFontSize = calculateFontSize(String(mainValue), textContainerDiameter, 28, 10, 1.5);
   const subTextFontSize = calculateFontSize(String(mainLabel), textContainerDiameter, 16, 8, 1.8);
 
+  // Custom Tooltip Content Component
+  const CustomDonutTooltipContent: React.FC<TooltipProps<ValueType, NameType> & {
+    chartOuterRadius: number;
+    formatValue: (value: number, options?: Intl.NumberFormatOptions) => string;
+  }> = ({
+    active,
+    payload,
+    label,
+    coordinate, // Mouse coordinates when cursor={true}
+    viewBox, // Contains cx, cy, width, height of the chart area
+    chartOuterRadius, // Passed from DonutWithCenterText props
+    formatValue,
+  }) => {
+    if (active && payload && payload.length && coordinate && viewBox) {
+      const { cx, cy } = viewBox; // Center of the chart area
+      const mouseX = coordinate.x;
+      const mouseY = coordinate.y;
+
+      // Calculate the angle of the mouse relative to the center of the donut
+      const angle = Math.atan2(mouseY - cy, mouseX - cx);
+
+      // Calculate a position for the tooltip that is always outside the donut
+      const tooltipDistance = chartOuterRadius + 20; // 20px beyond outer radius
+      let tooltipX = cx + tooltipDistance * Math.cos(angle);
+      let tooltipY = cy + tooltipDistance * Math.sin(angle);
+
+      // Basic adjustment to prevent tooltip from being cut off by screen edges
+      const padding = 10;
+      if (tooltipX < padding) tooltipX = padding;
+      if (tooltipY < padding) tooltipY = padding;
+
+      return (
+        <div
+          style={{
+            position: 'absolute',
+            left: tooltipX,
+            top: tooltipY,
+            backgroundColor: 'hsl(var(--card))',
+            color: 'hsl(0 0% 100%)',
+            borderRadius: '8px',
+            border: '1px solid hsl(var(--border))',
+            padding: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+            fontSize: '12px',
+            pointerEvents: 'none', // Important: prevent tooltip from capturing mouse events
+            zIndex: 100,
+            whiteSpace: 'nowrap', // Prevent text wrapping for better width estimation
+          }}
+        >
+          {label && <p className="font-semibold mb-1">{label}</p>}
+          {payload.map((entry, index) => (
+            <div key={`item-${index}`} className="flex items-center justify-between">
+              <span className="mr-2" style={{ color: entry.color as string }}>
+                {entry.name}:
+              </span>
+              <span className="font-medium">
+                {formatValue(Number(entry.value))}
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className={cn("relative w-full h-full flex items-center justify-center", className)}>
       <ResponsiveContainer width="100%" height="100%">
@@ -177,17 +245,11 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
             ))}
           </Pie>
           <Tooltip
-            offset={outerRadius + 20} // Adjusted offset to appear outside the donut
-            contentStyle={{
-              backgroundColor: 'hsl(var(--card))',
-              color: 'hsl(0 0% 100%)', // White text
-              borderRadius: '8px',
-              border: '1px solid hsl(var(--border))',
-              padding: '10px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-            }}
-            itemStyle={{ color: 'hsl(0 0% 100%)' }} // White text for items
-            formatter={(value: number) => formatValue ? formatValue(value) : value.toLocaleString()}
+            cursor={true} // Make tooltip follow the mouse
+            content={<CustomDonutTooltipContent
+              chartOuterRadius={outerRadius}
+              formatValue={formatValue || formatCurrency}
+            />}
           />
         </PieChart>
       </ResponsiveContainer>
