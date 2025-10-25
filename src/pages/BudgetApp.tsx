@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { format, addDays, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { Menu, Lightbulb, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useFinanceData, Goal, Category, Transaction, Account, RecurringTransaction } from '@/hooks/use-finance-data'; // Fix: Imported all necessary types
+import { useFinanceData, Goal, Category, Transaction, Account, RecurringTransaction } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
 
@@ -27,6 +27,7 @@ import DashboardView from './budget-app-views/DashboardView';
 import BudgetView from './budget-app-views/BudgetView';
 import GoalsView from './budget-app-views/GoalsView';
 import TransactionsView from './budget-app-views/TransactionsView';
+import CategoriesView from './budget-app-views/CategoriesView'; // Import new CategoriesView
 
 interface BudgetAppProps {
   userUid: string | null;
@@ -52,15 +53,16 @@ interface CategoryData {
 
 const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { formatCurrency } = useCurrency();
   const { selectedRange } = useDateRange();
 
   const {
-    transactions,
-    categories,
+    transactions, // Now includes merged actual and generated recurring transactions
+    categories, // Now includes dynamically calculated 'spent'
     accounts,
     goals,
-    recurringTransactions,
+    recurringTransactions: recurringTemplates, // Renamed for clarity
     budgetSettings,
     loading,
     error,
@@ -98,8 +100,8 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   }, [location.pathname, location.search]);
 
   const totalRecurring = useMemo(() =>
-    recurringTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0),
-    [recurringTransactions]
+    recurringTemplates.reduce((sum, txn) => sum + Math.abs(txn.amount), 0),
+    [recurringTemplates]
   );
 
   const netWorth = useMemo(() =>
@@ -264,7 +266,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     }
     return data;
   }, [filteredTransactionsForForecast, dailyAvgSpending]);
-  // --- End Smart Forecast Calculations ---
 
 
   const handleViewChange = useCallback((view: string) => {
@@ -280,31 +281,31 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     setSidebarOpen(false);
   }, []);
 
-  const handleQuickAddTransaction = useCallback(async (amount: number, note: string, date: string, categoryName: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => {
+  // --- Transaction Handlers ---
+  const handleQuickAddTransaction = useCallback(async (amount: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => {
     if (!userUid) {
       toast.error("You must be logged in to save data.");
       return;
     }
 
-    const transactionPayload = {
+    const transactionPayload: Omit<Transaction, 'id' | 'ownerUid'> = {
       date: date,
-      merchant: note || 'Quick Add',
+      merchant: merchant || 'Quick Add',
       amount: amount,
-      category: categoryName,
+      categoryId: categoryId,
       status: 'pending',
       account: accounts.length > 0 ? accounts[0].name : 'Default Account',
+      isRecurring: isRecurring,
     };
 
     try {
-      await addDocument('transactions', transactionPayload);
-      toast.success("Transaction added successfully!");
-
-      if (isRecurring && frequency && nextDate) {
-        const categoryEmoji = categories.find(cat => cat.name === categoryName)?.emoji || '💳';
+      const transactionId = await addDocument('transactions', transactionPayload);
+      if (transactionId && isRecurring && frequency && nextDate) {
+        const categoryEmoji = categories.find(cat => cat.id === categoryId)?.emoji || '💳';
         await addDocument('recurringTransactions', {
-          name: note || 'Quick Add',
+          name: merchant || 'Quick Add',
           amount: amount,
-          category: categoryName,
+          categoryId: categoryId,
           frequency,
           nextDate,
           emoji: categoryEmoji,
@@ -317,6 +318,91 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     }
   }, [addDocument, accounts, userUid, categories]);
 
+  const handleEditTransaction = useCallback((transaction: Transaction) => {
+    setTransactionToEdit(transaction);
+    setIsAddEditTransactionModalOpen(true);
+  }, []);
+
+  const handleSaveTransaction = useCallback(async (transactionData: Omit<Transaction, 'id' | 'ownerUid'>, isRecurring: boolean, recurringDetails?: Omit<RecurringTransaction, 'id' | 'ownerUid'>) => {
+    if (!userUid) {
+      toast.error("User not authenticated.");
+      return;
+    }
+
+    try {
+      if (transactionToEdit) {
+        // Update existing transaction
+        await updateDocument('transactions', transactionToEdit.id, {
+          ...transactionData,
+          recurringTransactionId: transactionToEdit.recurringTransactionId, // Preserve recurring link if it exists
+        });
+        toast.success("Transaction updated successfully!");
+
+        // Handle recurring template updates
+        const wasRecurringTemplate = recurringTemplates.some(rt => rt.id === transactionToEdit.recurringTransactionId);
+
+        if (isRecurring && recurringDetails) {
+          if (wasRecurringTemplate && transactionToEdit.recurringTransactionId) {
+            // Update existing recurring template
+            await updateDocument('recurringTransactions', transactionToEdit.recurringTransactionId, recurringDetails);
+            toast.success("Recurring template updated!");
+          } else if (!wasRecurringTemplate) {
+            // Add new recurring template and link it to this transaction
+            const newRecurringId = await addDocument('recurringTransactions', { ...recurringDetails, ownerUid: userUid });
+            if (newRecurringId) {
+              await updateDocument('transactions', transactionToEdit.id, { isRecurring: true, recurringTransactionId: newRecurringId });
+              toast.success("New recurring template added and linked!");
+            }
+          }
+        } else if (wasRecurringTemplate && !isRecurring && transactionToEdit.recurringTransactionId) {
+          // Remove from recurring templates if it was one and now isn't
+          await deleteDocument('recurringTransactions', transactionToEdit.recurringTransactionId);
+          await updateDocument('transactions', transactionToEdit.id, { isRecurring: false, recurringTransactionId: null });
+          toast.success("Recurring template removed!");
+        }
+      } else {
+        // Add new transaction
+        const newTransactionId = await addDocument('transactions', transactionData);
+        if (newTransactionId && isRecurring && recurringDetails) {
+          const newRecurringId = await addDocument('recurringTransactions', { ...recurringDetails, ownerUid: userUid });
+          if (newRecurringId) {
+            await updateDocument('transactions', newTransactionId, { isRecurring: true, recurringTransactionId: newRecurringId });
+            toast.success("New recurring template added and linked!");
+          }
+        }
+      }
+      setIsAddEditTransactionModalOpen(false);
+      setTransactionToEdit(null);
+    } catch (e: any) {
+      console.error("Error saving transaction:", e.code, e.message);
+      toast.error(`Failed to save transaction: ${e.message}`);
+    }
+  }, [userUid, transactionToEdit, addDocument, updateDocument, deleteDocument, recurringTemplates, categories, accounts]);
+
+  const handleDeleteTransaction = useCallback(async (transactionId: string) => {
+    if (!userUid) {
+      toast.error("User not authenticated.");
+      return;
+    }
+    try {
+      const transactionToDelete = transactions.find(t => t.id === transactionId);
+      if (transactionToDelete && transactionToDelete.isRecurring && transactionToDelete.recurringTransactionId) {
+        // If it's an instance of a recurring transaction, just delete the instance
+        await deleteDocument('transactions', transactionId);
+        toast.success("Transaction instance deleted successfully!");
+      } else {
+        // If it's a one-time transaction, delete it
+        await deleteDocument('transactions', transactionId);
+        toast.success("Transaction deleted successfully!");
+      }
+      setIsAddEditTransactionModalOpen(false);
+      setTransactionToEdit(null);
+    } catch (e: any) {
+      console.error("Error deleting transaction:", e.code, e.message);
+      toast.error(`Failed to delete transaction: ${e.message}`);
+    }
+  }, [userUid, deleteDocument, transactions]);
+
   // --- Category Handlers ---
   const handleAddCategory = useCallback(() => {
     setCategoryToEdit(null);
@@ -328,31 +414,25 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     setIsAddEditCategoryModalOpen(true);
   }, []);
 
-  const handleSaveCategory = useCallback(async (categoryData: Omit<Category, 'spent' | 'ownerUid'>) => {
+  const handleSaveCategory = useCallback(async (categoryData: Omit<Category, 'spent' | 'ownerUid' | 'id'>, id?: string) => {
     if (!userUid) {
       toast.error("User not authenticated.");
       return;
     }
 
-    // Check for duplicate category name only when adding a new category
-    if (!categoryToEdit) {
-      const isDuplicate = categories.some(
-        (cat) => cat.name.toLowerCase() === categoryData.name.toLowerCase()
-      );
-      if (isDuplicate) {
-        toast.error("A category with this name already exists.");
-        return;
+    try {
+      if (id) {
+        await updateDocument('categories', id, categoryData);
+      } else {
+        await addDocument('categories', { ...categoryData, spent: 0 });
       }
+      setIsAddEditCategoryModalOpen(false);
+      setCategoryToEdit(null);
+    } catch (e: any) {
+      console.error("Error saving category:", e.code, e.message);
+      toast.error(`Failed to save category: ${e.message}`);
     }
-
-    if (categoryToEdit) {
-      await updateDocument('categories', categoryToEdit.id, categoryData);
-    } else {
-      await addDocument('categories', { ...categoryData, spent: 0 });
-    }
-    setIsAddEditCategoryModalOpen(false);
-    setCategoryToEdit(null);
-  }, [userUid, categoryToEdit, addDocument, updateDocument, categories]);
+  }, [userUid, addDocument, updateDocument]);
 
   const handleDeleteCategory = useCallback(async (categoryId: string) => {
     if (!userUid) {
@@ -360,6 +440,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       return;
     }
     await deleteDocument('categories', categoryId);
+    setIsAddEditCategoryModalOpen(false);
   }, [userUid, deleteDocument]);
 
   // --- Goal Handlers ---
@@ -411,107 +492,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     setGoalToFund(null);
   }, [userUid, goalToFund, updateDocument]);
 
-  // --- Transaction Handlers ---
-  const handleEditTransaction = useCallback((transaction: Transaction) => {
-    setTransactionToEdit(transaction);
-    setIsAddEditTransactionModalOpen(true);
-  }, []);
-
-  const handleSaveTransaction = useCallback(async (transactionData: Omit<Transaction, 'id' | 'ownerUid'>, isRecurring: boolean, recurringDetails?: Omit<RecurringTransaction, 'id' | 'ownerUid'>) => {
-    if (!userUid) {
-      toast.error("User not authenticated.");
-      return;
-    }
-
-    try {
-      if (transactionToEdit) {
-        await updateDocument('transactions', transactionToEdit.id, transactionData);
-        toast.success("Transaction updated successfully!");
-
-        // Handle recurring status change
-        const wasRecurring = recurringTransactions.some(rt =>
-          rt.name === transactionToEdit.merchant &&
-          rt.amount === transactionToEdit.amount &&
-          rt.category === transactionToEdit.category
-        );
-
-        if (isRecurring && recurringDetails) {
-          if (wasRecurring) {
-            // Update existing recurring transaction
-            const existingRecurring = recurringTransactions.find(rt =>
-              rt.name === transactionToEdit.merchant &&
-              rt.amount === transactionToEdit.amount &&
-              rt.category === transactionToEdit.category
-            );
-            if (existingRecurring) {
-              await updateDocument('recurringTransactions', existingRecurring.id, recurringDetails);
-              toast.success("Recurring transaction updated!");
-            }
-          } else {
-            // Add new recurring transaction
-            await addDocument('recurringTransactions', { ...recurringDetails, ownerUid: userUid });
-            toast.success("New recurring transaction added!");
-          }
-        } else if (wasRecurring && !isRecurring) {
-          // Remove from recurring transactions
-          const existingRecurring = recurringTransactions.find(rt =>
-            rt.name === transactionToEdit.merchant &&
-            rt.amount === transactionToEdit.amount &&
-            rt.category === transactionToEdit.category
-          );
-          if (existingRecurring) {
-            await deleteDocument('recurringTransactions', existingRecurring.id);
-            toast.success("Recurring transaction removed!");
-          }
-        }
-      } else {
-        // Add new transaction
-        await addDocument('transactions', transactionData);
-        toast.success("Transaction added successfully!");
-
-        if (isRecurring && recurringDetails) {
-          await addDocument('recurringTransactions', { ...recurringDetails, ownerUid: userUid });
-          toast.success("Recurring transaction also added!");
-        }
-      }
-      setIsAddEditTransactionModalOpen(false);
-      setTransactionToEdit(null);
-    } catch (e: any) {
-      console.error("Error saving transaction:", e.code, e.message);
-      toast.error(`Failed to save transaction: ${e.message}`);
-    }
-  }, [userUid, transactionToEdit, addDocument, updateDocument, deleteDocument, recurringTransactions, categories]);
-
-  const handleDeleteTransaction = useCallback(async (transactionId: string) => {
-    if (!userUid) {
-      toast.error("User not authenticated.");
-      return;
-    }
-    try {
-      await deleteDocument('transactions', transactionId);
-      toast.success("Transaction deleted successfully!");
-
-      // Also check and delete if it's a recurring transaction
-      const transactionToDelete = transactions.find(t => t.id === transactionId);
-      if (transactionToDelete) {
-        const matchingRecurring = recurringTransactions.find(rt =>
-          rt.name === transactionToDelete.merchant &&
-          rt.amount === transactionToDelete.amount &&
-          rt.category === transactionToDelete.category
-        );
-        if (matchingRecurring) {
-          await deleteDocument('recurringTransactions', matchingRecurring.id);
-          toast.success("Associated recurring transaction also deleted!");
-        }
-      }
-      setIsAddEditTransactionModalOpen(false);
-      setTransactionToEdit(null);
-    } catch (e: any) {
-      console.error("Error deleting transaction:", e.code, e.message);
-      toast.error(`Failed to delete transaction: ${e.message}`);
-    }
-  }, [userUid, deleteDocument, transactions, recurringTransactions]);
-
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -543,7 +523,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </header>
 
         <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full">
-          {error && <ErrorMessage message={error} />} {/* Fix: Changed prop from 'error' to 'message' */}
+          {error && <ErrorMessage message={error} />}
           {loading ? (
             <LoadingSpinner />
           ) : (
@@ -566,7 +546,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   accounts={accounts}
                   spendingTrend={spendingTrend}
                   categoryData={categoryData}
-                  recurringTransactions={recurringTransactions}
+                  recurringTransactions={recurringTemplates} // Pass templates
                   transactions={transactions}
                   categories={categories}
                   formatCurrency={formatCurrency}
@@ -588,6 +568,15 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   handleDeleteCategory={handleDeleteCategory}
                 />
               )}
+              {activeView === 'categories' && ( // New route for CategoriesView
+                <CategoriesView
+                  categories={categories}
+                  handleAddCategory={handleAddCategory}
+                  handleEditCategory={handleEditCategory}
+                  handleDeleteCategory={handleDeleteCategory}
+                  formatCurrency={formatCurrency}
+                />
+              )}
               {activeView === 'goals' && (
                 <GoalsView
                   goals={goals}
@@ -606,7 +595,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   setTransactionSearchTerm={setTransactionSearchTerm}
                   transactionFilterPeriod={transactionFilterPeriod}
                   setTransactionFilterPeriod={setTransactionFilterPeriod}
-                  setIsQuickAddModalOpen={setIsQuickAddModalOpen}
+                  setIsAddEditTransactionModalOpen={setIsAddEditTransactionModalOpen} // Changed prop name
                   handleEditTransaction={handleEditTransaction}
                   formatCurrency={formatCurrency}
                 />
@@ -631,7 +620,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         transactionToEdit={transactionToEdit}
         categories={categories}
         accounts={accounts}
-        recurringTransactions={recurringTransactions}
+        recurringTemplates={recurringTemplates} // Pass templates
       />
 
       <AddEditCategoryModal
@@ -639,6 +628,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         onClose={() => setIsAddEditCategoryModalOpen(false)}
         onSave={handleSaveCategory}
         categoryToEdit={categoryToEdit}
+        existingCategoryNames={categories.map(cat => cat.name)} // Pass existing names for validation
       />
 
       <AddEditGoalModal

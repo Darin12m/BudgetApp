@@ -21,7 +21,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // Import AlertDialog components
+} from "@/components/ui/alert-dialog";
+import { Category } from '@/hooks/use-finance-data'; // Import Category type
 
 // Predefined colors and emojis for selection
 const CATEGORY_COLORS = [
@@ -32,24 +33,15 @@ const CATEGORY_EMOJIS = [
   '🍔', '🏠', '🚗', '💡', '🛒', '🎉', '📚', '🏥', '🐾', '🎁', '✈️', '☕'
 ];
 
-interface Category {
-  id?: string;
-  name: string;
-  budgeted: number;
-  spent: number;
-  color: string;
-  emoji: string;
-  ownerUid?: string;
-}
-
 interface AddEditCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (category: Omit<Category, 'spent' | 'ownerUid'>) => void;
+  onSave: (category: Omit<Category, 'spent' | 'ownerUid' | 'id'>, id?: string) => void; // Added id for update
   categoryToEdit?: Category | null;
+  existingCategoryNames: string[]; // New prop to check for duplicates
 }
 
-const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onClose, onSave, categoryToEdit }) => {
+const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onClose, onSave, categoryToEdit, existingCategoryNames }) => {
   const { isMobile } = useDeviceDetection();
   const [name, setName] = useState('');
   const [budgeted, setBudgeted] = useState('');
@@ -76,7 +68,18 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!name.trim()) newErrors.name = 'Category name is required.';
+    if (!name.trim()) {
+      newErrors.name = 'Category name is required.';
+    } else {
+      // Check for duplicate name, excluding the current category if editing
+      const isDuplicate = existingCategoryNames.some(
+        (catName) => catName.toLowerCase() === name.trim().toLowerCase() && catName.toLowerCase() !== categoryToEdit?.name.toLowerCase()
+      );
+      if (isDuplicate) {
+        newErrors.name = 'A category with this name already exists.';
+      }
+    }
+
     const parsedBudgeted = parseFloat(budgeted);
     if (isNaN(parsedBudgeted) || parsedBudgeted < 0) newErrors.budgeted = 'Budgeted amount must be a non-negative number.';
     setErrors(newErrors);
@@ -95,7 +98,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       budgeted: parseFloat(budgeted),
       color,
       emoji,
-    });
+    }, categoryToEdit?.id); // Pass ID if editing
     onClose();
   };
 

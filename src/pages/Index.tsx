@@ -7,7 +7,7 @@ import { Plus, TrendingUp, TrendingDown, DollarSign, Wallet, List, LucideIcon, M
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useFinanceData } from '@/hooks/use-finance-data';
+import { useFinanceData, Transaction, RecurringTransaction } from '@/hooks/use-finance-data'; // Import Transaction and RecurringTransaction
 import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
 import { calculateGainLoss, getStartOfCurrentWeek, getEndOfCurrentWeek } from '@/lib/utils';
 import RemainingBudgetCard from '@/components/RemainingBudgetCard';
@@ -22,8 +22,8 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
 import { DateRangePicker } from '@/components/common/DateRangePicker';
 import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
-import CategoryOverviewCard from '@/components/dashboard/CategoryOverviewCard'; // Import the new component
-import { toast } from 'sonner'; // Import toast from sonner
+import CategoryOverviewCard from '@/components/dashboard/CategoryOverviewCard';
+import { toast } from 'sonner';
 
 interface IndexPageProps {
   userUid: string | null;
@@ -48,7 +48,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
     totalSpentMonthly,
     remainingBudgetMonthly,
     weeklyBudgetTarget,
-    topSpendingCategories, // This is now correctly typed as { name: string; amount: number; }[]
+    topSpendingCategories,
     currentMonthTransactions,
   } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
 
@@ -132,31 +132,30 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   }, [investments]);
 
   // --- Handlers ---
-  const handleQuickAddTransaction = useCallback(async (amount: number, note: string, date: string, categoryName: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => {
+  const handleQuickAddTransaction = useCallback(async (amount: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => {
     if (!userUid) {
       toast.error("You must be logged in to save data.");
       return;
     }
 
-    const transactionPayload = {
+    const transactionPayload: Omit<Transaction, 'id' | 'ownerUid'> = {
       date: date,
-      merchant: note || 'Quick Add',
+      merchant: merchant || 'Quick Add',
       amount: amount,
-      category: categoryName,
+      categoryId: categoryId,
       status: 'pending',
-      account: transactions.length > 0 ? transactions[0].account : 'Default Account',
+      account: accounts.length > 0 ? accounts[0].name : 'Default Account',
+      isRecurring: isRecurring,
     };
 
     try {
-      await addDocument('transactions', transactionPayload);
-      toast.success("Transaction added successfully!");
-
-      if (isRecurring && frequency && nextDate) {
-        const categoryEmoji = categories.find(cat => cat.name === categoryName)?.emoji || '💳';
+      const transactionId = await addDocument('transactions', transactionPayload);
+      if (transactionId && isRecurring && frequency && nextDate) {
+        const categoryEmoji = categories.find(cat => cat.id === categoryId)?.emoji || '💳';
         await addDocument('recurringTransactions', {
-          name: note || 'Quick Add',
+          name: merchant || 'Quick Add',
           amount: amount,
-          category: categoryName,
+          categoryId: categoryId,
           frequency,
           nextDate,
           emoji: categoryEmoji,
@@ -167,7 +166,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
       console.error("Error adding transaction:", e.code, e.message);
       toast.error(`Failed to add transaction: ${e.message}`);
     }
-  }, [addDocument, transactions, userUid, categories]);
+  }, [addDocument, accounts, userUid, categories]);
 
   const handleSaveNewInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
     await addInvestment(newInvestment);
@@ -209,6 +208,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
     if (view === 'dashboard') navigate('/');
     else if (view === 'investments') navigate('/investments');
     else if (view === 'settings') navigate('/settings');
+    else if (view === 'categories') navigate('/budget-app?view=categories'); // New route
     else navigate(`/budget-app?view=${view}`);
   }, [navigate]);
 

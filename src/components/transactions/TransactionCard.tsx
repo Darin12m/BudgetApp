@@ -3,7 +3,7 @@
 import React, { memo } from 'react';
 import { Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Transaction, Category } from '@/hooks/use-finance-data'; // Import types
+import { Transaction, Category } from '@/hooks/use-finance-data';
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -13,7 +13,7 @@ interface TransactionCardProps {
 }
 
 const TransactionCard: React.FC<TransactionCardProps> = memo(({ transaction, categories, formatCurrency, onEdit }) => {
-  const category = categories.find(c => c.name === transaction.category);
+  const category = categories.find(c => c.id === transaction.categoryId);
   return (
     <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted">
       <div className="flex items-center space-x-3 flex-1 min-w-0">

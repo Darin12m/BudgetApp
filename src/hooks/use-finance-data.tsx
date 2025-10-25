@@ -3,25 +3,27 @@ import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { isTransactionInCurrentWeek, isTransactionInPreviousWeek, isTransactionInCurrentMonth, getStartOfCurrentWeek, getEndOfCurrentWeek, getStartOfPreviousWeek, getEndOfPreviousWeek } from '@/lib/utils';
-import { format, parseISO, getDaysInMonth, isWithinInterval, startOfDay, endOfDay, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth, addMonths, addWeeks, addYears, isBefore, isAfter, isSameDay } from 'date-fns'; // Added date-fns imports for recurring logic
+import { format, parseISO, getDaysInMonth, isWithinInterval, startOfDay, endOfDay, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth, addMonths, addWeeks, addYears, isBefore, isAfter, isSameDay } from 'date-fns';
 
-// TypeScript Interfaces (re-defined for clarity within the hook context)
+// TypeScript Interfaces
 export interface Transaction {
   id: string;
   date: string; // YYYY-MM-DD
   merchant: string;
   amount: number;
-  category: string;
+  categoryId: string; // Changed from 'category' to 'categoryId'
   status: 'pending' | 'cleared';
   account: string;
   ownerUid: string;
+  isRecurring: boolean; // New flag: true if this transaction is an instance of a recurring template
+  recurringTransactionId?: string; // Link to RecurringTransaction template if isRecurring is true
 }
 
 export interface Category {
   id: string;
   name: string;
   budgeted: number;
-  spent: number; // RE-ADDED: spent will be calculated dynamically
+  spent: number; // Calculated dynamically
   color: string;
   emoji: string;
   ownerUid: string;
@@ -36,7 +38,7 @@ export interface Account {
   ownerUid: string;
 }
 
-export interface Goal { // Exported for use in other files
+export interface Goal {
   id: string;
   name: string;
   target: number;
@@ -50,7 +52,7 @@ export interface RecurringTransaction {
   id: string;
   name: string;
   amount: number;
-  category: string;
+  categoryId: string; // Changed from 'category' to 'categoryId'
   frequency: 'Monthly' | 'Weekly' | 'Yearly';
   nextDate: string; // YYYY-MM-DD
   emoji: string;
@@ -65,8 +67,8 @@ export interface BudgetSettings {
   totalBudgeted?: number;
   microInvestingEnabled?: boolean;
   microInvestingPercentage?: number;
-  priceAlertThreshold?: number; // New: Price alert threshold
-  categoriesInitialized?: boolean; // New: Flag to track if categories have been initialized
+  priceAlertThreshold?: number;
+  categoriesInitialized?: boolean;
 }
 
 // Helper function to generate recurring transaction occurrences within a date range
@@ -98,10 +100,12 @@ const generateRecurringOccurrences = (
       date: format(currentOccurrenceDate, 'yyyy-MM-dd'),
       merchant: recurringTxn.name,
       amount: recurringTxn.amount,
-      category: recurringTxn.category,
+      categoryId: recurringTxn.categoryId,
       status: 'cleared', // Assume recurring transactions are cleared once due
       account: 'Recurring', // A generic account for recurring transactions
       ownerUid: recurringTxn.ownerUid,
+      isRecurring: true,
+      recurringTransactionId: recurringTxn.id,
     });
 
     // Advance to the next potential occurrence date
@@ -120,16 +124,15 @@ const generateRecurringOccurrences = (
 
 
 export const useFinanceData = (userUid: string | null, startDate: Date | undefined, endDate: Date | undefined) => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]); // Actual transactions from Firestore
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
-  const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
+  const [recurringTemplates, setRecurringTemplates] = useState<RecurringTransaction[]>([]); // Recurring transaction templates
   const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ id: '', rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '', categoriesInitialized: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Ref to track if default budget settings have been attempted to be created
   const hasCreatedDefaultBudgetSettings = useRef(false);
 
   useEffect(() => {
@@ -143,24 +146,21 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
 
     const unsubscribes: (() => void)[] = [];
 
-    // Fetch budget settings first, as it contains the categoriesInitialized flag
+    // Fetch budget settings first
     const budgetSettingsRef = collection(db, 'budgetSettings');
     const qBudgetSettings = query(budgetSettingsRef, where("ownerUid", "==", userUid));
     const unsubscribeBudgetSettings = onSnapshot(qBudgetSettings, (snapshot) => {
       if (!snapshot.empty) {
         const settings = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as BudgetSettings;
-        // Ensure categoriesInitialized exists, default to false if not present
         if (settings.categoriesInitialized === undefined) {
           settings.categoriesInitialized = false;
-          // Update Firestore to set the flag if it's missing
           updateDoc(doc(db, 'budgetSettings', settings.id), { categoriesInitialized: false });
         }
         setBudgetSettings(settings);
-        hasCreatedDefaultBudgetSettings.current = true; // Mark as true if settings are found
+        hasCreatedDefaultBudgetSettings.current = true;
       } else {
-        // If no settings exist AND we haven't tried to create them yet
         if (!hasCreatedDefaultBudgetSettings.current) {
-          hasCreatedDefaultBudgetSettings.current = true; // Mark immediately to prevent re-entry
+          hasCreatedDefaultBudgetSettings.current = true;
           addDoc(budgetSettingsRef, {
             ownerUid: userUid,
             rolloverEnabled: true,
@@ -168,20 +168,18 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
             totalBudgeted: 0,
             microInvestingEnabled: true,
             microInvestingPercentage: 30,
-            priceAlertThreshold: 5, // Default price alert threshold
-            categoriesInitialized: false, // Initialize new flag to false
-            createdAt: serverTimestamp(), // Add createdAt for default settings
-          }).then(() => {
-            // No need to set state here, onSnapshot will pick it up
-          }).catch(err => {
+            priceAlertThreshold: 5,
+            categoriesInitialized: false,
+            createdAt: serverTimestamp(),
+          }).then(() => {}).catch(err => {
             console.error("Error creating default budget settings:", err);
             toast.error("Failed to create default budget settings.");
-            hasCreatedDefaultBudgetSettings.current = false; // Reset if creation failed
+            hasCreatedDefaultBudgetSettings.current = false;
           });
         }
       }
     }, (err) => {
-      console.error("Error fetching budget settings:", err.code, err.message); // Enhanced error logging
+      console.error("Error fetching budget settings:", err.code, err.message);
       toast.error(`Failed to load budget settings. Error: ${err.code} - ${err.message}`);
     });
     unsubscribes.push(unsubscribeBudgetSettings);
@@ -190,7 +188,6 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       let q = query(collection(db, collectionName), where("ownerUid", "==", userUid));
 
       if (applyDateFilter && startDate && endDate) {
-        // Assuming 'date' field in Firestore is 'YYYY-MM-DD' string
         const formattedStartDate = format(startDate, 'yyyy-MM-dd');
         const formattedEndDate = format(endDate, 'yyyy-MM-dd');
         q = query(q, where("date", ">=", formattedStartDate), where("date", "<=", formattedEndDate));
@@ -202,7 +199,7 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
         setLoading(false);
 
         // Special handling for categories: add defaults if empty AND not yet initialized
-        if (collectionName === 'categories' && budgetSettings.categoriesInitialized !== undefined) { // Ensure budgetSettings is loaded
+        if (collectionName === 'categories' && budgetSettings.categoriesInitialized !== undefined) {
           if (snapshot.empty && !budgetSettings.categoriesInitialized) {
             const defaultCategories = [
               { name: 'Groceries', budgeted: 300, spent: 0, color: 'hsl(var(--emerald))', emoji: '🛒', ownerUid: userUid, createdAt: serverTimestamp() },
@@ -222,39 +219,34 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
               }
             });
 
-            // Mark categories as initialized in budgetSettings after adding defaults
             if (budgetSettings.id) {
               updateDoc(doc(db, 'budgetSettings', budgetSettings.id), { categoriesInitialized: true });
             }
           } else if (!snapshot.empty && !budgetSettings.categoriesInitialized) {
-            // If categories are found (meaning user added them or defaults were added previously)
-            // and the flag is still false, set it to true.
             if (budgetSettings.id) {
               updateDoc(doc(db, 'budgetSettings', budgetSettings.id), { categoriesInitialized: true });
             }
           }
         }
       }, (err) => {
-        console.error(`Error fetching ${collectionName}:`, err.code, err.message); // Enhanced error logging
-        setError(`Failed to load ${collectionName}. Error: ${err.message}`); // More specific error message
+        console.error(`Error fetching ${collectionName}:`, err.code, err.message);
+        setError(`Failed to load ${collectionName}. Error: ${err.message}`);
         setLoading(false);
         toast.error(`Failed to load ${collectionName}.`);
       });
       unsubscribes.push(unsubscribe);
     };
 
-    // Apply date filter to transactions
     fetchData('transactions', setTransactions, true);
-    // Categories, accounts, goals, recurring transactions are typically not date-filtered in this manner
     fetchData('categories', setCategories);
     fetchData('accounts', setAccounts);
     fetchData('goals', setGoals);
-    fetchData('recurringTransactions', setRecurringTransactions);
+    fetchData('recurringTransactions', setRecurringTemplates); // Fetch recurring templates
 
     return () => {
       unsubscribes.forEach(unsub => unsub());
     };
-  }, [userUid, startDate, endDate, budgetSettings.categoriesInitialized, budgetSettings.id]); // Add budgetSettings.categoriesInitialized and budgetSettings.id to dependencies
+  }, [userUid, startDate, endDate, budgetSettings.categoriesInitialized, budgetSettings.id]);
 
   const addDocument = useCallback(async (collectionName: string, data: any) => {
     if (!userUid) {
@@ -262,15 +254,17 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       return;
     }
     try {
-      await addDoc(collection(db, collectionName), {
+      const docRef = await addDoc(collection(db, collectionName), {
         ...data,
         ownerUid: userUid,
         createdAt: serverTimestamp(),
       });
       toast.success(`${collectionName.slice(0, -1)} added successfully!`);
+      return docRef.id; // Return the ID of the newly added document
     } catch (e) {
       console.error(`Error adding ${collectionName.slice(0, -1)}:`, e);
       toast.error(`Failed to add ${collectionName.slice(0, -1)}.`);
+      return null;
     }
   }, [userUid]);
 
@@ -297,13 +291,27 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       return;
     }
     try {
+      if (collectionName === 'categories') {
+        // When a category is deleted, re-assign its transactions to 'Uncategorized'
+        const uncategorizedCategory = categories.find(cat => cat.name === 'Uncategorized');
+        if (uncategorizedCategory) {
+          const batchUpdates: Promise<void>[] = [];
+          transactions.filter(txn => txn.categoryId === id).forEach(txn => {
+            batchUpdates.push(updateDoc(doc(db, 'transactions', txn.id), { categoryId: uncategorizedCategory.id }));
+          });
+          recurringTemplates.filter(rt => rt.categoryId === id).forEach(rt => {
+            batchUpdates.push(updateDoc(doc(db, 'recurringTransactions', rt.id), { categoryId: uncategorizedCategory.id }));
+          });
+          await Promise.all(batchUpdates);
+        }
+      }
       await deleteDoc(doc(db, collectionName, id));
       toast.success(`${collectionName.slice(0, -1)} deleted successfully!`);
     } catch (e) {
       console.error(`Error deleting ${collectionName.slice(0, -1)}:`, e);
       toast.error(`Failed to delete ${collectionName.slice(0, -1)}.`);
     }
-  }, [userUid]);
+  }, [userUid, transactions, recurringTemplates, categories]);
 
   // --- Derived Financial Data ---
 
@@ -312,7 +320,7 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
     if (!startDate || !endDate) return [];
 
     const recurringOccurrences: Transaction[] = [];
-    recurringTransactions.forEach(rt => {
+    recurringTemplates.forEach(rt => {
       recurringOccurrences.push(...generateRecurringOccurrences(rt, startDate, endDate));
     });
 
@@ -322,8 +330,18 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       return isWithinInterval(txnDate, { start: startOfDay(startDate), end: endOfDay(endDate) });
     });
 
-    return [...filteredActualTransactions, ...recurringOccurrences];
-  }, [transactions, recurringTransactions, startDate, endDate]);
+    // Merge and deduplicate: actual transactions take precedence over generated recurring ones
+    const mergedTransactionsMap = new Map<string, Transaction>();
+    
+    // Add generated recurring occurrences first
+    recurringOccurrences.forEach(txn => mergedTransactionsMap.set(txn.id, txn));
+    
+    // Add actual transactions, overwriting generated ones if they have the same ID
+    // (This handles cases where a generated recurring transaction was later saved as an actual one)
+    filteredActualTransactions.forEach(txn => mergedTransactionsMap.set(txn.id, txn));
+
+    return Array.from(mergedTransactionsMap.values());
+  }, [transactions, recurringTemplates, startDate, endDate]);
 
 
   const currentMonthTransactions = useMemo(() => {
@@ -384,7 +402,7 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   const categoriesWithSpent = useMemo(() => {
     return categories.map(cat => {
       const spent = allTransactionsInDateRange
-        .filter(txn => txn.category === cat.name && txn.amount < 0) // Only count expenses
+        .filter(txn => txn.categoryId === cat.id && txn.amount < 0) // Only count expenses
         .reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
       return { ...cat, spent };
     });
@@ -402,23 +420,26 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   );
 
   const topSpendingCategories = useMemo(() => {
-    const categorySpending: Record<string, number> = {}; // Fix: Initialize as Record<string, number>
-    currentMonthTransactions.filter(txn => txn.amount < 0).forEach(txn => { // Only consider expenses
-      categorySpending[txn.category] = (categorySpending[txn.category] || 0) + Math.abs(txn.amount);
+    const categorySpending: Record<string, number> = {};
+    currentMonthTransactions.filter(txn => txn.amount < 0).forEach(txn => {
+      const category = categories.find(c => c.id === txn.categoryId);
+      if (category) {
+        categorySpending[category.name] = (categorySpending[category.name] || 0) + Math.abs(txn.amount);
+      }
     });
 
     return Object.entries(categorySpending)
-      .sort(([, amountA]: [string, number], [, amountB]: [string, number]) => amountB - amountA) // Fix: Explicitly type amounts as number
+      .sort(([, amountA], [, amountB]) => amountB - amountA)
       .slice(0, 2)
       .map(([name, amount]) => ({ name, amount }));
-  }, [currentMonthTransactions]);
+  }, [currentMonthTransactions, categories]);
 
   return {
     transactions: allTransactionsInDateRange, // Return combined transactions
     categories: categoriesWithSpent, // Return categories with calculated spent
     accounts,
     goals,
-    recurringTransactions,
+    recurringTransactions: recurringTemplates, // Return recurring templates
     budgetSettings,
     loading,
     error,

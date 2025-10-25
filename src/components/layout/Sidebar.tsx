@@ -2,15 +2,15 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, DollarSign, List, Wallet, Settings, Bell, X, Target } from 'lucide-react';
+import { Home, DollarSign, List, Wallet, Settings, Bell, X, Target, Tag } from 'lucide-react'; // Added Tag icon
 import { toast } from 'sonner';
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"; // Add this import
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onViewChange: (view: string) => void;
-  userUid: string | null; // Keep userUid if needed for future user-specific sidebar content
+  userUid: string | null;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
@@ -20,6 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
     { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
     { id: 'transactions', label: 'Transactions', icon: List, path: '/budget-app?view=transactions' },
     { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app?view=budget' },
+    { id: 'categories', label: 'Categories', icon: Tag, path: '/budget-app?view=categories' }, // New Categories item
     { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app?view=goals' },
     { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
   ];
@@ -29,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
       {/* Sidebar */}
       <aside className={`fixed left-0 top-0 h-full bg-card backdrop-blur-lg border-r border-border transition-transform duration-300 ease-in-out z-50 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } w-64 sm:w-72 card-shadow flex flex-col`}> {/* Added flex-col here */}
+      } w-64 sm:w-72 card-shadow flex flex-col`}>
         <div className="flex flex-col h-full">
           <div className="p-5 sm:p-6 border-b border-border">
             <div className="flex items-center justify-between mb-6">
@@ -52,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
             </div>
           </div>
 
-          <nav className="p-4 space-y-1 flex-1 overflow-y-auto"> {/* Added flex-1 and overflow-y-auto */}
+          <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
             {navItems.map(item => {
               const Icon = item.icon;
               const isActive = (item.path === location.pathname + location.search) || (item.id === 'dashboard' && location.pathname === '/');

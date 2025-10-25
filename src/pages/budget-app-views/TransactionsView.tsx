@@ -5,8 +5,9 @@ import { Calendar, List, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Transaction, Category } from '@/hooks/use-finance-data'; // Import types
-import TransactionCard from '@/components/transactions/TransactionCard'; // Import TransactionCard
+import { Transaction, Category } from '@/hooks/use-finance-data';
+import TransactionCard from '@/components/transactions/TransactionCard';
+import { isWithinInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns';
 
 interface TransactionsViewProps {
   transactions: Transaction[];
@@ -15,7 +16,7 @@ interface TransactionsViewProps {
   setTransactionSearchTerm: (term: string) => void;
   transactionFilterPeriod: 'all' | 'thisMonth';
   setTransactionFilterPeriod: (period: 'all' | 'thisMonth') => void;
-  setIsQuickAddModalOpen: (isOpen: boolean) => void;
+  setIsAddEditTransactionModalOpen: (isOpen: boolean) => void; // Changed from setIsQuickAddModalOpen
   handleEditTransaction: (transaction: Transaction) => void;
   formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
 }
@@ -27,33 +28,37 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
   setTransactionSearchTerm,
   transactionFilterPeriod,
   setTransactionFilterPeriod,
-  setIsQuickAddModalOpen,
+  setIsAddEditTransactionModalOpen, // Changed prop name
   handleEditTransaction,
   formatCurrency,
 }) => {
   const filteredTransactions = useMemo(() => {
     const lowerCaseSearchTerm = transactionSearchTerm.toLowerCase();
     const now = new Date();
-    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfCurrentMonth = startOfMonth(now);
+    const endOfCurrentMonth = endOfMonth(now);
 
     return transactions.filter(txn => {
-      const matchesSearch = txn.merchant.toLowerCase().includes(lowerCaseSearchTerm) ||
-                            txn.category.toLowerCase().includes(lowerCaseSearchTerm);
+      const category = categories.find(c => c.id === txn.categoryId);
+      const categoryName = category ? category.name.toLowerCase() : 'uncategorized';
 
-      const transactionDate = new Date(txn.date);
-      const matchesPeriod = transactionFilterPeriod === 'all' || transactionDate >= startOfCurrentMonth;
+      const matchesSearch = txn.merchant.toLowerCase().includes(lowerCaseSearchTerm) ||
+                            categoryName.includes(lowerCaseSearchTerm);
+
+      const transactionDate = parseISO(txn.date);
+      const matchesPeriod = transactionFilterPeriod === 'all' || isWithinInterval(transactionDate, { start: startOfCurrentMonth, end: endOfCurrentMonth });
 
       return matchesSearch && matchesPeriod;
-    });
-  }, [transactions, transactionSearchTerm, transactionFilterPeriod]);
+    }).sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()); // Sort by date descending
+  }, [transactions, transactionSearchTerm, transactionFilterPeriod, categories]);
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-bold text-foreground">Transactions</h2>
-        <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex items-center space-x-2 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98">
+        <Button onClick={() => setIsAddEditTransactionModalOpen(true)} className="flex items-center space-x-2 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98">
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Add Expense</span>
+          <span className="hidden sm:inline">Add Transaction</span>
           <span className="sm:hidden">Add</span>
         </Button>
       </div>
@@ -98,9 +103,9 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
             <div className="p-6 text-center text-muted-foreground">
               <List className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg font-semibold text-foreground">No transactions found.</p>
-              <p className="text-sm mt-2">It looks like you haven't added any transactions yet. Use the "Add Expense" button to get started!</p>
-              <Button onClick={() => setIsQuickAddModalOpen(true)} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
-                Add First Expense
+              <p className="text-sm mt-2">It looks like you haven't added any transactions yet. Use the "Add Transaction" button to get started!</p>
+              <Button onClick={() => setIsAddEditTransactionModalOpen(true)} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
+                Add First Transaction
               </Button>
             </div>
           )}

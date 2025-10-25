@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, DollarSign, List, Wallet, Settings } from 'lucide-react';
+import { Home, DollarSign, List, Wallet, Settings, Tag } from 'lucide-react'; // Added Tag icon
 
 const BottomNavBar: React.FC = () => {
   const location = useLocation();
@@ -10,6 +10,7 @@ const BottomNavBar: React.FC = () => {
   const navItems = [
     { id: 'home', label: 'Home', icon: Home, path: '/' },
     { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app?view=budget' },
+    { id: 'categories', label: 'Categories', icon: Tag, path: '/budget-app?view=categories' }, // New Categories item
     { id: 'transactions', label: 'Activity', icon: List, path: '/budget-app?view=transactions' },
     { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
     { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
@@ -17,7 +18,7 @@ const BottomNavBar: React.FC = () => {
 
   return (
     <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-card backdrop-blur-lg border-t border-border z-40 safe-bottom transition-colors duration-300">
-      <div className="grid grid-cols-5 gap-1 px-2 py-2">
+      <div className="grid grid-cols-6 gap-1 px-2 py-2"> {/* Adjusted grid-cols to 6 */}
         {navItems.map(item => {
           const Icon = item.icon;
           const isActive = (item.path === location.pathname + location.search) || (item.id === 'home' && location.pathname === '/') || (item.id === 'investments' && location.pathname === '/investments') || (item.id === 'settings' && location.pathname === '/settings');

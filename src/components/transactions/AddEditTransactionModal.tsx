@@ -6,7 +6,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Plus, Save, X, Trash2, Calendar as CalendarIcon, Repeat, ArrowDownCircle, ArrowUpCircle } from 'lucide-react'; // Added ArrowDownCircle, ArrowUpCircle
+import { Plus, Save, X, Trash2, Calendar as CalendarIcon, Repeat, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useDeviceDetection } from '@/hooks/use-device-detection';
@@ -20,58 +20,24 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
-  AlertDialogContent, // Added AlertDialogContent here
+  AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // Import AlertDialog components
-
-interface Transaction {
-  id: string;
-  date: string; // YYYY-MM-DD
-  merchant: string;
-  amount: number;
-  category: string;
-  status: 'pending' | 'cleared';
-  account: string;
-  ownerUid: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  color: string;
-  emoji: string;
-}
-
-interface Account {
-  id: string;
-  name: string;
-  type: string;
-}
-
-interface RecurringTransaction {
-  id: string;
-  name: string;
-  amount: number;
-  category: string;
-  frequency: 'Monthly' | 'Weekly' | 'Yearly';
-  nextDate: string; // YYYY-MM-DD
-  emoji: string;
-  ownerUid: string;
-}
+} from "@/components/ui/alert-dialog";
+import { Transaction, Category, Account, RecurringTransaction } from '@/hooks/use-finance-data';
 
 interface AddEditTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (transaction: Omit<Transaction, 'id' | 'ownerUid'>, isRecurring: boolean, recurringDetails?: Omit<RecurringTransaction, 'id' | 'ownerUid'>) => void; // Removed 'emoji' from Omit
+  onSave: (transaction: Omit<Transaction, 'id' | 'ownerUid'>, isRecurring: boolean, recurringDetails?: Omit<RecurringTransaction, 'id' | 'ownerUid'>) => void;
   onDelete: (id: string) => void;
   transactionToEdit?: Transaction | null;
   categories: Category[];
   accounts: Account[];
-  recurringTransactions: RecurringTransaction[]; // Pass recurring transactions to check if this transaction is one
+  recurringTemplates: RecurringTransaction[]; // Changed from recurringTransactions to recurringTemplates
 }
 
 const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
@@ -82,7 +48,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   transactionToEdit,
   categories,
   accounts,
-  recurringTransactions,
+  recurringTemplates, // Changed prop name
 }) => {
   const { isMobile } = useDeviceDetection();
   const { formatCurrency } = useCurrency();
@@ -90,40 +56,39 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [merchant, setMerchant] = useState('');
   const [amount, setAmount] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Uncategorized');
+  const [selectedCategoryId, setSelectedCategoryId] = useState(''); // Changed to categoryId
   const [status, setStatus] = useState<'pending' | 'cleared'>('pending');
   const [selectedAccount, setSelectedAccount] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState<'Monthly' | 'Weekly' | 'Yearly'>('Monthly');
   const [nextDate, setNextDate] = useState<Date | undefined>(undefined);
-  const [isExpense, setIsExpense] = useState<boolean>(true); // New state for expense/income
+  const [isExpense, setIsExpense] = useState<boolean>(true);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false); // State for delete confirmation dialog
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const isEditing = !!transactionToEdit;
-  const isExistingRecurring = isEditing && recurringTransactions.some(rt => rt.name === transactionToEdit?.merchant && rt.amount === transactionToEdit?.amount && rt.category === transactionToEdit?.category);
+  // Check if the transaction being edited is an instance of a recurring template
+  const isInstanceFromRecurringTemplate = isEditing && transactionToEdit?.isRecurring && transactionToEdit?.recurringTransactionId;
 
   useEffect(() => {
     if (isOpen) {
       if (transactionToEdit) {
         setDate(new Date(transactionToEdit.date));
         setMerchant(transactionToEdit.merchant);
-        setAmount(Math.abs(transactionToEdit.amount).toString()); // Display absolute value
-        setIsExpense(transactionToEdit.amount < 0); // Set expense/income based on amount sign
-        setSelectedCategory(transactionToEdit.category);
+        setAmount(Math.abs(transactionToEdit.amount).toString());
+        setIsExpense(transactionToEdit.amount < 0);
+        setSelectedCategoryId(transactionToEdit.categoryId); // Use categoryId
         setStatus(transactionToEdit.status);
         setSelectedAccount(transactionToEdit.account);
 
-        // Check if the transaction being edited is a recurring one
-        const matchingRecurring = recurringTransactions.find(rt =>
-          rt.name === transactionToEdit.merchant &&
-          rt.amount === transactionToEdit.amount &&
-          rt.category === transactionToEdit.category
-        );
-        if (matchingRecurring) {
-          setIsRecurring(true);
-          setFrequency(matchingRecurring.frequency);
-          setNextDate(new Date(matchingRecurring.nextDate));
+        // If it's an instance from a recurring template, pre-fill recurring fields
+        if (isInstanceFromRecurringTemplate) {
+          const matchingTemplate = recurringTemplates.find(rt => rt.id === transactionToEdit.recurringTransactionId);
+          if (matchingTemplate) {
+            setIsRecurring(true);
+            setFrequency(matchingTemplate.frequency);
+            setNextDate(new Date(matchingTemplate.nextDate));
+          }
         } else {
           setIsRecurring(false);
           setFrequency('Monthly');
@@ -134,17 +99,18 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
         setDate(new Date());
         setMerchant('');
         setAmount('');
-        setSelectedCategory(categories.length > 0 ? categories[0].name : 'Uncategorized');
+        const uncategorized = categories.find(cat => cat.name === 'Uncategorized');
+        setSelectedCategoryId(uncategorized ? uncategorized.id : (categories.length > 0 ? categories[0].id : ''));
         setStatus('pending');
         setSelectedAccount(accounts.length > 0 ? accounts[0].name : '');
         setIsRecurring(false);
         setFrequency('Monthly');
         setNextDate(undefined);
-        setIsExpense(true); // Default to expense for new transactions
+        setIsExpense(true);
       }
       setErrors({});
     }
-  }, [isOpen, transactionToEdit, categories, accounts, recurringTransactions]);
+  }, [isOpen, transactionToEdit, categories, accounts, recurringTemplates, isInstanceFromRecurringTemplate]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -152,7 +118,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
     if (!merchant.trim()) newErrors.merchant = 'Merchant is required.';
     if (!amount || parseFloat(amount) === 0) newErrors.amount = 'Amount is required and must be non-zero.';
     if (isNaN(parseFloat(amount))) newErrors.amount = 'Amount must be a valid number.';
-    if (!selectedCategory.trim()) newErrors.category = 'Category is required.';
+    if (!selectedCategoryId.trim()) newErrors.categoryId = 'Category is required.';
     if (!selectedAccount.trim()) newErrors.account = 'Account is required.';
     if (isRecurring && !nextDate) newErrors.nextDate = 'Next due date is required for recurring transactions.';
     setErrors(newErrors);
@@ -172,21 +138,23 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       date: date ? format(date, 'yyyy-MM-dd') : '',
       merchant: merchant.trim(),
       amount: finalAmount,
-      category: selectedCategory,
+      categoryId: selectedCategoryId, // Use categoryId
       status,
       account: selectedAccount,
+      isRecurring: isRecurring, // Set isRecurring flag for the transaction instance
+      recurringTransactionId: isInstanceFromRecurringTemplate ? transactionToEdit?.recurringTransactionId : undefined, // Keep link if it was already an instance
     };
 
-    let recurringPayload: Omit<RecurringTransaction, 'id' | 'ownerUid'> | undefined = undefined; // Removed 'emoji' from Omit
+    let recurringPayload: Omit<RecurringTransaction, 'id' | 'ownerUid'> | undefined = undefined;
     if (isRecurring && nextDate) {
-      const categoryEmoji = categories.find(cat => cat.name === selectedCategory)?.emoji || '💳';
+      const categoryEmoji = categories.find(cat => cat.id === selectedCategoryId)?.emoji || '💳';
       recurringPayload = {
         name: merchant.trim(),
-        amount: finalAmount, // Use the signed amount for recurring transaction
-        category: selectedCategory,
+        amount: finalAmount,
+        categoryId: selectedCategoryId, // Use categoryId
         frequency,
         nextDate: format(nextDate, 'yyyy-MM-dd'),
-        emoji: categoryEmoji, // Include emoji for recurring transaction
+        emoji: categoryEmoji,
       };
     }
 
@@ -197,7 +165,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   const handleDeleteClick = () => {
     if (transactionToEdit?.id) {
       onDelete(transactionToEdit.id);
-      setIsDeleteConfirmOpen(false); // Close dialog after deletion
+      setIsDeleteConfirmOpen(false);
     }
   };
 
@@ -303,24 +271,19 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
           Category
         </Label>
         <div className="col-span-3">
-          <Select value={selectedCategory} onValueChange={(value) => { setSelectedCategory(value); setErrors(prev => ({ ...prev, category: '' })); }}>
+          <Select value={selectedCategoryId} onValueChange={(value) => { setSelectedCategoryId(value); setErrors(prev => ({ ...prev, categoryId: '' })); }}>
             <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
               {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.name}>
+                <SelectItem key={cat.id} value={cat.id}>
                   <span className="mr-2">{cat.emoji}</span> {cat.name}
                 </SelectItem>
               ))}
-              {!categories.some(cat => cat.name === 'Uncategorized') && (
-                <SelectItem value="Uncategorized">
-                  <span className="mr-2">🏷️</span> Uncategorized
-                </SelectItem>
-              )}
             </SelectContent>
           </Select>
-          {errors.category && <p className="text-destructive text-xs mt-1">{errors.category}</p>}
+          {errors.categoryId && <p className="text-destructive text-xs mt-1">{errors.categoryId}</p>}
         </div>
       </div>
 
@@ -371,13 +334,13 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             id="isRecurring"
             checked={isRecurring}
             onCheckedChange={setIsRecurring}
-            disabled={isExistingRecurring} // Disable if it's already a recurring transaction
+            disabled={isInstanceFromRecurringTemplate} // Disable if it's an instance from a recurring template
           />
           <span className="ml-2 text-sm text-muted-foreground">
             {isRecurring ? 'Enabled' : 'Disabled'}
           </span>
-          {isExistingRecurring && (
-            <span className="ml-2 text-xs text-muted-foreground">(Managed as recurring)</span>
+          {isInstanceFromRecurringTemplate && (
+            <span className="ml-2 text-xs text-muted-foreground">(Managed as recurring template)</span>
           )}
         </div>
       </div>
@@ -447,6 +410,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
                   This action cannot be undone. This will permanently delete the transaction "{transactionToEdit?.merchant}".
+                  {isInstanceFromRecurringTemplate && " Note: This will only delete this specific instance, not the recurring template."}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

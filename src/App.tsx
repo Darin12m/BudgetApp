@@ -104,7 +104,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <CurrencyProvider>
-            <DateRangeProvider> {/* Wrap the entire app with DateRangeProvider */}
+            <DateRangeProvider>
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route
@@ -117,6 +117,14 @@ const App = () => {
                 />
                 <Route
                   path="/budget-app"
+                  element={
+                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                      <BudgetApp userUid={userUid} />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/budget-app/:view" // Added dynamic view parameter
                   element={
                     <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
                       <BudgetApp userUid={userUid} />

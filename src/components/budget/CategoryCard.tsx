@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Category } from '@/hooks/use-finance-data'; // Import Category type
+import { Category } from '@/hooks/use-finance-data';
 import { cn } from '@/lib/utils';
 
 interface HealthStatus {
@@ -23,7 +23,6 @@ interface HealthStatus {
   bg: string;
 }
 
-// Utility Functions (moved from BudgetApp.tsx)
 const getHealthStatus = (spent: number, budgeted: number): HealthStatus => {
   const percentage = (spent / budgeted) * 100;
   if (percentage >= 100) return { status: 'over', color: 'text-destructive', bg: 'bg-red-50 dark:bg-red-900/20' };
@@ -39,7 +38,7 @@ interface CategoryCardProps {
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = memo(({ category, onEdit, onDelete, formatCurrency }) => {
-  const percentage = (category.spent / category.budgeted) * 100;
+  const percentage = category.budgeted > 0 ? (category.spent / category.budgeted) * 100 : 0;
   const health = getHealthStatus(category.spent, category.budgeted);
 
   return (
@@ -72,7 +71,7 @@ const CategoryCard: React.FC<CategoryCardProps> = memo(({ category, onEdit, onDe
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the category "{category.name}" and all associated data.
+                  This action cannot be undone. This will permanently delete the category "{category.name}" and re-assign all associated transactions to 'Uncategorized'.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

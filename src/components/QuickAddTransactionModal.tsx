@@ -6,53 +6,47 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Plus, Save, X, Repeat, Calendar as CalendarIcon, ArrowDownCircle, ArrowUpCircle } from 'lucide-react'; // Added ArrowDownCircle, ArrowUpCircle
+import { Plus, Save, X, Repeat, Calendar as CalendarIcon, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useDeviceDetection } from '@/hooks/use-device-detection';
 import { useCurrency } from '@/context/CurrencyContext';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
-import { Switch } from "@/components/ui/switch"; // Import Switch component
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover for date picker
-import { Calendar } from '@/components/ui/calendar'; // Import Calendar for date picker
-import { cn } from '@/lib/utils'; // Import cn for conditional class merging
-
-interface Category {
-  id: string;
-  name: string;
-  color: string;
-  emoji: string;
-}
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { Category } from '@/hooks/use-finance-data'; // Import Category type
 
 interface QuickAddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (amount: number, note: string, date: string, categoryName: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => void;
-  categories: Category[]; // Pass categories as a prop
+  onSave: (amount: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => void;
+  categories: Category[];
 }
 
 const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isOpen, onClose, onSave, categories }) => {
   const { isMobile } = useDeviceDetection();
   const { formatCurrency } = useCurrency();
   const [amount, setAmount] = useState<string>('');
-  const [note, setNote] = useState<string>('');
+  const [merchant, setMerchant] = useState<string>(''); // Changed from note to merchant
   const [date, setDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
-  const [selectedCategory, setSelectedCategory] = useState<string>('Uncategorized'); // Default to Uncategorized
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(''); // Changed to categoryId
   const [isRecurring, setIsRecurring] = useState<boolean>(false);
   const [frequency, setFrequency] = useState<'Monthly' | 'Weekly' | 'Yearly'>('Monthly');
-  const [nextDate, setNextDate] = useState<Date | undefined>(undefined); // For recurring transactions
-  const [isExpense, setIsExpense] = useState<boolean>(true); // New state for expense/income
+  const [nextDate, setNextDate] = useState<Date | undefined>(undefined);
+  const [isExpense, setIsExpense] = useState<boolean>(true);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const resetForm = useCallback(() => {
     setAmount('');
-    setNote('');
+    setMerchant('');
     setDate(format(new Date(), 'yyyy-MM-dd'));
-    setSelectedCategory('Uncategorized');
+    setSelectedCategoryId('');
     setIsRecurring(false);
     setFrequency('Monthly');
     setNextDate(undefined);
-    setIsExpense(true); // Reset to expense by default
+    setIsExpense(true);
     setErrors({});
   }, []);
 
@@ -61,10 +55,11 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       resetForm();
     } else {
       // Ensure 'Uncategorized' is available or select the first category
-      if (categories.length > 0 && !categories.some(cat => cat.name === 'Uncategorized')) {
-        setSelectedCategory(categories[0].name);
-      } else {
-        setSelectedCategory('Uncategorized');
+      const uncategorized = categories.find(cat => cat.name === 'Uncategorized');
+      if (uncategorized) {
+        setSelectedCategoryId(uncategorized.id);
+      } else if (categories.length > 0) {
+        setSelectedCategoryId(categories[0].id);
       }
     }
   }, [isOpen, resetForm, categories]);
@@ -73,7 +68,9 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
     const newErrors: { [key: string]: string } = {};
     if (!amount || parseFloat(amount) === 0) newErrors.amount = 'Amount is required and must be non-zero.';
     if (isNaN(parseFloat(amount))) newErrors.amount = 'Amount must be a valid number.';
+    if (!merchant.trim()) newErrors.merchant = 'Merchant is required.';
     if (!date) newErrors.date = 'Date is required.';
+    if (!selectedCategoryId) newErrors.categoryId = 'Category is required.';
     if (isRecurring && !nextDate) newErrors.nextDate = 'Next due date is required for recurring transactions.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -90,9 +87,9 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
 
     onSave(
       finalAmount,
-      note,
+      merchant,
       date,
-      selectedCategory,
+      selectedCategoryId,
       isRecurring,
       isRecurring ? frequency : undefined,
       isRecurring && nextDate ? format(nextDate, 'yyyy-MM-dd') : undefined
@@ -102,6 +99,19 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
 
   const FormContent = (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="merchant" className="text-right">
+          Merchant
+        </Label>
+        <Input
+          id="merchant"
+          value={merchant}
+          onChange={(e) => { setMerchant(e.target.value); setErrors(prev => ({ ...prev, merchant: '' })); }}
+          className="col-span-3 bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
+          placeholder="e.g., Coffee with friends"
+        />
+        {errors.merchant && <p className="text-destructive text-xs mt-1 col-start-2 col-span-3">{errors.merchant}</p>}
+      </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="amount" className="text-right">
           Amount
@@ -149,18 +159,6 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="note" className="text-right">
-          Note (Optional)
-        </Label>
-        <Input
-          id="note"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          className="col-span-3 bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
-          placeholder="e.g., Coffee with friends"
-        />
-      </div>
-      <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="date" className="text-right">
           Date
         </Label>
@@ -181,24 +179,19 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
           Category
         </Label>
         <div className="col-span-3">
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <Select value={selectedCategoryId} onValueChange={(value) => { setSelectedCategoryId(value); setErrors(prev => ({ ...prev, categoryId: '' })); }}>
             <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
               {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.name}>
+                <SelectItem key={cat.id} value={cat.id}>
                   <span className="mr-2">{cat.emoji}</span> {cat.name}
                 </SelectItem>
               ))}
-              {/* Add an 'Uncategorized' option if it doesn't exist in categories */}
-              {!categories.some(cat => cat.name === 'Uncategorized') && (
-                <SelectItem value="Uncategorized">
-                  <span className="mr-2">🏷️</span> Uncategorized
-                </SelectItem>
-              )}
             </SelectContent>
           </Select>
+          {errors.categoryId && <p className="text-destructive text-xs mt-1">{errors.categoryId}</p>}
         </div>
       </div>
 
