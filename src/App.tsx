@@ -9,11 +9,13 @@ import BudgetApp from "./pages/BudgetApp";
 import InvestmentsPage from "./pages/Investments";
 import SettingsPage from "./pages/Settings";
 import LoginPage from "./pages/Login";
-import { useEffect, useState, useLayoutEffect } from "react"; // Import useLayoutEffect
+import ConsoleLogPage from "./pages/ConsoleLogPage"; // Import the new ConsoleLogPage
+import { useEffect, useState, useLayoutEffect } from "react";
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, User, setPersistence, browserLocalPersistence } from "firebase/auth";
-import { CurrencyProvider } from "./context/CurrencyContext"; // Import CurrencyProvider
-import { DateRangeProvider } from "./context/DateRangeContext"; // Import DateRangeProvider
+import { CurrencyProvider } from "./context/CurrencyContext";
+import { DateRangeProvider } from "./context/DateRangeContext";
+import { ErrorLogProvider, useErrorLog } from "./context/ErrorLogContext"; // Import ErrorLogProvider and useErrorLog
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,32 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, userUid, isAu
   }
   return <>{children}</>;
 };
+
+// Component to set up global error handlers
+const GlobalErrorCatcher: React.FC = () => {
+  const { addError } = useErrorLog();
+
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      addError(event.message, 'error', event.error?.stack);
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      addError(`Unhandled Promise Rejection: ${event.reason?.message || event.reason}`, 'error', event.reason?.stack);
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, [addError]);
+
+  return null;
+};
+
 
 const App = () => {
   const [userUid, setUserUid] = useState<string | null>(null);
@@ -103,54 +131,58 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <CurrencyProvider>
-            <DateRangeProvider>
-              <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                      <Index userUid={userUid} />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/budget-app"
-                  element={
-                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                      <BudgetApp userUid={userUid} />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/budget-app/:view" // Added dynamic view parameter
-                  element={
-                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                      <BudgetApp userUid={userUid} />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/investments"
-                  element={
-                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                      <InvestmentsPage userUid={userUid} />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                      <SettingsPage userUid={userUid} />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </DateRangeProvider>
-          </CurrencyProvider>
+          <ErrorLogProvider> {/* Wrap the entire app with ErrorLogProvider */}
+            <GlobalErrorCatcher /> {/* Component to catch global errors */}
+            <CurrencyProvider>
+              <DateRangeProvider>
+                <Routes>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                        <Index userUid={userUid} />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/budget-app"
+                    element={
+                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                        <BudgetApp userUid={userUid} />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/budget-app/:view" // Added dynamic view parameter
+                    element={
+                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                        <BudgetApp userUid={userUid} />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/investments"
+                    element={
+                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                        <InvestmentsPage userUid={userUid} />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                        <SettingsPage userUid={userUid} />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/console-log" element={<ConsoleLogPage />} /> {/* New Console Log Page */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </DateRangeProvider>
+            </CurrencyProvider>
+          </ErrorLogProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
