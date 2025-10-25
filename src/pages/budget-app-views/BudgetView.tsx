@@ -151,7 +151,7 @@ const BudgetView: React.FC<BudgetViewProps> = ({
               remainingBudget={remainingBudget}
               isOverBudget={isOverBudget}
               spentPercentage={spentPercentage}
-              pieChartClassName={cn(isOverBudget && 'animate-pulse-red-glow')}
+              // Removed pieChartClassName={cn(isOverBudget && 'animate-pulse-red-glow')}
             />
           </div>
         </div>

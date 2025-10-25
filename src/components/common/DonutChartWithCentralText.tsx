@@ -182,9 +182,7 @@ const DonutChartWithCentralText: React.FC<DonutChartWithCentralTextProps> = ({
             animationEasing="ease-out"
             stroke={chartId === 'budget' ? `url(#gradientStroke-${chartId})` : undefined} // Stroke for budget chart
             strokeWidth={chartId === 'budget' ? 2 : 1} // Thin stroke for budget chart
-            className={cn(
-              isOverBudget && 'animate-pulse-red-glow' // Apply pulsing glow if over budget
-            )}
+            // Removed className={cn(isOverBudget && 'animate-pulse-red-glow')}
             labelLine={chartId === 'portfolio' ? false : undefined} // No label line for portfolio
           >
             {pieDataWithColors.map((entry, index) => (

@@ -94,11 +94,11 @@ const DynamicTextInCircle: React.FC<DynamicTextInCircleProps> = ({
         maxHeight: `${containerSize * 0.98}px`, // Constrain max height for initial render
       }}
     >
-      <span className={cn(mainTextColorClass, mainFontWeightClass)} style={{ fontSize: `${currentFontSize}px` }}>
+      <span className={cn(mainTextColorClass, mainFontWeightClass)} style={{ fontSize: `${currentFontSize}px`, display: 'block', lineHeight: 1 }}>
         {mainText}
       </span>
       {subText && (
-        <span className={cn("text-xs dynamic-subtext", subTextColorClass, subFontWeightClass)} style={{ fontSize: `${currentFontSize * 0.4}px` }}> {/* Added dynamic-subtext class */}
+        <span className={cn("text-xs dynamic-subtext", subTextColorClass, subFontWeightClass)} style={{ fontSize: `${currentFontSize * 0.4}px`, display: 'block', lineHeight: 1 }}> {/* Added dynamic-subtext class */}
           {subText}
         </span>
       )}

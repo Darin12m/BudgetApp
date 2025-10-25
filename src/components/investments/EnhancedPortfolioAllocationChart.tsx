@@ -5,7 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recha
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
-import DynamicTextInCircle from '@/components/common/DynamicTextInCircle'; // Import the new component
+import DynamicTextInCircle from '@/components/common/DynamicTextInCircle';
 import DonutChartWithCentralText from '@/components/common/DonutChartWithCentralText'; // Import the new unified component
 
 interface AllocationData {
