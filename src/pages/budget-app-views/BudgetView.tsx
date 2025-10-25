@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback } from 'react'; // Removed 'memo' from import
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
 import { PiggyBank, Plus, ArrowRight, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,7 +66,8 @@ const CustomDonutTooltip = ({ active, payload, totalBudgeted, totalSpent, remain
   return null;
 };
 
-const BudgetViewComponent: React.FC<BudgetViewProps> = ({
+// Renamed from BudgetViewComponent and removed memo wrapper for troubleshooting
+const BudgetView: React.FC<BudgetViewProps> = ({
   totalBudgeted,
   totalSpent,
   remainingBudget,
@@ -289,7 +290,5 @@ const BudgetViewComponent: React.FC<BudgetViewProps> = ({
     </div>
   );
 };
-
-const BudgetView = memo(BudgetViewComponent);
 
 export default BudgetView;
