@@ -258,11 +258,11 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center space-x-3 flex-1 min-w-0">
                 <span className="2xl flex-shrink-0">
-                  {txn.amount > 0 ? '💰' : categories.find(c => c.name === txn.category)?.emoji || '💳'}
+                  {txn.amount > 0 ? '💰' : categories.find(c => c.id === txn.categoryId)?.emoji || '💳'}
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-foreground text-sm truncate">{txn.merchant}</p>
-                  <p className="text-xs text-muted-foreground">{categories.find(c => c.name === txn.category)?.name || 'Uncategorized'}</p>
+                  <p className="text-xs text-muted-foreground">{categories.find(c => c.id === txn.categoryId)?.name || 'Uncategorized'}</p>
                 </div>
               </div>
               <p className={`font-bold text-sm ml-2 flex-shrink-0 ${txn.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>

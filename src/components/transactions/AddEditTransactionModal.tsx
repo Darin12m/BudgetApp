@@ -334,7 +334,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             id="isRecurring"
             checked={isRecurring}
             onCheckedChange={setIsRecurring}
-            disabled={isInstanceFromRecurringTemplate} // Disable if it's an instance from a recurring template
+            disabled={!!isInstanceFromRecurringTemplate} // Disable if it's an instance from a recurring template
           />
           <span className="ml-2 text-sm text-muted-foreground">
             {isRecurring ? 'Enabled' : 'Disabled'}
