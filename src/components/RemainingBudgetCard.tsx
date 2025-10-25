@@ -220,7 +220,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
               {/* Main Data Ring */}
               <Pie
                 activeIndex={activeIndex !== null ? activeIndex : undefined}
-                activeShape={activeIndex !== null ? CustomActiveShape : undefined}
+                activeShape={activeIndex !== null ? (props) => <CustomActiveShape {...props} /> : undefined} {/* Fix: Wrap CustomActiveShape in a function */}
                 data={pieChartData}
                 cx="50%"
                 cy="50%"
@@ -268,29 +268,32 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
       {/* Spending Trend Line Graph */}
       <div className="mt-6">
         <p className="text-sm font-semibold text-foreground mb-2">Spending Trend</p>
-        <ResponsiveContainer width="100%" height={80}> {/* Increased height for better visibility */}
-          <AreaChart data={sparklineData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-            <defs>
-              <linearGradient id="colorTrend" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="colorTrendFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
-                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
-            <XAxis dataKey="day" hide />
-            <YAxis hide domain={['auto', 'auto']} />
-            <Tooltip
-              contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }}
-              formatter={(value: number) => formatCurrency(value)}
-              labelFormatter={(label: string) => `Day ${label}`}
-            />
-            <Area type="monotone" dataKey="value" stroke="url(#colorTrend)" fill="url(#colorTrendFill)" strokeWidth={2} isAnimationActive={true} animationDuration={1500} animationEasing="ease-out" />
-          </AreaChart>
-        </ResponsiveContainer>
+        {/* Fix: ResponsiveContainer must be the only child of its parent div */}
+        <div className="h-[80px] w-full"> 
+          <ResponsiveContainer width="100%" height="100%"> 
+            <AreaChart data={sparklineData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+              <defs>
+                <linearGradient id="colorTrend" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorTrendFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
+              <XAxis dataKey="day" hide />
+              <YAxis hide domain={['auto', 'auto']} />
+              <Tooltip
+                contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }}
+                formatter={(value: number) => formatCurrency(value)}
+                labelFormatter={(label: string) => `Day ${label}`}
+              />
+              <Area type="monotone" dataKey="value" stroke="url(#colorTrend)" fill="url(#colorTrendFill)" strokeWidth={2} isAnimationActive={true} animationDuration={1500} animationEasing="ease-out" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {rolloverEnabled && previousMonthLeftover > 0 && (

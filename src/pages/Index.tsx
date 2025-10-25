@@ -48,7 +48,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
     totalSpentMonthly,
     remainingBudgetMonthly,
     weeklyBudgetTarget,
-    topSpendingCategories,
+    topSpendingCategories, // This is now correctly typed as { name: string; amount: number; }[]
     currentMonthTransactions,
   } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
 

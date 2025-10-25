@@ -6,7 +6,7 @@ import { format, addDays, startOfMonth, endOfMonth, isWithinInterval, parseISO }
 import { Menu, Lightbulb, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useFinanceData, Goal, Category, Transaction, Account, RecurringTransaction } from '@/hooks/use-finance-data';
+import { useFinanceData, Goal, Category, Transaction, Account, RecurringTransaction } from '@/hooks/use-finance-data'; // Fix: Imported all necessary types
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
 
@@ -543,7 +543,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         </header>
 
         <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full">
-          {error && <ErrorMessage error={error} />}
+          {error && <ErrorMessage message={error} />} {/* Fix: Changed prop from 'error' to 'message' */}
           {loading ? (
             <LoadingSpinner />
           ) : (

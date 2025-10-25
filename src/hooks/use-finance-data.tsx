@@ -6,7 +6,7 @@ import { isTransactionInCurrentWeek, isTransactionInPreviousWeek, isTransactionI
 import { format, parseISO, getDaysInMonth, isWithinInterval, startOfDay, endOfDay, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth, addMonths, addWeeks, addYears, isBefore, isAfter, isSameDay } from 'date-fns'; // Added date-fns imports for recurring logic
 
 // TypeScript Interfaces (re-defined for clarity within the hook context)
-interface Transaction {
+export interface Transaction {
   id: string;
   date: string; // YYYY-MM-DD
   merchant: string;
@@ -17,7 +17,7 @@ interface Transaction {
   ownerUid: string;
 }
 
-interface Category {
+export interface Category {
   id: string;
   name: string;
   budgeted: number;
@@ -27,7 +27,7 @@ interface Category {
   ownerUid: string;
 }
 
-interface Account {
+export interface Account {
   id: string;
   name: string;
   balance: number;
@@ -46,7 +46,7 @@ export interface Goal { // Exported for use in other files
   ownerUid: string;
 }
 
-interface RecurringTransaction {
+export interface RecurringTransaction {
   id: string;
   name: string;
   amount: number;
@@ -57,7 +57,7 @@ interface RecurringTransaction {
   ownerUid: string;
 }
 
-interface BudgetSettings {
+export interface BudgetSettings {
   id: string;
   rolloverEnabled: boolean;
   previousMonthLeftover: number;
@@ -402,13 +402,13 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   );
 
   const topSpendingCategories = useMemo(() => {
-    const categorySpending: { name: string; amount: number } = {};
+    const categorySpending: Record<string, number> = {}; // Fix: Initialize as Record<string, number>
     currentMonthTransactions.filter(txn => txn.amount < 0).forEach(txn => { // Only consider expenses
       categorySpending[txn.category] = (categorySpending[txn.category] || 0) + Math.abs(txn.amount);
     });
 
     return Object.entries(categorySpending)
-      .sort(([, amountA], [, amountB]) => amountB - amountA)
+      .sort(([, amountA]: [string, number], [, amountB]: [string, number]) => amountB - amountA) // Fix: Explicitly type amounts as number
       .slice(0, 2)
       .map(([name, amount]) => ({ name, amount }));
   }, [currentMonthTransactions]);
