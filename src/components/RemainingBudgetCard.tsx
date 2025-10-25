@@ -220,7 +220,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
               {/* Main Data Ring */}
               <Pie
                 activeIndex={activeIndex !== null ? activeIndex : undefined}
-                activeShape={activeIndex !== null ? (props) => <CustomActiveShape {...props} /> : undefined} {/* Fix: Wrap CustomActiveShape in a function */}
+                activeShape={activeIndex !== null ? (props: PieSectorDataItem) => <CustomActiveShape {...props} /> : undefined} {/* Fix: Explicitly type props */}
                 data={pieChartData}
                 cx="50%"
                 cy="50%"

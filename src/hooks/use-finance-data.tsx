@@ -21,7 +21,7 @@ export interface Category {
   id: string;
   name: string;
   budgeted: number;
-  // spent: number; // REMOVED: spent will be calculated dynamically
+  spent: number; // RE-ADDED: spent will be calculated dynamically
   color: string;
   emoji: string;
   ownerUid: string;
@@ -205,12 +205,12 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
         if (collectionName === 'categories' && budgetSettings.categoriesInitialized !== undefined) { // Ensure budgetSettings is loaded
           if (snapshot.empty && !budgetSettings.categoriesInitialized) {
             const defaultCategories = [
-              { name: 'Groceries', budgeted: 300, color: 'hsl(var(--emerald))', emoji: '🛒', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Rent', budgeted: 1200, color: 'hsl(var(--blue))', emoji: '🏠', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Utilities', budgeted: 150, color: 'hsl(var(--lilac))', emoji: '💡', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Transportation', budgeted: 100, color: '#f59e0b', emoji: '🚗', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Entertainment', budgeted: 80, color: '#ef4444', emoji: '🎉', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Uncategorized', budgeted: 0, color: '#6B7280', emoji: '🏷️', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Groceries', budgeted: 300, spent: 0, color: 'hsl(var(--emerald))', emoji: '🛒', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Rent', budgeted: 1200, spent: 0, color: 'hsl(var(--blue))', emoji: '🏠', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Utilities', budgeted: 150, spent: 0, color: 'hsl(var(--lilac))', emoji: '💡', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Transportation', budgeted: 100, spent: 0, color: '#f59e0b', emoji: '🚗', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Entertainment', budgeted: 80, spent: 0, color: '#ef4444', emoji: '🎉', ownerUid: userUid, createdAt: serverTimestamp() },
+              { name: 'Uncategorized', budgeted: 0, spent: 0, color: '#6B7280', emoji: '🏷️', ownerUid: userUid, createdAt: serverTimestamp() },
             ];
 
             defaultCategories.forEach(async (cat) => {
