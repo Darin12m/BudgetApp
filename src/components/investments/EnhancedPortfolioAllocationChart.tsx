@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
 import DynamicTextInCircle from '@/components/common/DynamicTextInCircle'; // Import the new component
+import DonutChartWithCentralText from '@/components/common/DonutChartWithCentralText'; // Import the new unified component
 
 interface AllocationData {
   name: string;
@@ -97,7 +98,7 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
 
 
 const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChartProps> = ({ title, data, emptyMessage, totalPortfolioValue }) => {
-  const { formatCurrency } = useCurrency(); // Changed to formatCurrency
+  const { formatCurrency } = useCurrency();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const onPieEnter = useCallback((_: any, index: number) => {
@@ -122,8 +123,6 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
   // Define donut radii
   const donutInnerRadius = 60;
   const donutOuterRadius = 90;
-  // Calculate the effective diameter for the text container based on inner radius
-  const textContainerDiameter = donutInnerRadius * 2; 
 
   return (
     <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
@@ -133,60 +132,16 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
       <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
         {chartData.length > 0 ? (
           <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}> {/* Added margin */}
-                <defs>
-                  {chartData.map((entry, index) => (
-                    <linearGradient key={`grad-${index}`} id={`color-${index}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={entry.color} stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor={entry.color} stopOpacity={0.5}/>
-                    </linearGradient>
-                  ))}
-                </defs>
-                <Pie
-                  activeIndex={activeIndex !== null ? activeIndex : undefined}
-                  activeShape={<CustomActiveShape />}
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={donutInnerRadius}
-                  outerRadius={donutOuterRadius}
-                  dataKey="value"
-                  isAnimationActive={true}
-                  animationDuration={800}
-                  animationEasing="ease-out"
-                  onMouseEnter={onPieEnter}
-                  onMouseLeave={onPieLeave}
-                  labelLine={false}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={`url(#color-${index})`} stroke={entry.color} strokeWidth={1} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  offset={10}
-                  contentStyle={{
-                    fontSize: '12px',
-                    backgroundColor: 'hsl(var(--tooltip-bg))',
-                    border: '1px solid hsl(var(--tooltip-border-color))',
-                    borderRadius: '8px',
-                    color: 'hsl(var(--tooltip-text-color))',
-                    pointerEvents: 'none', // Ensure tooltip doesn't block interaction with center label
-                  }}
-                  formatter={(value: number, name: string, props: any) => [
-                    formatCurrency(value), // Changed to formatCurrency
-                    `${props.payload.name} (${props.payload.percentage.toFixed(0)}%)`
-                  ]}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            {/* Center Label using DynamicTextInCircle */}
-            <DynamicTextInCircle
+            <DonutChartWithCentralText
+              data={chartData}
               mainText={activeItem ? formatCurrency(activeItem.value) : formatCurrency(totalPortfolioValue)}
               subText={activeItem ? `${activeItem.name} (${activeItem.percentage.toFixed(0)}%)` : 'Total Allocated'}
-              containerSize={textContainerDiameter} // Pass inner hole diameter
-              maxFontSizePx={28} 
-              minFontSizePx={10}
+              innerRadius={donutInnerRadius}
+              outerRadius={donutOuterRadius}
+              chartId="portfolio"
+              formatValue={formatCurrency}
+              activeShape={CustomActiveShape}
+              totalPortfolioValue={totalPortfolioValue}
             />
           </div>
         ) : (
@@ -196,8 +151,8 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
           <AllocationLegendList
             chartData={chartData}
             activeIndex={activeIndex}
-            setActiveIndex={setActiveIndex}
-            formatCurrency={formatCurrency} // Changed to formatCurrency
+            setActiveIndex={onPieEnter} // Use onPieEnter for setting active index from legend
+            formatCurrency={formatCurrency}
             totalPortfolioValue={totalPortfolioValue}
           />
         )}

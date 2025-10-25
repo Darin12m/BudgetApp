@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'; // Import Badge component
 import { PieSectorDataItem } from 'recharts/types/polar/Pie'; // Import PieSectorDataItem
 import { CustomProgress } from '@/components/common/CustomProgress'; // Import CustomProgress
 import DynamicTextInCircle from '@/components/common/DynamicTextInCircle'; // Import the new component
+import DonutChartWithCentralText from '@/components/common/DonutChartWithCentralText'; // Import the new unified component
 
 interface RemainingBudgetCardProps {
   totalBudgeted: number;
@@ -21,13 +22,8 @@ interface RemainingBudgetCardProps {
   smartSummary: string;
 }
 
-// Define props interface for CustomActiveShape
-interface CustomActiveShapeProps extends PieSectorDataItem {
-  // Add any other props you might be passing or that recharts provides
-}
-
 // Custom Active Shape for hover effect on Donut Chart
-const CustomActiveShape: React.FC<CustomActiveShapeProps> = (props) => {
+const CustomActiveShape: React.FC<PieSectorDataItem> = (props) => {
   const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
 
   return (
@@ -115,9 +111,6 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
 }) => {
   const { formatCurrency } = useCurrency();
 
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  // Removed showPercentageLabel state as animate-scale-in handles initial visibility
-
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
   const isOverBudget = remainingBudget < 0;
   const isCloseToLimit = !isOverBudget && spentPercentage >= 80;
@@ -127,12 +120,9 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   const visualRemainingPercentage = Math.max(0, 100 - visualSpentPercentage); // Ensure non-negative
 
   const pieChartData = [
-    { name: 'Spent', value: visualSpentPercentage, color: 'url(#gradientPrimary)' },
+    { name: 'Spent', value: visualSpentPercentage, color: 'url(#gradientPrimary-budget)' },
     { name: 'Remaining', value: visualRemainingPercentage, color: 'hsl(var(--emerald))' },
   ];
-
-  // Data for the subtle neutral background ring (always 100%)
-  const backgroundPieData = [{ name: 'Background', value: 100, color: 'hsl(var(--muted)/50%)' }];
 
   // Determine color for remaining budget text
   const remainingBudgetTextColor = isOverBudget
@@ -143,14 +133,6 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
 
   // Animate the remaining budget number
   const animatedRemainingBudget = useCountUp(remainingBudget, 1000);
-
-  const onPieEnter = useCallback((_: any, index: number) => {
-    setActiveIndex(index);
-  }, []);
-
-  const onPieLeave = useCallback(() => {
-    setActiveIndex(null);
-  }, []);
 
   // Sparkline Chart Data (using placeholder for now, can be replaced with real data)
   const sparklineData = [
@@ -166,8 +148,6 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   // Define donut radii
   const donutInnerRadius = 65;
   const donutOuterRadius = 75;
-  // Calculate the effective diameter for the text container based on inner radius
-  const textContainerDiameter = donutInnerRadius * 2;
 
   return (
     <div className="bg-card rounded-xl sm:rounded-2xl p-6 card-shadow animate-in fade-in slide-in-from-top-2 duration-300 border border-border/50 backdrop-blur-lg">
@@ -188,83 +168,23 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
         </div>
 
         {/* Donut Chart */}
-        <div className="w-40 h-40 relative flex-shrink-0"> {/* Increased container size */}
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart onMouseEnter={onPieEnter} onMouseLeave={onPieLeave} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}> {/* Added margin */}
-              <defs>
-                {/* Gradient for main spent portion */}
-                <linearGradient id="gradientPrimary" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--blue))" />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" />
-                </linearGradient>
-                {/* Gradient for the stroke glow */}
-                <linearGradient id="gradientStroke" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--blue))" stopOpacity={0.8} />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
-                </linearGradient>
-              </defs>
-              {/* Background Ring for depth */}
-              <Pie
-                data={backgroundPieData}
-                cx="50%"
-                cy="50%"
-                innerRadius={donutInnerRadius} // Adjusted radius
-                outerRadius={donutOuterRadius} // Adjusted radius
-                fill="hsl(var(--muted)/50%)"
-                dataKey="value"
-                isAnimationActive={false}
-                stroke="none"
-              />
-              {/* Main Data Ring */}
-              <Pie
-                activeIndex={activeIndex !== null ? activeIndex : undefined}
-                activeShape={activeIndex !== null ? (props: PieSectorDataItem) => <CustomActiveShape {...props} /> : undefined}
-                data={pieChartData}
-                cx="50%"
-                cy="50%"
-                innerRadius={donutInnerRadius} // Adjusted radius
-                outerRadius={donutOuterRadius} // Adjusted radius
-                startAngle={90}
-                endAngle={-270}
-                paddingAngle={0}
-                dataKey="value"
-                isAnimationActive={true}
-                animationDuration={1000}
-                animationEasing="ease-out"
-                stroke="url(#gradientStroke)" // Apply gradient stroke
-                strokeWidth={2} // Thin stroke
-                className={cn(
-                  isOverBudget && 'animate-pulse-red-glow' // Apply pulsing glow if over budget
-                )}
-              >
-                {pieChartData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={entry.color}
-                    style={{ filter: `drop-shadow(0 0 8px ${entry.color}60)` }} // Soft glow
-                  />
-                ))}
-              </Pie>
-              <Tooltip
-                offset={10}
-                content={<CustomDonutTooltip
-                    totalBudgeted={totalBudgeted}
-                    totalSpent={totalSpent}
-                    remainingBudget={remainingBudget}
-                    isOverBudget={isOverBudget}
-                    formatCurrency={formatCurrency}
-                  />}
-                contentStyle={{ pointerEvents: 'none' }} // Ensure tooltip doesn't block interaction with center label
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <DynamicTextInCircle
+        <div className="w-40 h-40 relative flex-shrink-0">
+          <DonutChartWithCentralText
+            data={pieChartData}
             mainText={totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
             subText="Used"
-            containerSize={textContainerDiameter}
-            maxFontSizePx={28} // Adjusted max font size for better fit
-            minFontSizePx={10}
-            // Removed className={showPercentageLabel ? 'opacity-100' : 'opacity-0'} to rely on animate-scale-in
+            innerRadius={donutInnerRadius}
+            outerRadius={donutOuterRadius}
+            chartId="budget"
+            formatValue={formatCurrency}
+            tooltipContent={CustomDonutTooltip}
+            activeShape={CustomActiveShape}
+            totalBudgeted={totalBudgeted}
+            totalSpent={totalSpent}
+            remainingBudget={remainingBudget}
+            isOverBudget={isOverBudget}
+            spentPercentage={spentPercentage}
+            pieChartClassName={cn(isOverBudget && 'animate-pulse-red-glow')}
           />
         </div>
       </div>
