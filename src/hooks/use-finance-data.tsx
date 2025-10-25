@@ -13,7 +13,6 @@ export interface Transaction {
   amount: number;
   categoryId: string; // Changed from 'category' to 'categoryId'
   status: 'pending' | 'cleared';
-  // Removed account field
   ownerUid: string;
   isRecurring: boolean; // New flag: true if this transaction is an instance of a recurring template
   recurringTransactionId?: string; // Link to RecurringTransaction template if isRecurring is true
@@ -102,7 +101,6 @@ const generateRecurringOccurrences = (
       amount: recurringTxn.amount,
       categoryId: recurringTxn.categoryId,
       status: 'cleared', // Assume recurring transactions are cleared once due
-      // Removed account from generated transaction
       ownerUid: recurringTxn.ownerUid,
       isRecurring: true,
       recurringTransactionId: recurringTxn.id,
