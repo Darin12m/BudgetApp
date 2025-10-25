@@ -171,10 +171,11 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
     { day: 7, value: 400 },
   ];
 
-  // Determine the size of the circular area for the text
-  const donutOuterRadius = 75; // From Pie component props
-  const donutInnerRadius = 65; // From Pie component props
-  const textContainerSize = (donutOuterRadius + donutInnerRadius) * 1.2; // A bit larger than inner radius for padding
+  // Define donut radii
+  const donutInnerRadius = 65;
+  const donutOuterRadius = 75;
+  // Calculate the effective diameter for the text container based on inner radius
+  const textContainerDiameter = donutInnerRadius * 2;
 
   return (
     <div className="bg-card rounded-xl sm:rounded-2xl p-6 card-shadow animate-in fade-in slide-in-from-top-2 duration-300 border border-border/50 backdrop-blur-lg">
@@ -260,13 +261,14 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                     isOverBudget={isOverBudget}
                     formatCurrency={formatCurrency}
                   />}
+                contentStyle={{ pointerEvents: 'none' }} // Ensure tooltip doesn't block interaction with center label
               />
             </PieChart>
           </ResponsiveContainer>
           <DynamicTextInCircle
             mainText={totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
             subText="Used"
-            containerSize={textContainerSize}
+            containerSize={textContainerDiameter}
             maxFontSizePx={28} // Adjusted max font size for better fit
             minFontSizePx={10}
             className={showPercentageLabel ? 'opacity-100' : 'opacity-0'}
@@ -295,7 +297,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
               <XAxis dataKey="day" hide />
               <YAxis hide domain={['auto', 'auto']} />
               <Tooltip
-                contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }}
+                contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))', pointerEvents: 'none' }}
                 formatter={(value: number) => formatCurrency(value)}
                 labelFormatter={(label: string) => `Day ${label}`}
               />
@@ -307,10 +309,10 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
 
       {rolloverEnabled && previousMonthLeftover > 0 && (
         <div className="bg-muted/50 rounded-lg p-3 mt-4 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Previous month rollover</span>
-            <span className="font-semibold text-foreground">+{formatCurrency(previousMonthLeftover)}</span>
-          </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Previous month rollover</span>
+              <span className="font-semibold text-foreground">+{formatCurrency(previousMonthLeftover)}</span>
+            </div>
         </div>
       )}
 

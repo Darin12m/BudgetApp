@@ -111,10 +111,11 @@ const BudgetView: React.FC<BudgetViewProps> = memo(({
     setActiveIndex(null);
   }, []);
 
-  // Determine the size of the circular area for the text
-  const donutOuterRadius = 75; // From Pie component props
-  const donutInnerRadius = 65; // From Pie component props
-  const textContainerSize = (donutOuterRadius + donutInnerRadius) * 1.2; // A bit larger than inner radius for padding
+  // Define donut radii
+  const donutInnerRadius = 65;
+  const donutOuterRadius = 75;
+  // Calculate the effective diameter for the text container based on inner radius
+  const textContainerDiameter = donutInnerRadius * 2;
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
@@ -211,13 +212,14 @@ const BudgetView: React.FC<BudgetViewProps> = memo(({
                     isOverBudget={isOverBudget}
                     formatCurrency={formatCurrency}
                   />}
+                  contentStyle={{ pointerEvents: 'none' }} // Ensure tooltip doesn't block interaction with center label
                 />
               </PieChart>
             </ResponsiveContainer>
             <DynamicTextInCircle
               mainText={totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
               subText="Used"
-              containerSize={textContainerSize}
+              containerSize={textContainerDiameter}
               maxFontSizePx={28} // Adjusted max font size for better fit
               minFontSizePx={10}
             />

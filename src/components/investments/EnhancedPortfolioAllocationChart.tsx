@@ -119,10 +119,11 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
 
   const activeItem = activeIndex !== null ? chartData[activeIndex] : null;
 
-  // Determine the size of the circular area for the text
-  const donutOuterRadius = 90; // From Pie component props
-  const donutInnerRadius = 60; // From Pie component props
-  const textContainerSize = (donutOuterRadius + donutInnerRadius) * 1.2; // A bit larger than inner radius for padding
+  // Define donut radii
+  const donutInnerRadius = 60;
+  const donutOuterRadius = 90;
+  // Calculate the effective diameter for the text container based on inner radius
+  const textContainerDiameter = donutInnerRadius * 2; 
 
   return (
     <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
@@ -168,7 +169,8 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                     backgroundColor: 'hsl(var(--tooltip-bg))',
                     border: '1px solid hsl(var(--tooltip-border-color))',
                     borderRadius: '8px',
-                    color: 'hsl(var(--tooltip-text-color))'
+                    color: 'hsl(var(--tooltip-text-color))',
+                    pointerEvents: 'none', // Ensure tooltip doesn't block interaction with center label
                   }}
                   formatter={(value: number, name: string, props: any) => [
                     formatCurrency(value), // Changed to formatCurrency
@@ -181,8 +183,8 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
             <DynamicTextInCircle
               mainText={activeItem ? formatCurrency(activeItem.value) : formatCurrency(totalPortfolioValue)}
               subText={activeItem ? `${activeItem.name} (${activeItem.percentage.toFixed(0)}%)` : 'Total Allocated'}
-              containerSize={textContainerSize}
-              maxFontSizePx={28} // Adjusted max font size for better fit
+              containerSize={textContainerDiameter} // Pass inner hole diameter
+              maxFontSizePx={28} 
               minFontSizePx={10}
             />
           </div>
