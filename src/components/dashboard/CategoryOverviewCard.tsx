@@ -83,15 +83,15 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
             )}
           </div>
           <div className="w-full sm:w-1/2 space-y-2">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Total Budgeted</span>
               <span className="font-semibold text-foreground">{formatCurrency(totalBudgetedMonthly)}</span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Total Spent</span>
               <span className="font-semibold text-foreground">{formatCurrency(totalSpentMonthly)}</span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Remaining</span>
               <span className={`font-semibold ${remainingBudget >= 0 ? 'text-emerald' : 'text-destructive'}`}>
                 {formatCurrency(remainingBudget)}
@@ -122,7 +122,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
                         <span className="text-lg">{cat.emoji}</span>
                         <span className="font-medium text-foreground text-sm">{cat.name}</span>
                       </div>
-                      <div className="text-sm text-right">
+                      <div className="text-sm text-right flex items-center space-x-1">
                         <span className={cn("font-semibold", isCategoryOverBudget ? "text-destructive" : "text-foreground")}>
                           {formatCurrency(cat.spent)}
                         </span>

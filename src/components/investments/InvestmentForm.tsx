@@ -271,6 +271,16 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label className="text-right">
+          Buy Price
+        </Label>
+        <div className="col-span-3">
+          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
+          {errors.buyPrice && <p className="text-destructive text-xs mt-1">{errors.buyPrice}</p>}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label className="text-right">
           Live Price
         </Label>
         <div className="col-span-3 flex items-center space-x-2">
@@ -298,15 +308,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity}</p>}
         </div>
       </div>
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="buyPrice" className="text-right">
-          Buy Price
-        </Label>
-        <div className="col-span-3">
-          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
-          {errors.buyPrice && <p className="text-destructive text-xs mt-1">{errors.buyPrice}</p>}
-        </div>
-      </div>
+      
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="datePurchased" className="text-right">
           Date Purchased

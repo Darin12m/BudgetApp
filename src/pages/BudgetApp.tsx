@@ -370,7 +370,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           <LineChart data={spendingTrend}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
-            <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+            <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} tickFormatter={(value) => formatCurrency(Number(value))} />
             <Tooltip
               contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
               formatter={(value) => formatCurrency(Number(value))}
@@ -645,11 +645,11 @@ const GoalsView: React.FC<GoalsViewProps> = ({
               </div>
               <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3">{goal.name}</h3>
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Current</span>
                   <span className="font-semibold text-foreground">{formatCurrency(goal.current)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Target</span>
                   <span className="font-semibold text-foreground">{formatCurrency(goal.target)}</span>
                 </div>
@@ -722,7 +722,7 @@ const GoalsView: React.FC<GoalsViewProps> = ({
         ]}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
-          <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+          <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} tickFormatter={(value) => formatCurrency(Number(value))} />
           <Tooltip
             contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
             formatter={(value) => formatCurrency(Number(value))}
@@ -1209,7 +1209,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     setIsAddEditTransactionModalOpen(true);
   }, []);
 
-  const handleSaveTransaction = useCallback(async (transactionData: Omit<Transaction, 'id' | 'ownerUid'>, isRecurring: boolean, recurringDetails?: Omit<RecurringTransaction, 'id' | 'ownerUid' | 'emoji'>) => {
+  const handleSaveTransaction = useCallback(async (transactionData: Omit<Transaction, 'id' | 'ownerUid'>, isRecurring: boolean, recurringDetails?: Omit<RecurringTransaction, 'id' | 'ownerUid'>) => {
     if (!userUid) {
       toast.error("User not authenticated.");
       return;

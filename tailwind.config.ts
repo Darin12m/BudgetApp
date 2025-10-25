@@ -119,6 +119,10 @@ export default {
           from: { opacity: "0", transform: "translate(-50%, -45%) scale(0.98)" },
           to: { opacity: "1", transform: "translate(-50%, -50%) scale(1)" },
         },
+        "scale-in": { // New animation for scaling in
+          "0%": { opacity: "0", transform: "scale(0.9)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -130,6 +134,7 @@ export default {
         "float-up-down": "float-up-down 1.5s ease-in-out infinite",
         "pulse-red-glow": "pulse-red-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", // New animation
         "modal-in": "modal-in 0.18s ease-out forwards",
+        "scale-in": "scale-in 0.3s ease-out forwards", // New animation
       },
       boxShadow: {
         glass: '0 10px 30px rgba(0,0,0,0.35)', // Soft, diffused shadow for glassmorphism

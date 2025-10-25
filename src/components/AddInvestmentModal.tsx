@@ -31,7 +31,9 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
   const ModalContent = (
     <> {/* Removed Card wrapper */}
       <DialogHeader> {/* Using DialogHeader for consistent styling, works with Drawer too */}
-        <DialogTitle>{investmentToEdit ? 'Edit Investment' : 'Add New Investment'}</DialogTitle>
+        <DialogTitle className="flex items-center"> {/* Added flex and items-center */}
+          {investmentToEdit ? 'Edit Investment' : 'Add New Investment'}
+        </DialogTitle>
       </DialogHeader>
       <InvestmentForm
         investment={investmentToEdit || null}
@@ -47,7 +49,9 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg"> {/* Apply glassmorphism to drawer content */}
           <DrawerHeader className="text-left">
-            <DrawerTitle>{investmentToEdit ? 'Edit Investment' : 'Add New Investment'}</DrawerTitle>
+            <DrawerTitle className="flex items-center"> {/* Added flex and items-center */}
+              {investmentToEdit ? 'Edit Investment' : 'Add New Investment'}
+            </DrawerTitle>
           </DrawerHeader>
           <div className="p-4"> {/* Wrap form in a div for padding within drawer */}
             <InvestmentForm

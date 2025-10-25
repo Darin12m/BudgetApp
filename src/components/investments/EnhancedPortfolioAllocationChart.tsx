@@ -172,15 +172,13 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
               </PieChart>
             </ResponsiveContainer>
             {/* Center Label */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center">
-                <p className="text-xl font-bold text-foreground">
-                  {activeItem ? formatCurrency(activeItem.value) : formatCurrency(totalPortfolioValue)} {/* Changed to formatCurrency */}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {activeItem ? `${activeItem.name} (${activeItem.percentage.toFixed(0)}%)` : 'Total Allocated'}
-                </p>
-              </div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center pointer-events-none animate-scale-in">
+              <p className="font-bold text-foreground" style={{ fontSize: 'clamp(1.25rem, 4vw, 1.5rem)' }}>
+                {activeItem ? formatCurrency(activeItem.value) : formatCurrency(totalPortfolioValue)} {/* Changed to formatCurrency */}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {activeItem ? `${activeItem.name} (${activeItem.percentage.toFixed(0)}%)` : 'Total Allocated'}
+              </p>
             </div>
           </div>
         ) : (

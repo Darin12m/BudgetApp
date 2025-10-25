@@ -181,7 +181,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
               <AlertTriangle className="w-3 h-3 mr-1" /> Over Budget
             </Badge>
           )}
-          <p className={cn("text-5xl font-bold", remainingBudgetTextColor)}>
+          <p className={cn("font-bold", remainingBudgetTextColor)} style={{ fontSize: 'clamp(2.25rem, 8vw, 3.75rem)' }}>
             {formatCurrency(animatedRemainingBudget)}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
@@ -248,23 +248,19 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                 ))}
               </Pie>
               <Tooltip
-                content={<CustomDonutTooltip
-                  totalBudgeted={totalBudgeted}
-                  totalSpent={totalSpent}
-                  remainingBudget={remainingBudget}
-                  isOverBudget={isOverBudget}
-                  formatCurrency={formatCurrency}
-                />}
+                contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }}
+                formatter={(value, name) => [`${formatCurrency(Number(value))}`, name]}
               />
             </PieChart>
           </ResponsiveContainer>
           <div className={cn(
-            "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
+            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center transition-opacity duration-300 animate-scale-in",
             showPercentageLabel ? 'opacity-100' : 'opacity-0'
           )}>
-            <span className="text-xl font-bold text-foreground">
+            <span className="font-bold text-foreground" style={{ fontSize: 'clamp(1.25rem, 4vw, 1.5rem)' }}>
               {totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
             </span>
+            <span className="text-xs text-muted-foreground">Used</span>
           </div>
         </div>
       </div>
