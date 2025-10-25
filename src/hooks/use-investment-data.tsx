@@ -45,7 +45,7 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
 
   const { budgetSettings } = useBudgetSettings(userUid); // Use the new lightweight hook
 
-  // Ref to store the latest investments to avoid stale closures in setInterval
+  // Ref to store the latest investments to avoid stale closures
   const latestInvestments = useRef<Investment[]>([]);
   useEffect(() => {
     latestInvestments.current = investments;
@@ -203,11 +203,38 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
     return () => unsubscribe();
   }, [userUid, startDate, endDate]); // Add startDate and endDate to dependencies
 
-  // --- REMOVED CLIENT-SIDE PRICE POLLING ---
-  // The client will now rely on the Firestore listener for 'investments'
-  // which will be updated by the Cloud Function.
-  // The `priceChange` and `alertedInvestments` states are now updated directly
-  // within the `onSnapshot` callback for `investments`.
+  // Effect to save portfolio snapshot daily
+  useEffect(() => {
+    if (!userUid || investments.length === 0) return;
+
+    const saveSnapshot = async () => {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const lastSnapshot = portfolioSnapshots.length > 0 ? portfolioSnapshots[portfolioSnapshots.length - 1] : null;
+
+      if (!lastSnapshot || !isSameDay(parseISO(lastSnapshot.date), new Date())) {
+        const totalPortfolioValue = investments.reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice), 0);
+
+        try {
+          await addDoc(collection(db, "portfolioSnapshots"), {
+            ownerUid: userUid,
+            date: today,
+            value: totalPortfolioValue,
+            createdAt: serverTimestamp(),
+          });
+          console.log("Portfolio snapshot saved for", today);
+        } catch (e) {
+          console.error("Error saving portfolio snapshot:", e);
+          toast.error("Failed to save portfolio snapshot.");
+        }
+      }
+    };
+
+    // Debounce snapshot saving to avoid multiple calls on rapid page loads/updates
+    const timeoutId = setTimeout(saveSnapshot, 2000); // Wait 2 seconds after investments load
+
+    return () => clearTimeout(timeoutId);
+  }, [userUid, investments, portfolioSnapshots]);
+
 
   const addInvestment = useCallback(async (data: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice' | 'change24hPercent'>) => {
     if (!userUid) {
