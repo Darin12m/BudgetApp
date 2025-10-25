@@ -145,7 +145,6 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
       amount: amount,
       categoryId: categoryId,
       status: 'pending',
-      account: accounts.length > 0 ? accounts[0].name : 'Default Account',
       isRecurring: isRecurring,
     };
 
@@ -167,7 +166,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
       console.error("Error adding transaction:", e.code, e.message);
       toast.error(`Failed to add transaction: ${e.message}`);
     }
-  }, [addDocument, accounts, userUid, categories]);
+  }, [addDocument, userUid, categories]);
 
   const handleSaveNewInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
     await addInvestment(newInvestment);
@@ -178,8 +177,8 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   }, [deleteInvestment]);
 
   const handleEditInvestment = useCallback(async (id: string, updatedData: Partial<Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>>) => {
-    await updateInvestment(id, updatedData);
-  }, [updateInvestment]);
+    await updateDocument(id, updatedData);
+  }, [updateDocument]);
 
   const handleMicroInvest = useCallback(async (amount: number, assetName: string, assetType: 'Stock' | 'Crypto', symbol?: string, coingeckoId?: string) => {
     const currentPrice = investments.find(inv => inv.name === assetName)?.currentPrice || 1;
