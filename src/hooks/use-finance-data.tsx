@@ -223,9 +223,9 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       });
       toast.success(`${collectionName.slice(0, -1)} added successfully!`);
       return docRef.id; // Return the ID of the newly added document
-    } catch (e) {
-      console.error(`Error adding ${collectionName.slice(0, -1)}:`, e);
-      toast.error(`Failed to add ${collectionName.slice(0, -1)}.`);
+    } catch (e: any) { // Explicitly type 'e' as 'any' to access 'code' and 'message'
+      console.error(`Error adding ${collectionName.slice(0, -1)}:`, e.code, e.message, e);
+      toast.error(`Failed to add ${collectionName.slice(0, -1)}: ${e.message}`);
       return null;
     }
   }, [userUid]);
@@ -241,9 +241,9 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
         updatedAt: serverTimestamp(),
       });
       toast.success(`${collectionName.slice(0, -1)} updated successfully!`);
-    } catch (e) {
-      console.error(`Error updating ${collectionName.slice(0, -1)}:`, e);
-      toast.error(`Failed to update ${collectionName.slice(0, -1)}.`);
+    } catch (e: any) { // Explicitly type 'e' as 'any'
+      console.error(`Error updating ${collectionName.slice(0, -1)}:`, e.code, e.message, e);
+      toast.error(`Failed to update ${collectionName.slice(0, -1)}: ${e.message}`);
     }
   }, [userUid]);
 
@@ -269,9 +269,9 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       }
       await deleteDoc(doc(db, collectionName, id));
       toast.success(`${collectionName.slice(0, -1)} deleted successfully!`);
-    } catch (e) {
-      console.error(`Error deleting ${collectionName.slice(0, -1)}:`, e);
-      toast.error(`Failed to delete ${collectionName.slice(0, -1)}.`);
+    } catch (e: any) { // Explicitly type 'e' as 'any'
+      console.error(`Error deleting ${collectionName.slice(0, -1)}:`, e.code, e.message, e);
+      toast.error(`Failed to delete ${collectionName.slice(0, -1)}: ${e.message}`);
     }
   }, [userUid, transactions, recurringTemplates, categories]);
 
