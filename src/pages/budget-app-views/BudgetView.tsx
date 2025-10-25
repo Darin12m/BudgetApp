@@ -8,7 +8,7 @@ import CategoryCard from '@/components/budget/CategoryCard';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { CustomProgress } from '@/components/common/CustomProgress';
-import SvgDonutChart from '@/components/common/SvgDonutChart'; // Import the new SVG donut component
+import DonutWithCenterText from '@/components/DonutWithCenterText'; // Import the new DonutWithCenterText component
 
 interface BudgetViewProps {
   totalBudgeted: number;
@@ -47,9 +47,16 @@ const BudgetView: React.FC<BudgetViewProps> = ({
       ? 'text-amber-500'
       : 'text-emerald';
 
-  // Define donut radii
-  const donutInnerRadius = 65;
-  const donutOuterRadius = 75;
+  // Data for DonutWithCenterText
+  const donutData = useMemo(() => {
+    const clampedSpentPercentage = Math.min(spentPercentage, 100);
+    const remainingPercentage = 100 - clampedSpentPercentage;
+
+    return [
+      { name: 'Spent', value: clampedSpentPercentage, color: 'hsl(var(--primary))' },
+      { name: 'Remaining', value: remainingPercentage, color: 'hsl(var(--muted)/50%)' },
+    ];
+  }, [spentPercentage]);
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
@@ -84,17 +91,20 @@ const BudgetView: React.FC<BudgetViewProps> = ({
 
           {/* Donut Chart */}
           <div className="w-40 h-40 relative flex-shrink-0">
-            <SvgDonutChart
-              mainText={totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
-              subText="Used"
-              percentage={Math.min(spentPercentage, 100)} // Cap at 100% for visual progress
-              innerRadius={donutInnerRadius}
-              outerRadius={donutOuterRadius}
-              chartId="budget"
+            <DonutWithCenterText
+              chartId="budget-view-summary"
+              mainValue={`${Math.round(spentPercentage)}%`}
+              mainLabel="Used"
+              data={donutData}
+              innerRadius={65}
+              outerRadius={75}
               formatValue={formatCurrency}
-              gradientColors={{ from: 'hsl(var(--blue))', to: 'hsl(var(--primary))' }}
-              backgroundColor="hsl(var(--muted)/50%)"
               isOverBudget={isOverBudget}
+              startAngle={90}
+              endAngle={-270}
+              strokeWidth={2}
+              strokeColor="hsl(var(--primary))"
+              backgroundFill="hsl(var(--muted)/50%)"
             />
           </div>
         </div>

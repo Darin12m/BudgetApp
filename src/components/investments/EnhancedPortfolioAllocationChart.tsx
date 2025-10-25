@@ -4,7 +4,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
-import SvgDonutChart from '@/components/common/SvgDonutChart'; // Import the new SVG donut component
+import DonutWithCenterText from '@/components/DonutWithCenterText'; // Import the new DonutWithCenterText component
 
 interface AllocationData {
   name: string;
@@ -42,7 +42,6 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
   chartData,
   formatCurrency,
 }) => {
-  // No activeIndex state needed here as hover is handled by the SVG chart itself
   return (
     <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
       {chartData.map((entry, index) => (
@@ -79,10 +78,6 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
     }));
   }, [data]);
 
-  // Define donut radii
-  const donutInnerRadius = 60;
-  const donutOuterRadius = 90;
-
   return (
     <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -91,16 +86,20 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
       <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
         {chartData.length > 0 ? (
           <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-            <SvgDonutChart
-              mainText={formatCurrency(totalPortfolioValue)}
-              subText="Total Allocated"
-              percentage={100} // Always 100% for total portfolio value
-              innerRadius={donutInnerRadius}
-              outerRadius={donutOuterRadius}
-              chartId="portfolio"
+            <DonutWithCenterText
+              chartId="portfolio-allocation"
+              mainValue={formatCurrency(totalPortfolioValue)}
+              mainLabel="Total Allocated"
+              data={chartData.map(item => ({ ...item, color: item.color || 'hsl(var(--primary))' }))} // Ensure color is always set
+              innerRadius={60}
+              outerRadius={90}
               formatValue={formatCurrency}
-              progressColor="hsl(var(--primary))" // Solid color for portfolio total
-              backgroundColor="hsl(var(--muted)/50%)"
+              startAngle={90}
+              endAngle={-270}
+              paddingAngle={2}
+              strokeWidth={1}
+              strokeColor="transparent" // No stroke for individual slices
+              backgroundFill="hsl(var(--muted)/50%)" // Background for the full circle
             />
           </div>
         ) : (

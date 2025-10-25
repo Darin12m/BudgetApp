@@ -1,13 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PiggyBank, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { CustomProgress } from '@/components/common/CustomProgress';
-import SvgDonutChart from '@/components/common/SvgDonutChart'; // Import SvgDonutChart
+import DonutWithCenterText from '@/components/DonutWithCenterText'; // Import the new DonutWithCenterText component
 
 interface Category {
   id: string;
@@ -35,12 +35,16 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
   const spentPercentage = totalBudgetedMonthly > 0 ? (totalSpentMonthly / totalBudgetedMonthly) * 100 : 0;
   const isOverBudget = remainingBudget < 0;
 
-  // Data for SvgDonutChart
-  const donutPercentage = Math.min(spentPercentage, 100); // Cap at 100% for visual progress
+  // Data for DonutWithCenterText
+  const donutData = useMemo(() => {
+    const clampedSpentPercentage = Math.min(spentPercentage, 100);
+    const remainingPercentage = 100 - clampedSpentPercentage;
 
-  // Define donut radii
-  const donutInnerRadius = 40;
-  const donutOuterRadius = 60;
+    return [
+      { name: 'Spent', value: clampedSpentPercentage, color: 'hsl(var(--primary))' },
+      { name: 'Remaining', value: remainingPercentage, color: 'hsl(var(--muted)/50%)' },
+    ];
+  }, [spentPercentage]);
 
   return (
     <Card className="card-shadow border-none bg-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
@@ -57,17 +61,20 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
           <div className="w-full sm:w-1/2 h-[150px] flex items-center justify-center mb-4 sm:mb-0 relative">
             {totalBudgetedMonthly > 0 ? (
-              <SvgDonutChart
-                mainText={`${Math.round(spentPercentage)}%`}
-                subText="Spent"
-                percentage={donutPercentage}
-                innerRadius={donutInnerRadius}
-                outerRadius={donutOuterRadius}
+              <DonutWithCenterText
                 chartId="category-overview"
+                mainValue={`${Math.round(spentPercentage)}%`}
+                mainLabel="Spent"
+                data={donutData}
+                innerRadius={40}
+                outerRadius={60}
                 formatValue={formatCurrency}
-                progressColor="hsl(var(--primary))"
-                backgroundColor="hsl(var(--muted)/50%)"
                 isOverBudget={isOverBudget}
+                startAngle={90}
+                endAngle={-270}
+                strokeWidth={2}
+                strokeColor="hsl(var(--primary))"
+                backgroundFill="hsl(var(--muted)/50%)"
               />
             ) : (
               <div className="text-center text-muted-foreground">
