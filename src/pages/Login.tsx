@@ -22,7 +22,7 @@ const LoginPage: React.FC = () => {
   const handleSubmitAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    console.log(`${isRegisterMode ? 'Register' : 'Login'} clicked`); // Add console.log
+    console.log(`${isRegisterMode ? 'Register' : 'Login'} clicked for email: ${email}`); // Add console.log
 
     try {
       if (isRegisterMode) {
@@ -34,7 +34,8 @@ const LoginPage: React.FC = () => {
       }
       navigate('/'); // Redirect to dashboard or home page
     } catch (error: any) {
-      console.error(`${isRegisterMode ? 'Registration' : 'Login'} failed:`, error);
+      // Enhanced error logging
+      console.error(`Firebase Auth Error during ${isRegisterMode ? 'registration' : 'login'}:`, error.code, error.message, error);
       let errorMessage = `${isRegisterMode ? 'Registration' : 'Login'} failed.`;
       if (error.code === 'auth/invalid-email') {
         errorMessage = 'Invalid email address.';
@@ -62,7 +63,7 @@ const LoginPage: React.FC = () => {
       toast.success('Logged in with Google successfully!');
       navigate('/'); // Redirect to dashboard or home page
     } catch (error: any) {
-      console.error('Google login failed:', error);
+      console.error('Firebase Auth Error during Google login:', error.code, error.message, error);
       let errorMessage = 'Google login failed.';
       if (error.code === 'auth/popup-closed-by-user') {
         errorMessage = 'Google login window closed.';
