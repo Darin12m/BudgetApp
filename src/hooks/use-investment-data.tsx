@@ -12,24 +12,25 @@ export interface Investment {
   name: string;
   type: 'Stock' | 'Crypto';
   quantity: number;
-  buyPrice: number;
-  currentPrice: number; // This will be updated by live data
+  buyPrice: number; // Stored in USD
+  currentPrice: number; // This will be updated by live data, stored in USD
   datePurchased: string; // YYYY-MM-DD
   ownerUid: string;
   symbol?: string; // For stocks (e.g., AAPL)
   coingeckoId?: string; // For crypto (e.g., bitcoin)
   companyName?: string | null; // New: For stocks, fetched from Finnhub
-  lastPrice?: number; // The last fetched live price
+  lastPrice?: number; // The last fetched live price, stored in USD
   priceSource?: 'CoinGecko' | 'Finnhub'; // Source of the last price
   lastUpdated?: string; // Timestamp of last price update
-  previousPrice?: number; // To track price changes for UI animations
+  previousPrice?: number; // To track price changes for UI animations, stored in USD
   change24hPercent?: number | null; // New: 24-hour percentage change
+  inputCurrencyCode: string; // New: Currency code used when the buyPrice was input
 }
 
 interface PortfolioSnapshot {
   id: string;
   date: string; // YYYY-MM-DD
-  value: number;
+  value: number; // Stored in USD
   ownerUid: string;
   createdAt: any; // Firebase Timestamp
 }
@@ -78,29 +79,31 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
             name: 'Apple Inc.',
             type: 'Stock',
             quantity: 5,
-            buyPrice: 150.00,
-            currentPrice: 170.00, // Placeholder, will be updated by live fetch
+            buyPrice: 150.00, // Stored in USD
+            currentPrice: 170.00, // Placeholder, will be updated by live fetch, stored in USD
             datePurchased: format(new Date(), 'yyyy-MM-dd'),
             symbol: 'AAPL',
             companyName: 'Apple Inc.',
             priceSource: 'Finnhub',
-            lastPrice: 170.00,
+            lastPrice: 170.00, // Stored in USD
             lastUpdated: new Date().toISOString(),
             ownerUid: userUid,
+            inputCurrencyCode: 'USD', // Default to USD
             createdAt: serverTimestamp(),
           },
           {
             name: 'Bitcoin',
             type: 'Crypto',
             quantity: 0.05,
-            buyPrice: 30000.00,
-            currentPrice: 60000.00, // Placeholder, will be updated by live fetch
+            buyPrice: 30000.00, // Stored in USD
+            currentPrice: 60000.00, // Placeholder, will be updated by live fetch, stored in USD
             datePurchased: format(new Date(), 'yyyy-MM-dd'),
             coingeckoId: 'bitcoin',
             priceSource: 'CoinGecko',
-            lastPrice: 60000.00,
+            lastPrice: 60000.00, // Stored in USD
             lastUpdated: new Date().toISOString(),
             ownerUid: userUid,
+            inputCurrencyCode: 'USD', // Default to USD
             createdAt: serverTimestamp(),
           },
         ];

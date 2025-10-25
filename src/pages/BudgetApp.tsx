@@ -54,7 +54,7 @@ interface CategoryData {
 const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, selectedCurrency, convertInputToUSD } = useCurrency();
   const { selectedRange } = useDateRange();
 
   const {
@@ -282,7 +282,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
   }, []);
 
   // --- Transaction Handlers ---
-  const handleQuickAddTransaction = useCallback(async (amount: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => {
+  const handleQuickAddTransaction = useCallback(async (amountInUSD: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string, inputCurrencyCode?: string) => {
     if (!userUid) {
       toast.error("You must be logged in to save data.");
       return;
@@ -291,11 +291,12 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     const transactionPayload: Omit<Transaction, 'id' | 'ownerUid'> = {
       date: date,
       merchant: merchant || 'Quick Add',
-      amount: amount,
+      amount: amountInUSD, // Already in USD
       categoryId: categoryId,
       status: 'pending',
       // Removed account from payload
       isRecurring: isRecurring,
+      inputCurrencyCode: inputCurrencyCode || selectedCurrency.code, // Use provided or selected currency
     };
 
     try {
@@ -304,11 +305,12 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
         const categoryEmoji = categories.find(cat => cat.id === categoryId)?.emoji || '💳';
         await addDocument('recurringTransactions', {
           name: merchant || 'Quick Add',
-          amount: amount,
+          amount: amountInUSD, // Already in USD
           categoryId: categoryId,
           frequency,
           nextDate,
           emoji: categoryEmoji,
+          inputCurrencyCode: inputCurrencyCode || selectedCurrency.code, // Use provided or selected currency
         });
         toast.success("Recurring transaction also added!");
       }
@@ -316,7 +318,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
       console.error("Error adding transaction:", e.code, e.message);
       toast.error(`Failed to add transaction: ${e.message}`);
     }
-  }, [addDocument, userUid, categories]); // Removed accounts from dependency array
+  }, [addDocument, userUid, categories, selectedCurrency.code]); // Added selectedCurrency.code to dependencies
 
   const handleEditTransaction = useCallback((transaction: Transaction) => {
     setTransactionToEdit(transaction);
@@ -474,13 +476,13 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     setIsAddFundsModalOpen(true);
   }, []);
 
-  const handleAddFundsToGoal = useCallback(async (amount: number) => {
+  const handleAddFundsToGoal = useCallback(async (amountInUSD: number, inputCurrencyCode: string) => {
     if (!userUid || !goalToFund) {
       toast.error("User not authenticated or no goal selected.");
       return;
     }
-    const newCurrentAmount = goalToFund.current + amount;
-    await updateDocument('goals', goalToFund.id, { current: newCurrentAmount });
+    const newCurrentAmount = goalToFund.current + amountInUSD; // amountInUSD is already in USD
+    await updateDocument('goals', goalToFund.id, { current: newCurrentAmount, inputCurrencyCode });
     setIsAddFundsModalOpen(false);
     setGoalToFund(null);
   }, [userUid, goalToFund, updateDocument]);
@@ -628,8 +630,8 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
           onClose={() => setIsAddFundsModalOpen(false)}
           onAddFunds={handleAddFundsToGoal}
           goalName={goalToFund.name}
-          currentAmount={goalToFund.current}
-          targetAmount={goalToFund.target}
+          currentAmountInUSD={goalToFund.current}
+          targetAmountInUSD={goalToFund.target}
         />
       )}
     </div>

@@ -21,13 +21,13 @@ import { Category } from '@/hooks/use-finance-data'; // Import Category type
 interface QuickAddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (amount: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => void;
+  onSave: (amount: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string, inputCurrencyCode?: string) => void;
   categories: Category[];
 }
 
 const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isOpen, onClose, onSave, categories }) => {
   const { isMobile } = useDeviceDetection();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, selectedCurrency, convertInputToUSD } = useCurrency();
   const [amount, setAmount] = useState<string>('');
   const [merchant, setMerchant] = useState<string>('');
   const [date, setDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
@@ -82,7 +82,9 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       return;
     }
 
-    const finalAmount = isExpense ? -parseFloat(amount) : parseFloat(amount);
+    // Convert input amount to USD before saving
+    const amountInUSD = convertInputToUSD(parseFloat(amount));
+    const finalAmount = isExpense ? -amountInUSD : amountInUSD;
 
     onSave(
       finalAmount,
@@ -91,7 +93,8 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       selectedCategoryId,
       isRecurring,
       isRecurring ? frequency : undefined,
-      isRecurring && nextDate ? format(nextDate, 'yyyy-MM-dd') : undefined
+      isRecurring && nextDate ? format(nextDate, 'yyyy-MM-dd') : undefined,
+      selectedCurrency.code // Pass the input currency code
     );
     onClose();
   };
@@ -122,7 +125,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
             step="0.01"
             value={amount}
             onChange={(e) => { setAmount(e.target.value); setErrors(prev => ({ ...prev, amount: '' })); }}
-            placeholder="e.g., 25.50"
+            placeholder={`${selectedCurrency.symbol} 25.50`}
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.amount && <p className="text-destructive text-xs mt-1">{errors.amount}</p>}

@@ -23,6 +23,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Category } from '@/hooks/use-finance-data'; // Import Category type
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 // Predefined colors and emojis for selection
 const CATEGORY_COLORS = [
@@ -43,6 +44,7 @@ interface AddEditCategoryModalProps {
 
 const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onClose, onSave, categoryToEdit, existingCategoryNames }) => {
   const { isMobile } = useDeviceDetection();
+  const { selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
   const [name, setName] = useState('');
   const [budgeted, setBudgeted] = useState('');
   const [color, setColor] = useState(CATEGORY_COLORS[0]);
@@ -53,7 +55,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
     if (isOpen) {
       if (categoryToEdit) {
         setName(categoryToEdit.name);
-        setBudgeted(categoryToEdit.budgeted.toString());
+        setBudgeted(convertUSDToSelected(categoryToEdit.budgeted).toString()); // Convert from USD for display
         setColor(categoryToEdit.color);
         setEmoji(categoryToEdit.emoji);
       } else {
@@ -64,7 +66,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       }
       setErrors({});
     }
-  }, [isOpen, categoryToEdit]);
+  }, [isOpen, categoryToEdit, convertUSDToSelected]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -93,11 +95,15 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       return;
     }
 
+    // Convert budgeted amount to USD before saving
+    const budgetedInUSD = convertInputToUSD(parseFloat(budgeted));
+
     onSave({
       name: name.trim(),
-      budgeted: parseFloat(budgeted),
+      budgeted: budgetedInUSD, // Stored in USD
       color,
       emoji,
+      inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
     }, categoryToEdit?.id); // Pass ID if editing
     onClose();
   };
@@ -131,7 +137,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
             step="0.01"
             value={budgeted}
             onChange={(e) => { setBudgeted(e.target.value); setErrors(prev => ({ ...prev, budgeted: '' })); }}
-            placeholder="e.g., 300.00"
+            placeholder={`${selectedCurrency.symbol} 300.00`}
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.budgeted && <p className="text-destructive text-xs mt-1">{errors.budgeted}</p>}

@@ -25,15 +25,15 @@ import {
 interface AddFundsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddFunds: (amount: number) => void;
+  onAddFunds: (amountInUSD: number, inputCurrencyCode: string) => void; // Updated to pass USD amount and currency code
   goalName: string;
-  currentAmount: number;
-  targetAmount: number;
+  currentAmountInUSD: number; // Now explicitly in USD
+  targetAmountInUSD: number; // Now explicitly in USD
 }
 
-const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFunds, goalName, currentAmount, targetAmount }) => {
+const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFunds, goalName, currentAmountInUSD, targetAmountInUSD }) => {
   const { isMobile } = useDeviceDetection();
-  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const { formatCurrency, selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency(); // Use currency context
   const [amountToAdd, setAmountToAdd] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -48,7 +48,11 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
     const newErrors: { [key: string]: string } = {};
     const parsedAmount = parseFloat(amountToAdd);
     if (isNaN(parsedAmount) || parsedAmount <= 0) newErrors.amountToAdd = 'Amount must be a positive number.';
-    if (parsedAmount + currentAmount > targetAmount) newErrors.amountToAdd = 'Adding this amount would exceed the target.';
+    
+    // Convert input amount to USD for validation against USD-based current/target
+    const amountToAddInUSD = convertInputToUSD(parsedAmount);
+    if (amountToAddInUSD + currentAmountInUSD > targetAmountInUSD) newErrors.amountToAdd = 'Adding this amount would exceed the target.';
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -60,9 +64,15 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
       return;
     }
 
-    onAddFunds(parseFloat(amountToAdd));
+    // Convert input amount to USD before passing to onAddFunds
+    const amountToAddInUSD = convertInputToUSD(parseFloat(amountToAdd));
+    onAddFunds(amountToAddInUSD, selectedCurrency.code); // Pass USD amount and input currency code
     onClose();
   };
+
+  // Convert current and target amounts from USD to selected currency for display
+  const currentAmountDisplay = convertUSDToSelected(currentAmountInUSD);
+  const targetAmountDisplay = convertUSDToSelected(targetAmountInUSD);
 
   const FormContent = (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
@@ -77,7 +87,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
             step="0.01"
             value={amountToAdd}
             onChange={(e) => { setAmountToAdd(e.target.value); setErrors(prev => ({ ...prev, amountToAdd: '' })); }}
-            placeholder="e.g., 50.00"
+            placeholder={`${selectedCurrency.symbol} 50.00`}
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.amountToAdd && <p className="text-destructive text-xs mt-1">{errors.amountToAdd}</p>}
@@ -85,7 +95,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
       </div>
 
       <div className="text-sm text-muted-foreground col-span-full text-center mt-2">
-        Current: <span className="font-semibold text-foreground">{formatCurrency(currentAmount)}</span> / Target: <span className="font-semibold text-foreground">{formatCurrency(targetAmount)}</span>
+        Current: <span className="font-semibold text-foreground">{formatCurrency(currentAmountInUSD)}</span> / Target: <span className="font-semibold text-foreground">{formatCurrency(targetAmountInUSD)}</span>
       </div>
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">

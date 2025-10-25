@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"; // Import AlertDialog components
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 // Predefined colors for selection
 const GOAL_COLORS = [
@@ -35,11 +36,12 @@ const GOAL_COLORS = [
 interface Goal {
   id?: string;
   name: string;
-  target: number;
-  current: number;
+  target: number; // Stored in USD
+  current: number; // Stored in USD
   color: string;
   targetDate: string; // YYYY-MM-DD
   ownerUid?: string;
+  inputCurrencyCode: string; // New: Currency code used when amounts were input
 }
 
 interface AddEditGoalModalProps {
@@ -51,6 +53,7 @@ interface AddEditGoalModalProps {
 
 const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, onSave, goalToEdit }) => {
   const { isMobile } = useDeviceDetection();
+  const { selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
   const [name, setName] = useState('');
   const [target, setTarget] = useState('');
   const [current, setCurrent] = useState('');
@@ -62,8 +65,8 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
     if (isOpen) {
       if (goalToEdit) {
         setName(goalToEdit.name);
-        setTarget(goalToEdit.target.toString());
-        setCurrent(goalToEdit.current.toString());
+        setTarget(convertUSDToSelected(goalToEdit.target).toString()); // Convert from USD for display
+        setCurrent(convertUSDToSelected(goalToEdit.current).toString()); // Convert from USD for display
         setColor(goalToEdit.color);
         setTargetDate(goalToEdit.targetDate ? new Date(goalToEdit.targetDate) : undefined);
       } else {
@@ -75,7 +78,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       }
       setErrors({});
     }
-  }, [isOpen, goalToEdit]);
+  }, [isOpen, goalToEdit, convertUSDToSelected]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -97,12 +100,17 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       return;
     }
 
+    // Convert target and current amounts to USD before saving
+    const targetInUSD = convertInputToUSD(parseFloat(target));
+    const currentInUSD = convertInputToUSD(parseFloat(current));
+
     onSave({
       name: name.trim(),
-      target: parseFloat(target),
-      current: parseFloat(current),
+      target: targetInUSD, // Stored in USD
+      current: currentInUSD, // Stored in USD
       color,
       targetDate: targetDate ? format(targetDate, 'yyyy-MM-dd') : '',
+      inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
     });
     onClose();
   };
@@ -136,7 +144,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
             step="0.01"
             value={target}
             onChange={(e) => { setTarget(e.target.value); setErrors(prev => ({ ...prev, target: '' })); }}
-            placeholder="e.g., 15000.00"
+            placeholder={`${selectedCurrency.symbol} 15000.00`}
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.target && <p className="text-destructive text-xs mt-1">{errors.target}</p>}
@@ -154,7 +162,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
             step="0.01"
             value={current}
             onChange={(e) => { setCurrent(e.target.value); setErrors(prev => ({ ...prev, current: '' })); }}
-            placeholder="e.g., 500.00"
+            placeholder={`${selectedCurrency.symbol} 500.00`}
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.current && <p className="text-destructive text-xs mt-1">{errors.current}</p>}

@@ -32,7 +32,7 @@ interface IndexPageProps {
 const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))', '#f59e0b', '#ef4444', '#06b6d4'];
 
 const Index: React.FC<IndexPageProps> = ({ userUid }) => {
-  const { formatCurrency, formatUSD } = useCurrency();
+  const { formatCurrency, formatUSD, selectedCurrency, convertInputToUSD } = useCurrency();
   const { selectedRange } = useDateRange();
 
   const {
@@ -134,7 +134,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   }, [investments]);
 
   // --- Handlers ---
-  const handleQuickAddTransaction = useCallback(async (amount: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string) => {
+  const handleQuickAddTransaction = useCallback(async (amountInUSD: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string, inputCurrencyCode?: string) => {
     if (!userUid) {
       toast.error("You must be logged in to save data.");
       return;
@@ -143,10 +143,11 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
     const transactionPayload: Omit<Transaction, 'id' | 'ownerUid'> = {
       date: date,
       merchant: merchant || 'Quick Add',
-      amount: amount,
+      amount: amountInUSD, // Already in USD
       categoryId: categoryId,
       status: 'pending',
       isRecurring: isRecurring,
+      inputCurrencyCode: inputCurrencyCode || selectedCurrency.code, // Use provided or selected currency
     };
 
     try {
@@ -155,11 +156,12 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
         const categoryEmoji = categories.find(cat => cat.id === categoryId)?.emoji || '💳';
         await addDocument('recurringTransactions', {
           name: merchant || 'Quick Add',
-          amount: amount,
+          amount: amountInUSD, // Already in USD
           categoryId: categoryId,
           frequency,
           nextDate,
           emoji: categoryEmoji,
+          inputCurrencyCode: inputCurrencyCode || selectedCurrency.code, // Use provided or selected currency
         });
         toast.success("Recurring transaction also added!");
       }
@@ -167,7 +169,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
       console.error("Error adding transaction:", e.code, e.message);
       toast.error(`Failed to add transaction: ${e.message}`);
     }
-  }, [addDocument, userUid, categories]);
+  }, [addDocument, userUid, categories, selectedCurrency.code]);
 
   const handleSaveNewInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
     await addInvestment(newInvestment);
@@ -182,20 +184,24 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   }, [updateInvestment]);
 
   const handleMicroInvest = useCallback(async (amount: number, assetName: string, assetType: 'Stock' | 'Crypto', symbol?: string, coingeckoId?: string) => {
+    // The 'amount' here is already in the selected currency from MicroInvestingSuggestionCard
+    const amountInUSD = convertInputToUSD(amount); // Convert to USD for storage
+
     const currentPrice = investments.find(inv => inv.name === assetName)?.currentPrice || 1;
-    const quantity = amount / currentPrice;
+    const quantity = amountInUSD / currentPrice; // Calculate quantity based on USD amount
 
     await addInvestment({
       name: assetName,
       type: assetType,
       quantity: quantity,
-      buyPrice: currentPrice,
+      buyPrice: currentPrice, // Assuming currentPrice is already in USD
       currentPrice: currentPrice,
       datePurchased: format(new Date(), 'yyyy-MM-dd'),
       symbol: symbol,
       coingeckoId: coingeckoId,
+      inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
     });
-  }, [addInvestment, investments]);
+  }, [addInvestment, investments, convertInputToUSD, selectedCurrency.code]);
 
   const handleSidebarToggle = useCallback(() => {
     setSidebarOpen(prev => !prev);

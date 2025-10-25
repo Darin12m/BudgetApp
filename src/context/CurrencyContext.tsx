@@ -18,9 +18,8 @@ const CURRENCIES: Currency[] = [
   { code: 'JPY', symbol: '¥', conversionRateToUSD: 1 / 158 }, // 1 JPY = 1/158 USD (placeholder)
 ];
 
-// Find the default MKD currency object
-const MKD_CURRENCY = CURRENCIES.find(c => c.code === 'MKD')!;
-const USD_CURRENCY = CURRENCIES.find(c => c.code === 'USD')!; // Also keep USD for explicit use
+// Find the default USD currency object
+const USD_CURRENCY = CURRENCIES.find(c => c.code === 'USD')!;
 
 // Define the shape of the context value
 interface CurrencyContextType {
@@ -28,6 +27,8 @@ interface CurrencyContextType {
   setCurrency: (currencyCode: string) => void;
   formatCurrency: (valueInUSD: number, options?: Intl.NumberFormatOptions) => string;
   formatUSD: (valueInUSD: number, options?: Intl.NumberFormatOptions) => string; // New function for explicit USD formatting
+  convertInputToUSD: (value: number) => number; // New: Converts value from selectedCurrency to USD
+  convertUSDToSelected: (valueInUSD: number) => number; // New: Converts USD value to selectedCurrency
 }
 
 // Create the context
@@ -35,7 +36,7 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 
 // CurrencyProvider component
 export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(MKD_CURRENCY); // Default to MKD
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(USD_CURRENCY); // Default to USD
 
   // Use useLayoutEffect to read from localStorage before the first render
   useLayoutEffect(() => {
@@ -45,14 +46,14 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (foundCurrency) {
         setSelectedCurrency(foundCurrency);
       } else {
-        // If saved currency is not in our list, default to MKD
-        setSelectedCurrency(MKD_CURRENCY);
-        localStorage.setItem('selectedCurrency', MKD_CURRENCY.code);
+        // If saved currency is not in our list, default to USD
+        setSelectedCurrency(USD_CURRENCY);
+        localStorage.setItem('selectedCurrency', USD_CURRENCY.code);
       }
     } else {
-      // If no currency is saved, default to MKD and save it
-      setSelectedCurrency(MKD_CURRENCY);
-      localStorage.setItem('selectedCurrency', MKD_CURRENCY.code);
+      // If no currency is saved, default to USD and save it
+      setSelectedCurrency(USD_CURRENCY);
+      localStorage.setItem('selectedCurrency', USD_CURRENCY.code);
     }
   }, []);
 
@@ -88,8 +89,18 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     }).format(valueInUSD);
   }, []);
 
+  // New: Converts a value (assumed to be in selectedCurrency) to USD
+  const convertInputToUSD = useCallback((value: number): number => {
+    return value * selectedCurrency.conversionRateToUSD;
+  }, [selectedCurrency]);
+
+  // New: Converts a USD value to the selected currency's value (number)
+  const convertUSDToSelected = useCallback((valueInUSD: number): number => {
+    return valueInUSD / selectedCurrency.conversionRateToUSD;
+  }, [selectedCurrency]);
+
   return (
-    <CurrencyContext.Provider value={{ selectedCurrency, setCurrency, formatCurrency, formatUSD }}>
+    <CurrencyContext.Provider value={{ selectedCurrency, setCurrency, formatCurrency, formatUSD, convertInputToUSD, convertUSDToSelected }}>
       {children}
     </CurrencyContext.Provider>
   );

@@ -34,7 +34,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
 
   const { selectedRange } = useDateRange(); // Get selectedRange from context
   const { budgetSettings, updateDocument, loading: financeLoading } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
-  const { selectedCurrency, setCurrency } = useCurrency(); // Use the currency context
+  const { selectedCurrency, setCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency(); // Use the currency context
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,12 +54,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
 
   useEffect(() => {
     if (budgetSettings && budgetSettings.id) {
-      setMonthlyBudgetInput(budgetSettings.totalBudgeted?.toString() || '');
+      // Convert USD value from Firestore to selected currency for display
+      setMonthlyBudgetInput(convertUSDToSelected(budgetSettings.totalBudgeted || 0).toString());
       setMicroInvestingEnabled(budgetSettings.microInvestingEnabled ?? true);
       setMicroInvestingPercentage(budgetSettings.microInvestingPercentage?.toString() || '30');
       setPriceAlertThresholdInput(budgetSettings.priceAlertThreshold?.toString() || '5');
     }
-  }, [budgetSettings]);
+  }, [budgetSettings, convertUSDToSelected]);
 
   const toggleTheme = () => {
     setIsDarkMode(prev => {
@@ -84,8 +86,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
       toast.error("Please enter a valid positive number for the monthly budget.");
       return;
     }
+    // Convert input amount to USD before saving
+    const newBudgetInUSD = convertInputToUSD(newBudget);
     try {
-      await updateDocument('budgetSettings', budgetSettings.id, { totalBudgeted: newBudget });
+      await updateDocument('budgetSettings', budgetSettings.id, {
+        totalBudgeted: newBudgetInUSD,
+        inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
+      });
       toast.success("Monthly budget updated successfully!");
     } catch (error) {
       console.error("Error updating monthly budget:", error);
@@ -243,7 +250,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                     step="0.01"
                     value={monthlyBudgetInput}
                     onChange={(e) => setMonthlyBudgetInput(e.target.value)}
-                    placeholder="e.g., 3000.00"
+                    placeholder={`${selectedCurrency.symbol} 3000.00`}
                     className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
                   />
                   <Button onClick={handleSaveMonthlyBudget} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground">

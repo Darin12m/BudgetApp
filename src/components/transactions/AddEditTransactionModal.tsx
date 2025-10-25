@@ -51,7 +51,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   recurringTemplates,
 }) => {
   const { isMobile } = useDeviceDetection();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
 
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [merchant, setMerchant] = useState('');
@@ -74,7 +74,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       if (transactionToEdit) {
         setDate(new Date(transactionToEdit.date));
         setMerchant(transactionToEdit.merchant);
-        setAmount(Math.abs(transactionToEdit.amount).toString());
+        setAmount(convertUSDToSelected(Math.abs(transactionToEdit.amount)).toString()); // Convert from USD for display
         setIsExpense(transactionToEdit.amount < 0);
         setSelectedCategoryId(transactionToEdit.categoryId);
         setStatus(transactionToEdit.status);
@@ -111,7 +111,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       }
       setErrors({});
     }
-  }, [isOpen, transactionToEdit, categories, recurringTemplates, isInstanceFromRecurringTemplate]);
+  }, [isOpen, transactionToEdit, categories, recurringTemplates, isInstanceFromRecurringTemplate, convertUSDToSelected]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -133,17 +133,20 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       return;
     }
 
-    const finalAmount = isExpense ? -parseFloat(amount) : parseFloat(amount);
+    // Convert input amount to USD before saving
+    const amountInUSD = convertInputToUSD(parseFloat(amount));
+    const finalAmount = isExpense ? -amountInUSD : amountInUSD;
 
     const transactionPayload: Omit<Transaction, 'id' | 'ownerUid'> = {
       date: date ? format(date, 'yyyy-MM-dd') : '',
       merchant: merchant.trim(),
-      amount: finalAmount,
+      amount: finalAmount, // Stored in USD
       categoryId: selectedCategoryId,
       status,
       // Removed account from payload
       isRecurring: isRecurring,
       recurringTransactionId: isInstanceFromRecurringTemplate ? transactionToEdit?.recurringTransactionId : undefined,
+      inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
     };
 
     let recurringPayload: Omit<RecurringTransaction, 'id' | 'ownerUid'> | undefined = undefined;
@@ -151,11 +154,12 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       const categoryEmoji = categories.find(cat => cat.id === selectedCategoryId)?.emoji || '💳';
       recurringPayload = {
         name: merchant.trim(),
-        amount: finalAmount,
+        amount: finalAmount, // Stored in USD
         categoryId: selectedCategoryId,
         frequency,
         nextDate: format(nextDate, 'yyyy-MM-dd'),
         emoji: categoryEmoji,
+        inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
       };
     }
 
@@ -199,7 +203,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             step="0.01"
             value={amount}
             onChange={(e) => { setAmount(e.target.value); setErrors(prev => ({ ...prev, amount: '' })); }}
-            placeholder="e.g., 25.50"
+            placeholder={`${selectedCurrency.symbol} 25.50`}
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.amount && <p className="text-destructive text-xs mt-1">{errors.amount}</p>}

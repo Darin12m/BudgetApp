@@ -10,63 +10,69 @@ export interface Transaction {
   id: string;
   date: string; // YYYY-MM-DD
   merchant: string;
-  amount: number;
+  amount: number; // Stored in USD
   categoryId: string; // Changed from 'category' to 'categoryId'
   status: 'pending' | 'cleared';
   ownerUid: string;
   isRecurring: boolean; // New flag: true if this transaction is an instance of a recurring template
   recurringTransactionId?: string; // Link to RecurringTransaction template if isRecurring is true
+  inputCurrencyCode: string; // New: Currency code used when the amount was input
 }
 
 export interface Category {
   id: string;
   name: string;
-  budgeted: number;
-  spent: number; // Calculated dynamically
+  budgeted: number; // Stored in USD
+  spent: number; // Calculated dynamically, will be in USD
   color: string;
   emoji: string;
   ownerUid: string;
+  inputCurrencyCode: string; // New: Currency code used when the budgeted amount was input
 }
 
 export interface Account {
   id: string;
   name: string;
-  balance: number;
+  balance: number; // Stored in USD
   type: 'checking' | 'savings' | 'credit' | 'investment';
   lastUpdated: string;
   ownerUid: string;
+  inputCurrencyCode: string; // New: Currency code used when the balance was last updated
 }
 
 export interface Goal {
   id: string;
   name: string;
-  target: number;
-  current: number;
+  target: number; // Stored in USD
+  current: number; // Stored in USD
   color: string;
   targetDate: string; // YYYY-MM-DD
   ownerUid: string;
+  inputCurrencyCode: string; // New: Currency code used when the target/current amounts were input
 }
 
 export interface RecurringTransaction {
   id: string;
   name: string;
-  amount: number;
+  amount: number; // Stored in USD
   categoryId: string; // Changed from 'category' to 'categoryId'
   frequency: 'Monthly' | 'Weekly' | 'Yearly';
   nextDate: string; // YYYY-MM-DD
   emoji: string;
   ownerUid: string;
+  inputCurrencyCode: string; // New: Currency code used when the amount was input
 }
 
 export interface BudgetSettings {
   id: string;
   rolloverEnabled: boolean;
-  previousMonthLeftover: number;
+  previousMonthLeftover: number; // Stored in USD
   ownerUid: string;
-  totalBudgeted?: number;
+  totalBudgeted?: number; // Stored in USD
   microInvestingEnabled?: boolean;
   microInvestingPercentage?: number;
   priceAlertThreshold?: number;
+  inputCurrencyCode: string; // New: Currency code used when budget amounts were input
   // categoriesInitialized?: boolean; // Removed as categories will no longer be auto-initialized
 }
 
@@ -98,12 +104,13 @@ const generateRecurringOccurrences = (
       id: `recurring-${recurringTxn.id}-${format(currentOccurrenceDate, 'yyyy-MM-dd')}`, // Unique ID for each occurrence
       date: format(currentOccurrenceDate, 'yyyy-MM-dd'),
       merchant: recurringTxn.name,
-      amount: recurringTxn.amount,
+      amount: recurringTxn.amount, // Already in USD
       categoryId: recurringTxn.categoryId,
       status: 'cleared', // Assume recurring transactions are cleared once due
       ownerUid: recurringTxn.ownerUid,
       isRecurring: true,
       recurringTransactionId: recurringTxn.id,
+      inputCurrencyCode: recurringTxn.inputCurrencyCode, // Pass through input currency code
     });
 
     // Advance to the next potential occurrence date
@@ -127,7 +134,7 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [recurringTemplates, setRecurringTemplates] = useState<RecurringTransaction[]>([]); // Recurring transaction templates
-  const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ id: '', rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '' });
+  const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ id: '', rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '', inputCurrencyCode: 'USD' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -163,6 +170,7 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
             microInvestingEnabled: true,
             microInvestingPercentage: 30,
             priceAlertThreshold: 5,
+            inputCurrencyCode: 'USD', // Default to USD for new settings
             createdAt: serverTimestamp(),
           }).then(() => {}).catch(err => {
             console.error("Error creating default budget settings:", err);

@@ -26,17 +26,17 @@ import {
 
 interface InvestmentFormProps {
   investment: Investment | null;
-  onSave: (investment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice' | 'change24hPercent'>) => void; // Updated Omit type
+  onSave: (investment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice' | 'change24hPercent' | 'inputCurrencyCode'>) => void; // Updated Omit type
   onDelete: (id: string) => void;
   onClose: () => void;
 }
 
 const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onDelete, onClose }) => {
-  const { formatCurrency, formatUSD } = useCurrency(); // Use formatCurrency and formatUSD from context
+  const { formatCurrency, formatUSD, selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency(); // Use currency context
   const [name, setName] = useState(investment?.name || '');
   const [type, setType] = useState<'Stock' | 'Crypto'>(investment?.type || 'Stock');
   const [quantity, setQuantity] = useState(investment?.quantity.toString() || '');
-  const [buyPrice, setBuyPrice] = useState(investment?.buyPrice.toString() || '');
+  const [buyPrice, setBuyPrice] = useState(investment?.buyPrice ? convertUSDToSelected(investment.buyPrice).toString() : ''); // Convert from USD for display
   const [datePurchased, setDatePurchased] = useState(investment?.datePurchased || format(new Date(), 'yyyy-MM-dd'));
   const [symbolOrId, setSymbolOrId] = useState(investment?.symbol || investment?.coingeckoId || '');
   const [companyName, setCompanyName] = useState(investment?.companyName || null); // New state for company name
@@ -128,11 +128,11 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       setName(investment.name);
       setType(investment.type);
       setQuantity(investment.quantity.toString());
-      setBuyPrice(investment.buyPrice.toString());
+      setBuyPrice(convertUSDToSelected(investment.buyPrice).toString()); // Convert from USD for display
       setDatePurchased(investment.datePurchased);
       setSymbolOrId(investment.symbol || investment.coingeckoId || '');
       setCompanyName(investment.companyName || null);
-      setLivePrice(investment.currentPrice); // Use currentPrice as initial live price
+      setLivePrice(investment.currentPrice); // Use currentPrice as initial live price (already in USD)
       setLivePriceError(null); // Clear any previous errors
     } else {
       // Reset form for new investment
@@ -147,7 +147,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       setLivePriceError(null);
     }
     setErrors({}); // Clear errors on investment change or reset
-  }, [investment]);
+  }, [investment, convertUSDToSelected]);
 
   // Effect to fetch live price when type or symbol/ID changes
   useEffect(() => {
@@ -180,19 +180,23 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       return;
     }
 
+    // Convert buyPrice from selected currency to USD before saving
+    const buyPriceInUSD = convertInputToUSD(parseFloat(buyPrice));
+
     onSave({
       name,
       type,
       quantity: parseFloat(quantity),
-      buyPrice: parseFloat(buyPrice),
-      currentPrice: livePrice, // Use the fetched live price
+      buyPrice: buyPriceInUSD, // Use the converted buy price
+      currentPrice: livePrice, // Use the fetched live price (already in USD)
       datePurchased,
       symbol: type === 'Stock' ? symbolOrId.toUpperCase() : undefined,
       coingeckoId: type === 'Crypto' ? getCoingeckoId(symbolOrId) : undefined,
       companyName: companyName, // Save the fetched company name
-      lastPrice: livePrice, // Initialize lastPrice with current live price
+      lastPrice: livePrice, // Initialize lastPrice with current live price (already in USD)
       priceSource: type === 'Stock' ? 'Finnhub' : 'CoinGecko',
       lastUpdated: new Date().toISOString(),
+      inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
     });
   };
 
@@ -274,7 +278,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Buy Price
         </Label>
         <div className="col-span-3">
-          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
+          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} placeholder={`${selectedCurrency.symbol} 150.00`} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
           {errors.buyPrice && <p className="text-destructive text-xs mt-1">{errors.buyPrice}</p>}
         </div>
       </div>
