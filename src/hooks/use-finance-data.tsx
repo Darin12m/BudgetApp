@@ -68,7 +68,7 @@ export interface BudgetSettings {
   microInvestingEnabled?: boolean;
   microInvestingPercentage?: number;
   priceAlertThreshold?: number;
-  categoriesInitialized?: boolean;
+  // categoriesInitialized?: boolean; // Removed as categories will no longer be auto-initialized
 }
 
 // Helper function to generate recurring transaction occurrences within a date range
@@ -129,7 +129,7 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [recurringTemplates, setRecurringTemplates] = useState<RecurringTransaction[]>([]); // Recurring transaction templates
-  const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ id: '', rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '', categoriesInitialized: false });
+  const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ id: '', rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -152,10 +152,6 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
     const unsubscribeBudgetSettings = onSnapshot(qBudgetSettings, (snapshot) => {
       if (!snapshot.empty) {
         const settings = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as BudgetSettings;
-        if (settings.categoriesInitialized === undefined) {
-          settings.categoriesInitialized = false;
-          updateDoc(doc(db, 'budgetSettings', settings.id), { categoriesInitialized: false });
-        }
         setBudgetSettings(settings);
         hasCreatedDefaultBudgetSettings.current = true;
       } else {
@@ -169,7 +165,6 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
             microInvestingEnabled: true,
             microInvestingPercentage: 30,
             priceAlertThreshold: 5,
-            categoriesInitialized: false,
             createdAt: serverTimestamp(),
           }).then(() => {}).catch(err => {
             console.error("Error creating default budget settings:", err);
@@ -197,37 +192,6 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setState(data as any[]);
         setLoading(false);
-
-        // Special handling for categories: add defaults if empty AND not yet initialized
-        if (collectionName === 'categories' && budgetSettings.categoriesInitialized !== undefined) {
-          if (snapshot.empty && !budgetSettings.categoriesInitialized) {
-            const defaultCategories = [
-              { name: 'Groceries', budgeted: 300, spent: 0, color: 'hsl(var(--emerald))', emoji: '🛒', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Rent', budgeted: 1200, spent: 0, color: 'hsl(var(--blue))', emoji: '🏠', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Utilities', budgeted: 150, spent: 0, color: 'hsl(var(--lilac))', emoji: '💡', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Transportation', budgeted: 100, spent: 0, color: '#f59e0b', emoji: '🚗', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Entertainment', budgeted: 80, spent: 0, color: '#ef4444', emoji: '🎉', ownerUid: userUid, createdAt: serverTimestamp() },
-              { name: 'Uncategorized', budgeted: 0, spent: 0, color: '#6B7280', emoji: '🏷️', ownerUid: userUid, createdAt: serverTimestamp() },
-            ];
-
-            defaultCategories.forEach(async (cat) => {
-              try {
-                await addDoc(collection(db, "categories"), cat);
-              } catch (e) {
-                console.error("Error adding default category:", e);
-                toast.error("Failed to add default category data.");
-              }
-            });
-
-            if (budgetSettings.id) {
-              updateDoc(doc(db, 'budgetSettings', budgetSettings.id), { categoriesInitialized: true });
-            }
-          } else if (!snapshot.empty && !budgetSettings.categoriesInitialized) {
-            if (budgetSettings.id) {
-              updateDoc(doc(db, 'budgetSettings', budgetSettings.id), { categoriesInitialized: true });
-            }
-          }
-        }
       }, (err) => {
         console.error(`Error fetching ${collectionName}:`, err.code, err.message);
         setError(`Failed to load ${collectionName}. Error: ${err.message}`);
@@ -246,7 +210,7 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
     return () => {
       unsubscribes.forEach(unsub => unsub());
     };
-  }, [userUid, startDate, endDate, budgetSettings.categoriesInitialized, budgetSettings.id]);
+  }, [userUid, startDate, endDate]);
 
   const addDocument = useCallback(async (collectionName: string, data: any) => {
     if (!userUid) {
