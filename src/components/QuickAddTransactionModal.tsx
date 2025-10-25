@@ -54,11 +54,11 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
     if (!isOpen) {
       resetForm();
     } else {
-      const uncategorized = categories.find(cat => cat.name === 'Uncategorized');
-      if (uncategorized) {
-        setSelectedCategoryId(uncategorized.id);
-      } else if (categories.length > 0) {
-        setSelectedCategoryId(categories[0].id);
+      if (categories.length > 0) {
+        const uncategorized = categories.find(cat => cat.name === 'Uncategorized');
+        setSelectedCategoryId(uncategorized ? uncategorized.id : categories[0].id);
+      } else {
+        setSelectedCategoryId(''); // No categories available
       }
     }
   }, [isOpen, resetForm, categories]);
@@ -180,14 +180,20 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
         <div className="col-span-3">
           <Select value={selectedCategoryId} onValueChange={(value) => { setSelectedCategoryId(value); setErrors(prev => ({ ...prev, categoryId: '' })); }}>
             <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
-              <SelectValue placeholder="Select a category" />
+              <SelectValue placeholder={categories.length > 0 ? "Select a category" : "No categories available"} />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  <span className="mr-2">{cat.emoji}</span> {cat.name}
+              {categories.length > 0 ? (
+                categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    <span className="mr-2">{cat.emoji}</span> {cat.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="" disabled>
+                  No categories. Add one in Budget tab.
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
           {errors.categoryId && <p className="text-destructive text-xs mt-1">{errors.categoryId}</p>}
