@@ -40,18 +40,27 @@ const DynamicTextInCircle: React.FC<DynamicTextInCircleProps> = ({
 
     // Reset font size to max to measure actual content size
     textElement.style.fontSize = `${maxFontSizePx}px`;
+    // Also reset subtext font size for accurate measurement
+    const subTextElement = textElement.querySelector('.dynamic-subtext');
+    if (subTextElement) {
+      (subTextElement as HTMLElement).style.fontSize = `${maxFontSizePx * 0.4}px`;
+    }
 
+
+    let newFontSize = maxFontSizePx;
     let currentTextWidth = textElement.scrollWidth;
     let currentTextHeight = textElement.scrollHeight;
-    let newFontSize = maxFontSizePx;
 
     // Shrink font size until it fits within the parent's dimensions
     while (
-      (currentTextWidth > parentWidth * 0.9 || currentTextHeight > parentHeight * 0.9) && // 90% to leave some padding
+      (currentTextWidth > parentWidth * 0.95 || currentTextHeight > parentHeight * 0.95) && // Increased factor for more breathing room
       newFontSize > minFontSizePx
     ) {
       newFontSize -= 1;
       textElement.style.fontSize = `${newFontSize}px`;
+      if (subTextElement) {
+        (subTextElement as HTMLElement).style.fontSize = `${newFontSize * 0.4}px`;
+      }
       currentTextWidth = textElement.scrollWidth;
       currentTextHeight = textElement.scrollHeight;
     }
@@ -80,16 +89,16 @@ const DynamicTextInCircle: React.FC<DynamicTextInCircleProps> = ({
       style={{
         // Set initial font size for measurement, will be updated by adjustFontSize
         fontSize: `${currentFontSize}px`,
-        lineHeight: '1.2', // Adjust line height for better vertical spacing
-        maxWidth: `${containerSize * 0.9}px`, // Constrain max width for initial render
-        maxHeight: `${containerSize * 0.9}px`, // Constrain max height for initial render
+        lineHeight: 'normal', // Changed to normal for better browser handling
+        maxWidth: `${containerSize * 0.98}px`, // Constrain max width for initial render, slightly more generous
+        maxHeight: `${containerSize * 0.98}px`, // Constrain max height for initial render
       }}
     >
       <span className={cn(mainTextColorClass, mainFontWeightClass)} style={{ fontSize: `${currentFontSize}px` }}>
         {mainText}
       </span>
       {subText && (
-        <span className={cn("text-xs", subTextColorClass, subFontWeightClass)} style={{ fontSize: `${currentFontSize * 0.4}px` }}> {/* Subtext is smaller */}
+        <span className={cn("text-xs dynamic-subtext", subTextColorClass, subFontWeightClass)} style={{ fontSize: `${currentFontSize * 0.4}px` }}> {/* Added dynamic-subtext class */}
           {subText}
         </span>
       )}
