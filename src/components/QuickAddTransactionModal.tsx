@@ -6,7 +6,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Plus, Save, X, Repeat, Calendar as CalendarIcon } from 'lucide-react'; // Added Repeat and CalendarIcon
+import { Plus, Save, X, Repeat, Calendar as CalendarIcon, ArrowDownCircle, ArrowUpCircle } from 'lucide-react'; // Added ArrowDownCircle, ArrowUpCircle
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useDeviceDetection } from '@/hooks/use-device-detection';
@@ -41,6 +41,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
   const [isRecurring, setIsRecurring] = useState<boolean>(false);
   const [frequency, setFrequency] = useState<'Monthly' | 'Weekly' | 'Yearly'>('Monthly');
   const [nextDate, setNextDate] = useState<Date | undefined>(undefined); // For recurring transactions
+  const [isExpense, setIsExpense] = useState<boolean>(true); // New state for expense/income
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const resetForm = useCallback(() => {
@@ -51,6 +52,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
     setIsRecurring(false);
     setFrequency('Monthly');
     setNextDate(undefined);
+    setIsExpense(true); // Reset to expense by default
     setErrors({});
   }, []);
 
@@ -84,8 +86,10 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       return;
     }
 
+    const finalAmount = isExpense ? -parseFloat(amount) : parseFloat(amount);
+
     onSave(
-      parseFloat(amount),
+      finalAmount,
       note,
       date,
       selectedCategory,
@@ -109,10 +113,39 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
             step="0.01"
             value={amount}
             onChange={(e) => { setAmount(e.target.value); setErrors(prev => ({ ...prev, amount: '' })); }}
-            placeholder={`e.g., ${formatCurrency(-25.50)} for expense, ${formatCurrency(100)} for income`}
+            placeholder="e.g., 25.50"
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.amount && <p className="text-destructive text-xs mt-1">{errors.amount}</p>}
+        </div>
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="type" className="text-right">
+          Type
+        </Label>
+        <div className="col-span-3 flex items-center space-x-2">
+          <Button
+            type="button"
+            variant={isExpense ? "default" : "outline"}
+            onClick={() => setIsExpense(true)}
+            className={cn(
+              "flex-1",
+              isExpense ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "bg-muted/50 border-none hover:bg-muted text-foreground"
+            )}
+          >
+            <ArrowDownCircle className="h-4 w-4 mr-2" /> Expense
+          </Button>
+          <Button
+            type="button"
+            variant={!isExpense ? "default" : "outline"}
+            onClick={() => setIsExpense(false)}
+            className={cn(
+              "flex-1",
+              !isExpense ? "bg-emerald hover:bg-emerald/90 text-white" : "bg-muted/50 border-none hover:bg-muted text-foreground"
+            )}
+          >
+            <ArrowUpCircle className="h-4 w-4 mr-2" /> Income
+          </Button>
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">

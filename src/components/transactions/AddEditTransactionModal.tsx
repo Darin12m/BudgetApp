@@ -6,7 +6,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Plus, Save, X, Trash2, Calendar as CalendarIcon, Repeat } from 'lucide-react';
+import { Plus, Save, X, Trash2, Calendar as CalendarIcon, Repeat, ArrowDownCircle, ArrowUpCircle } from 'lucide-react'; // Added ArrowDownCircle, ArrowUpCircle
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useDeviceDetection } from '@/hooks/use-device-detection';
@@ -58,7 +58,7 @@ interface RecurringTransaction {
   amount: number;
   category: string;
   frequency: 'Monthly' | 'Weekly' | 'Yearly';
-  nextDate: string;
+  nextDate: string; // YYYY-MM-DD
   emoji: string;
   ownerUid: string;
 }
@@ -96,6 +96,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState<'Monthly' | 'Weekly' | 'Yearly'>('Monthly');
   const [nextDate, setNextDate] = useState<Date | undefined>(undefined);
+  const [isExpense, setIsExpense] = useState<boolean>(true); // New state for expense/income
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false); // State for delete confirmation dialog
 
@@ -107,7 +108,8 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       if (transactionToEdit) {
         setDate(new Date(transactionToEdit.date));
         setMerchant(transactionToEdit.merchant);
-        setAmount(transactionToEdit.amount.toString());
+        setAmount(Math.abs(transactionToEdit.amount).toString()); // Display absolute value
+        setIsExpense(transactionToEdit.amount < 0); // Set expense/income based on amount sign
         setSelectedCategory(transactionToEdit.category);
         setStatus(transactionToEdit.status);
         setSelectedAccount(transactionToEdit.account);
@@ -138,6 +140,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
         setIsRecurring(false);
         setFrequency('Monthly');
         setNextDate(undefined);
+        setIsExpense(true); // Default to expense for new transactions
       }
       setErrors({});
     }
@@ -163,10 +166,12 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       return;
     }
 
+    const finalAmount = isExpense ? -parseFloat(amount) : parseFloat(amount);
+
     const transactionPayload: Omit<Transaction, 'id' | 'ownerUid'> = {
       date: date ? format(date, 'yyyy-MM-dd') : '',
       merchant: merchant.trim(),
-      amount: parseFloat(amount),
+      amount: finalAmount,
       category: selectedCategory,
       status,
       account: selectedAccount,
@@ -177,7 +182,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       const categoryEmoji = categories.find(cat => cat.name === selectedCategory)?.emoji || '💳';
       recurringPayload = {
         name: merchant.trim(),
-        amount: parseFloat(amount),
+        amount: finalAmount, // Use the signed amount for recurring transaction
         category: selectedCategory,
         frequency,
         nextDate: format(nextDate, 'yyyy-MM-dd'),
@@ -225,10 +230,40 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             step="0.01"
             value={amount}
             onChange={(e) => { setAmount(e.target.value); setErrors(prev => ({ ...prev, amount: '' })); }}
-            placeholder={`e.g., ${formatCurrency(-25.50)} for expense, ${formatCurrency(100)} for income`}
+            placeholder="e.g., 25.50"
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.amount && <p className="text-destructive text-xs mt-1">{errors.amount}</p>}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="type" className="text-right">
+          Type
+        </Label>
+        <div className="col-span-3 flex items-center space-x-2">
+          <Button
+            type="button"
+            variant={isExpense ? "default" : "outline"}
+            onClick={() => setIsExpense(true)}
+            className={cn(
+              "flex-1",
+              isExpense ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "bg-muted/50 border-none hover:bg-muted text-foreground"
+            )}
+          >
+            <ArrowDownCircle className="h-4 w-4 mr-2" /> Expense
+          </Button>
+          <Button
+            type="button"
+            variant={!isExpense ? "default" : "outline"}
+            onClick={() => setIsExpense(false)}
+            className={cn(
+              "flex-1",
+              !isExpense ? "bg-emerald hover:bg-emerald/90 text-white" : "bg-muted/50 border-none hover:bg-muted text-foreground"
+            )}
+          >
+            <ArrowUpCircle className="h-4 w-4 mr-2" /> Income
+          </Button>
         </div>
       </div>
 
