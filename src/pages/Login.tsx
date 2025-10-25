@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth'; // Import createUserWithEmailAndPassword
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,13 +16,13 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isRegisterMode, setIsRegisterMode] = useState(false); // New state for register mode
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmitAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    console.log(`${isRegisterMode ? 'Register' : 'Login'} clicked for email: ${email}`); // Add console.log
+    console.log(`${isRegisterMode ? 'Register' : 'Login'} clicked for email: ${email}`);
 
     try {
       if (isRegisterMode) {
@@ -32,21 +32,37 @@ const LoginPage: React.FC = () => {
         await signInWithEmailAndPassword(auth, email, password);
         toast.success('Logged in successfully!');
       }
-      navigate('/'); // Redirect to dashboard or home page
+      navigate('/');
     } catch (error: any) {
-      // Enhanced error logging
       console.error(`Firebase Auth Error during ${isRegisterMode ? 'registration' : 'login'}:`, error.code, error.message, error);
       let errorMessage = `${isRegisterMode ? 'Registration' : 'Login'} failed.`;
-      if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Invalid email address.';
-      } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        errorMessage = 'Invalid email or password.';
-      } else if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'This email is already in use. Try logging in.';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'Password should be at least 6 characters.';
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = 'Too many failed attempts. Please try again later.';
+
+      switch (error.code) {
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address format.';
+          break;
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential': // Covers cases where email/password don't match
+          errorMessage = 'Invalid email or password.';
+          break;
+        case 'auth/email-already-in-use':
+          errorMessage = 'This email is already in use. Try logging in instead.';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'Password should be at least 6 characters.';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many failed attempts. Please try again later.';
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Please check your internet connection.';
+          break;
+        case 'auth/unauthorized-domain':
+          errorMessage = 'This domain is not authorized for Firebase authentication. Please check your Firebase project settings.';
+          break;
+        default:
+          errorMessage = `An unexpected error occurred: ${error.message}`;
       }
       toast.error(errorMessage);
     } finally {
@@ -56,19 +72,30 @@ const LoginPage: React.FC = () => {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    console.log('Google login clicked'); // Add console.log
+    console.log('Google login clicked');
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       toast.success('Logged in with Google successfully!');
-      navigate('/'); // Redirect to dashboard or home page
+      navigate('/');
     } catch (error: any) {
       console.error('Firebase Auth Error during Google login:', error.code, error.message, error);
       let errorMessage = 'Google login failed.';
-      if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Google login window closed.';
-      } else if (error.code === 'auth/cancelled-popup-request') {
-        errorMessage = 'Google login cancelled.';
+      switch (error.code) {
+        case 'auth/popup-closed-by-user':
+          errorMessage = 'Google login window closed.';
+          break;
+        case 'auth/cancelled-popup-request':
+          errorMessage = 'Google login cancelled.';
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Please check your internet connection.';
+          break;
+        case 'auth/unauthorized-domain':
+          errorMessage = 'This domain is not authorized for Firebase authentication. Please check your Firebase project settings.';
+          break;
+        default:
+          errorMessage = `An unexpected error occurred: ${error.message}`;
       }
       toast.error(errorMessage);
     } finally {
@@ -148,7 +175,6 @@ const LoginPage: React.FC = () => {
               onClick={(e) => {
                 e.preventDefault();
                 setIsRegisterMode(prev => !prev);
-                // Clear email and password fields when toggling mode
                 setEmail('');
                 setPassword('');
               }}

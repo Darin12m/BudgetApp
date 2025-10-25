@@ -18,6 +18,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+console.log("Firebase app initialized successfully!"); // Confirmation log
 
 // Initialize Analytics only in a browser environment
 const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
