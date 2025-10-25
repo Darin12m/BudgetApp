@@ -38,6 +38,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
   const {
     transactions,
     categories,
+    accounts, // Destructure accounts here
     budgetSettings,
     addDocument,
     loading: financeLoading,
@@ -166,7 +167,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
       console.error("Error adding transaction:", e.code, e.message);
       toast.error(`Failed to add transaction: ${e.message}`);
     }
-  }, [addDocument, accounts, userUid, categories]);
+  }, [addDocument, accounts, userUid, categories]); // Added accounts to dependency array
 
   const handleSaveNewInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
     await addInvestment(newInvestment);
