@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { CustomProgress } from '@/components/common/CustomProgress'; // Import CustomProgress
+import DynamicTextInCircle from '@/components/common/DynamicTextInCircle'; // Import DynamicTextInCircle
 
 interface Category {
   id: string;
@@ -40,6 +41,11 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
     { name: 'Remaining', value: Math.max(0, remainingBudget), color: 'hsl(var(--emerald))' },
   ];
 
+  // Define donut radii for DynamicTextInCircle
+  const donutInnerRadius = 40;
+  const donutOuterRadius = 60;
+  const textContainerDiameter = donutInnerRadius * 2;
+
   return (
     <Card className="card-shadow border-none bg-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -53,7 +59,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
       </CardHeader>
       <CardContent className="p-6 pt-0">
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
-          <div className="w-full sm:w-1/2 h-[150px] flex items-center justify-center mb-4 sm:mb-0">
+          <div className="w-full sm:w-1/2 h-[150px] flex items-center justify-center mb-4 sm:mb-0 relative">
             {pieChartData.some(d => d.value > 0) ? ( // Only show chart if there's data
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -61,8 +67,8 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
                     data={pieChartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={40}
-                    outerRadius={60}
+                    innerRadius={donutInnerRadius}
+                    outerRadius={donutOuterRadius}
                     fill="#8884d8"
                     dataKey="value"
                     labelLine={false}
@@ -80,6 +86,17 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
               <div className="text-center text-muted-foreground">
                 <p className="text-sm">No spending data yet.</p>
               </div>
+            )}
+            {pieChartData.some(d => d.value > 0) && (
+              <DynamicTextInCircle
+                mainText={`${Math.round(spentPercentage)}%`}
+                subText="Spent"
+                containerSize={textContainerDiameter}
+                maxFontSizePx={24}
+                minFontSizePx={10}
+                mainTextColorClass="text-white" // Force white text
+                subTextColorClass="text-white" // Force white text
+              />
             )}
           </div>
           <div className="w-full sm:w-1/2 space-y-2">
