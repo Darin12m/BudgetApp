@@ -103,6 +103,9 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     handleOpenAddFunds,
     handleAddFundsToGoal,
     handleQuickAddTransaction,
+    setIsAddEditCategoryModalOpen, // Destructure here
+    setIsAddEditGoalModalOpen,     // Destructure here
+    setIsAddFundsModalOpen,        // Destructure here
   } = useBudgetAppLogic(userUid);
 
 

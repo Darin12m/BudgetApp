@@ -26,7 +26,7 @@ import {
 
 interface InvestmentFormProps {
   investment: Investment | null;
-  onSave: (investment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice' | 'change24hPercent' | 'inputCurrencyCode'>) => void; // Updated Omit type
+  onSave: (investment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice' | 'change24hPercent'>) => void; // Updated Omit type
   onDelete: (id: string) => void;
   onClose: () => void;
 }
@@ -100,8 +100,12 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
         fetchStockPrice(currentSymbolOrId),
         fetchCompanyProfile(currentSymbolOrId)
       ]);
-      fetchedPrice = priceResult.price;
-      fetchedName = profileResult.name;
+      if (priceResult.price !== null) {
+        fetchedPrice = priceResult.price;
+        if (profileResult.name !== null) {
+          fetchedName = profileResult.name;
+        }
+      }
       errorMsg = priceResult.error || profileResult.error; // Prioritize price error
       if (fetchedPrice === null && !errorMsg) {
         errorMsg = "Invalid stock ticker or price unavailable.";
@@ -318,7 +322,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           Date Purchased
         </Label>
         <div className="col-span-3">
-          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, date: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
+          <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurch2ased(e.target.value); setErrors(prev => ({ ...prev, date: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
           {errors.datePurchased && <p className="text-destructive text-xs mt-1">{errors.datePurchased}</p>}
           {new Date(datePurchased) > new Date() && (
             <p className="text-amber-500 text-xs mt-1 flex items-center">
