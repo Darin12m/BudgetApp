@@ -315,7 +315,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                     <p className="text-sm text-muted-foreground">Total Investment Portfolio</p>
                     <Wallet className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <p className="text-4xl font-bold mb-1">{formatUSD(overallPortfolioSummary.currentValue)}</p>
+                  <p className="text-4xl font-bold mb-1">{formatCurrency(overallPortfolioSummary.currentValue)}</p>
                   <div className="flex items-center space-x-2">
                     {PortfolioGainLossIcon && <PortfolioGainLossIcon className={`w-4 h-4 ${portfolioGainLossColor}`} />}
                     <span className={`text-sm ${portfolioGainLossColor}`}>
@@ -376,7 +376,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
                                 {gainLossPercentage.toFixed(2)}%
                               </p>
                             </div>
-                            <p className={`text-xs ${gainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatUSD(inv.quantity * inv.currentPrice)}</p>
+                            <p className={`text-xs ${gainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(inv.quantity * inv.currentPrice)}</p>
                           </div>
                         </div>
                       );
