@@ -58,7 +58,7 @@ interface AllocationLegendListProps {
   chartData: (AllocationData & { percentage: number; color: string })[];
   activeIndex: number | null;
   setActiveIndex: (index: number | null) => void;
-  formatUSD: (value: number) => string;
+  formatCurrency: (value: number) => string; // Changed to formatCurrency
   totalPortfolioValue: number;
 }
 
@@ -66,7 +66,7 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
   chartData,
   activeIndex,
   setActiveIndex,
-  formatUSD,
+  formatCurrency,
 }) => {
   return (
     <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
@@ -86,7 +86,7 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">{entry.percentage.toFixed(0)}%</span>
-            <span className="text-sm font-semibold text-foreground">{formatUSD(entry.value)}</span>
+            <span className="text-sm font-semibold text-foreground">{formatCurrency(entry.value)}</span>
           </div>
         </div>
       ))}
@@ -96,7 +96,7 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
 
 
 const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChartProps> = ({ title, data, emptyMessage, totalPortfolioValue }) => {
-  const { formatUSD } = useCurrency();
+  const { formatCurrency } = useCurrency(); // Changed to formatCurrency
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const onPieEnter = useCallback((_: any, index: number) => {
@@ -165,7 +165,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                     color: 'hsl(var(--tooltip-text-color))'
                   }}
                   formatter={(value: number, name: string, props: any) => [
-                    formatUSD(value),
+                    formatCurrency(value), // Changed to formatCurrency
                     `${props.payload.name} (${props.payload.percentage.toFixed(0)}%)`
                   ]}
                 />
@@ -175,7 +175,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <p className="text-xl font-bold text-foreground">
-                  {activeItem ? formatUSD(activeItem.value) : formatUSD(totalPortfolioValue)}
+                  {activeItem ? formatCurrency(activeItem.value) : formatCurrency(totalPortfolioValue)} {/* Changed to formatCurrency */}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {activeItem ? `${activeItem.name} (${activeItem.percentage.toFixed(0)}%)` : 'Total Allocated'}
@@ -191,7 +191,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
             chartData={chartData}
             activeIndex={activeIndex}
             setActiveIndex={setActiveIndex}
-            formatUSD={formatUSD}
+            formatCurrency={formatCurrency} // Changed to formatCurrency
             totalPortfolioValue={totalPortfolioValue}
           />
         )}

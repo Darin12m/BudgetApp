@@ -14,7 +14,7 @@ const OverallPortfolioSummaryCard: React.FC<OverallPortfolioSummaryCardProps> = 
   currentValue,
   gainLossPercentage,
 }) => {
-  const { formatUSD } = useCurrency(); // Use formatUSD from context
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
   const isPositive = gainLossPercentage >= 0;
   const gainLossColor = isPositive ? 'text-arrowUp' : 'text-arrowDown';
   const Icon: LucideIcon = isPositive ? TrendingUp : TrendingDown;
@@ -26,7 +26,7 @@ const OverallPortfolioSummaryCard: React.FC<OverallPortfolioSummaryCardProps> = 
           <p className="text-sm text-muted-foreground">Total Portfolio Value</p>
           <Wallet className="h-5 w-5 text-muted-foreground" />
         </div>
-        <p className="text-4xl font-bold mb-1">{formatUSD(currentValue)}</p>
+        <p className="text-4xl font-bold mb-1">{formatCurrency(currentValue)}</p>
         <div className="flex items-center space-x-2">
           {Icon && <Icon className={`w-4 h-4 ${gainLossColor}`} />}
           <span className={`text-sm ${gainLossColor}`}>

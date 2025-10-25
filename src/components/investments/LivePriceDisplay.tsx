@@ -10,7 +10,7 @@ interface LivePriceDisplayProps {
 }
 
 const LivePriceDisplay: React.FC<LivePriceDisplayProps> = ({ price, loading, error }) => {
-  const { formatUSD } = useCurrency(); // Use formatUSD from context
+  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
 
   if (loading) {
     return (
@@ -38,7 +38,7 @@ const LivePriceDisplay: React.FC<LivePriceDisplayProps> = ({ price, loading, err
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-arrowUp/40 opacity-75"></span>
         <span className="relative inline-flex rounded-full h-2 w-2 bg-arrowUp"></span>
       </span>
-      <span>{formatUSD(price)}</span>
+      <span>{formatCurrency(price)}</span>
     </div>
   );
 };

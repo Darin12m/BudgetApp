@@ -16,7 +16,7 @@ interface InvestmentListItemProps {
 }
 
 const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onEdit, priceChangeStatus, isAlerted }) => {
-  const { formatCurrency, formatUSD, selectedCurrency } = useCurrency(); // Use formatCurrency, formatUSD, selectedCurrency from context
+  const { formatCurrency, selectedCurrency } = useCurrency(); // Use formatCurrency, selectedCurrency from context
 
   const invested = investment.quantity * investment.buyPrice;
   const currentValue = investment.quantity * investment.currentPrice;
@@ -40,12 +40,6 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
     none: '',
   };
 
-  // Converted value for tooltip
-  const convertedValue = useMemo(() => {
-    if (selectedCurrency.code === 'USD') return null; // No need to convert if already USD
-    return formatCurrency(currentValue);
-  }, [currentValue, selectedCurrency, formatCurrency]);
-
   return (
     <div className={cn(
       "flex items-center justify-between p-4 bg-card rounded-lg shadow-sm border border-border/50 hover:bg-muted/50 transition-colors active:bg-muted backdrop-blur-lg animate-in fade-in slide-in-from-bottom-2 duration-300",
@@ -62,7 +56,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
           <Tooltip>
             <TooltipTrigger asChild>
               <p className="text-xs text-muted-foreground truncate cursor-help">
-                {investment.type} • {formatUSD(currentValue)} {/* Display in USD */}
+                {investment.type} • {formatCurrency(currentValue)} {/* Display in selected currency */}
                 <span className="ml-2 text-arrowUp text-xs font-medium flex items-center">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-arrowUp/40 opacity-75"></span>
@@ -72,11 +66,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
                 </span>
               </p>
             </TooltipTrigger>
-            {convertedValue && (
-              <TooltipContent className="bg-tooltip-bg border-tooltip-border-color text-tooltip-text-color">
-                <p>Value in {selectedCurrency.code}: {convertedValue}</p>
-              </TooltipContent>
-            )}
+            {/* Removed convertedValue tooltip as formatCurrency handles it directly */}
           </Tooltip>
         </div>
       </div>
@@ -94,7 +84,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
             <AlertTriangle className="w-3 h-3 mr-1" /> Alert!
           </p>
         )}
-        <p className={`text-xs ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatUSD(gainLoss)}</p>
+        <p className={`text-xs ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(gainLoss)}</p>
       </div>
       <Button variant="ghost" size="icon" onClick={() => onEdit(investment)} className="ml-2 flex-shrink-0 text-muted-foreground hover:bg-muted/50">
         <Edit className="h-4 w-4" />

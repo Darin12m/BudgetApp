@@ -54,7 +54,7 @@ interface InvestmentsPageProps {
 }
 
 const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
-  const { formatCurrency, formatUSD, selectedCurrency } = useCurrency(); // Use formatUSD and selectedCurrency
+  const { formatCurrency, selectedCurrency } = useCurrency(); // Use formatCurrency
   const { selectedRange } = useDateRange();
 
   const {
@@ -387,11 +387,11 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                     <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       style={{ fontSize: '10px' }}
-                      tickFormatter={(value) => formatUSD(Number(value))} // Use formatUSD here
+                      tickFormatter={(value) => formatCurrency(Number(value))} // Use formatCurrency here
                     />
                     <Tooltip
                       contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
-                      formatter={(value) => formatUSD(Number(value))} // Use formatUSD here
+                      formatter={(value) => formatCurrency(Number(value))} // Use formatCurrency here
                       labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                     />
                     <Line type="monotone" dataKey="value" stroke="hsl(var(--emerald))" strokeWidth={2} name="Portfolio Value" dot={false} />
