@@ -16,6 +16,7 @@ import { onAuthStateChanged, User, setPersistence, browserLocalPersistence } fro
 import { CurrencyProvider } from "./context/CurrencyContext";
 import { DateRangeProvider } from "./context/DateRangeContext";
 import { ErrorLogProvider, useErrorLog } from "./context/ErrorLogContext"; // Import ErrorLogProvider and useErrorLog
+import GlobalErrorLogger from "./components/GlobalErrorLogger"; // Import GlobalErrorLogger
 
 const queryClient = new QueryClient();
 
@@ -131,8 +132,8 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <ErrorLogProvider> {/* Wrap the entire app with ErrorLogProvider */}
-            <GlobalErrorCatcher /> {/* Component to catch global errors */}
+          <ErrorLogProvider>
+            <GlobalErrorCatcher />
             <CurrencyProvider>
               <DateRangeProvider>
                 <Routes>
@@ -154,7 +155,7 @@ const App = () => {
                     }
                   />
                   <Route
-                    path="/budget-app/:view" // Added dynamic view parameter
+                    path="/budget-app/:view"
                     element={
                       <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
                         <BudgetApp userUid={userUid} />
@@ -177,11 +178,12 @@ const App = () => {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/console-log" element={<ConsoleLogPage />} /> {/* New Console Log Page */}
+                  <Route path="/console-log" element={<ConsoleLogPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </DateRangeProvider>
             </CurrencyProvider>
+            <GlobalErrorLogger /> {/* Integrate GlobalErrorLogger here */}
           </ErrorLogProvider>
         </BrowserRouter>
       </TooltipProvider>
