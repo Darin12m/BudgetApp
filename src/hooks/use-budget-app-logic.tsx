@@ -527,6 +527,9 @@ export const useBudgetAppLogic = (userUid: string | null) => {
     handleOpenAddFunds,
     handleAddFundsToGoal,
     handleQuickAddTransaction,
+    setIsAddEditCategoryModalOpen, // Return here
+    setIsAddEditGoalModalOpen,     // Return here
+    setIsAddFundsModalOpen,        // Return here
     formatCurrency, // Pass formatCurrency for convenience
   };
 };
