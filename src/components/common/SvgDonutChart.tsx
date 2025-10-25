@@ -11,8 +11,8 @@ interface SvgDonutChartProps {
   outerRadius: number;
   chartId: string; // Unique ID for gradients
   formatValue: (value: number, options?: Intl.NumberFormatOptions) => string;
-  mainTextColorClass?: string;
-  subTextColorClass?: string;
+  mainTextColorClass?: string; // No longer used for color, but kept for other potential text styles
+  subTextColorClass?: string; // No longer used for color, but kept for other potential text styles
   mainFontWeightClass?: string;
   subFontWeightClass?: string;
   progressColor?: string; // For solid color progress
@@ -30,8 +30,8 @@ const SvgDonutChart: React.FC<SvgDonutChartProps> = ({
   outerRadius,
   chartId,
   formatValue,
-  mainTextColorClass = 'text-white', // Changed to text-white
-  subTextColorClass = 'text-white', // Changed to text-white
+  mainTextColorClass, // Removed default 'text-white' as fill will be explicit
+  subTextColorClass, // Removed default 'text-white' as fill will be explicit
   mainFontWeightClass = 'font-bold',
   subFontWeightClass = 'font-normal',
   progressColor,
@@ -146,8 +146,9 @@ const SvgDonutChart: React.FC<SvgDonutChartProps> = ({
           <tspan
             x={centerX}
             dy="-0.3em" // Adjust vertical position for main text
-            className={cn(mainTextColorClass, mainFontWeightClass)}
+            className={cn(mainFontWeightClass)} // Removed mainTextColorClass
             style={{ fontSize: `${mainTextFontSize}px` }}
+            fill="white" // Explicitly set fill to white
           >
             {mainText}
           </tspan>
@@ -155,8 +156,9 @@ const SvgDonutChart: React.FC<SvgDonutChartProps> = ({
             <tspan
               x={centerX}
               dy="1.2em" // Adjust vertical position for sub text relative to main text
-              className={cn("text-xs", subTextColorClass, subFontWeightClass)}
+              className={cn("text-xs", subFontWeightClass)} // Removed subTextColorClass
               style={{ fontSize: `${subTextFontSize}px` }}
+              fill="white" // Explicitly set fill to white
             >
               {subText}
             </tspan>
