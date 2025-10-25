@@ -118,6 +118,7 @@ const BudgetView: React.FC<BudgetViewProps> = memo(
     // Calculate the effective diameter for the text container based on inner radius
     const textContainerDiameter = donutInnerRadius * 2;
 
+    // Start of JSX return for BudgetView component
     return (
       <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
         {/* Overall Budget Summary Card */}
