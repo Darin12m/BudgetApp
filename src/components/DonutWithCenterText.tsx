@@ -178,34 +178,17 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
           </Pie>
           <Tooltip
             offset={10}
-            content={({ active, payload, label }) => {
-              if (active && payload && payload.length) {
-                const entry = payload[0].payload; // Get the actual data entry
-                const percentage = totalValue > 0 ? (entry.value / totalValue) * 100 : 0;
-                return (
-                  <div className="rounded-lg border bg-tooltip-bg p-3 text-sm shadow-lg border-tooltip-border-color text-tooltip-text-color">
-                    <p className="font-semibold mb-1">{entry.name}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="mr-2" style={{ color: entry.color as string }}>
-                        Value:
-                      </span>
-                      <span className="font-medium">
-                        {formatValue ? formatValue(entry.value) : entry.value}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="mr-2">
-                        Percentage:
-                      </span>
-                      <span className="font-medium">
-                        {percentage.toFixed(1)}%
-                      </span>
-                    </div>
-                  </div>
-                );
-              }
-              return null;
+            contentStyle={{
+              backgroundColor: 'hsl(var(--card))',
+              color: 'hsl(0 0% 100%)', // White text
+              borderRadius: '8px',
+              border: '1px solid hsl(var(--border))',
+              padding: '10px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+              pointerEvents: 'none',
             }}
+            itemStyle={{ color: 'hsl(0 0% 100%)' }} // White text for items
+            formatter={(value: number) => formatValue ? formatValue(value) : value.toLocaleString()}
           />
         </PieChart>
       </ResponsiveContainer>
