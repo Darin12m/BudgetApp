@@ -3,8 +3,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
 import { PieSectorDataItem } from 'recharts/types/polar/Pie';
-import { TooltipProps } from 'recharts/types/component/DefaultTooltipContent'; // Import TooltipProps
-import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'; // Import NameType, ValueType
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency for formatting
 
@@ -90,6 +88,7 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
 }) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const onPieEnter = useCallback((_: any, index: number) => {
     setActiveIndex(index);
@@ -99,17 +98,11 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
     setActiveIndex(null);
   }, []);
 
-  // Calculate total value for percentage calculation in tooltip if not provided
-  const totalValue = useMemo(() => data.reduce((sum, entry) => sum + entry.value, 0), [data]);
-
   // Dynamic font sizing for the center text
   const calculateFontSize = useCallback((text: string, containerDiameter: number, maxPx: number, minPx: number, charFactor: number) => {
     if (!text) return minPx;
     const textLength = text.length;
-    // A heuristic: scale font size based on text length relative to available diameter
-    // Adjust charFactor for desired visual density.
-    // Using a logarithmic scale for length to handle very long numbers better.
-    const lengthFactor = Math.log(textLength + 1) / Math.log(2); // log base 2
+    const lengthFactor = Math.log(textLength + 1) / Math.log(2);
     const calculatedSize = (containerDiameter / (lengthFactor * charFactor));
     return Math.max(minPx, Math.min(maxPx, calculatedSize));
   }, []);
@@ -118,85 +111,26 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
   const mainTextFontSize = calculateFontSize(String(mainValue), textContainerDiameter, 28, 10, 1.5);
   const subTextFontSize = calculateFontSize(String(mainLabel), textContainerDiameter, 16, 8, 1.8);
 
-  // Custom Tooltip Content Component
-  const CustomDonutTooltipContent: React.FC<TooltipProps<ValueType, NameType> & {
-    chartOuterRadius: number;
-    formatValue: (value: number, options?: Intl.NumberFormatOptions) => string;
-  }> = ({
-    active,
-    payload,
-    label,
-    coordinate, // Mouse coordinates when cursor={true}
-    viewBox, // Contains cx, cy, width, height of the chart area
-    chartOuterRadius, // Passed from DonutWithCenterText props
-    formatValue,
-  }) => {
-    if (active && payload && payload.length && coordinate && viewBox) {
-      const { cx, cy } = viewBox; // Center of the chart area
-      const mouseX = coordinate.x;
-      const mouseY = coordinate.y;
-
-      // Calculate the angle of the mouse relative to the center of the donut
-      const angle = Math.atan2(mouseY - cy, mouseX - cx);
-
-      // Calculate a position for the tooltip that is always outside the donut
-      const tooltipDistance = chartOuterRadius + 20; // 20px beyond outer radius
-      let tooltipX = cx + tooltipDistance * Math.cos(angle);
-      let tooltipY = cy + tooltipDistance * Math.sin(angle);
-
-      // Basic adjustment to prevent tooltip from being cut off by screen edges
-      const padding = 10;
-      if (tooltipX < padding) tooltipX = padding;
-      if (tooltipY < padding) tooltipY = padding;
-
-      return (
-        <div
-          style={{
-            position: 'absolute',
-            left: tooltipX,
-            top: tooltipY,
-            backgroundColor: 'hsl(var(--card))',
-            color: 'hsl(0 0% 100%)',
-            borderRadius: '8px',
-            border: '1px solid hsl(var(--border))',
-            padding: '10px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-            fontSize: '12px',
-            pointerEvents: 'none', // Important: prevent tooltip from capturing mouse events
-            zIndex: 100,
-            whiteSpace: 'nowrap', // Prevent text wrapping for better width estimation
-          }}
-        >
-          {label && <p className="font-semibold mb-1">{label}</p>}
-          {payload.map((entry, index) => (
-            <div key={`item-${index}`} className="flex items-center justify-between">
-              <span className="mr-2" style={{ color: entry.color as string }}>
-                {entry.name}:
-              </span>
-              <span className="font-medium">
-                {formatValue(Number(entry.value))}
-              </span>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
     <div className={cn("relative w-full h-full flex items-center justify-center", className)}>
       <ResponsiveContainer width="100%" height="100%">
-        <PieChart onMouseEnter={onPieEnter} onMouseLeave={onPieLeave}>
+        <PieChart
+          onMouseEnter={onPieEnter}
+          onMouseLeave={onPieLeave}
+          onMouseMove={(e) => {
+            if (e && e.activeCoordinate) {
+              setMousePos({
+                x: e.activeCoordinate.x + 30, // 30px to the right of cursor
+                y: e.activeCoordinate.y - 30, // slightly above cursor
+              });
+            }
+          }}
+        >
           <defs>
             {data.map((entry, index) => {
-              // Check if color is a gradient URL, otherwise assume solid color
               if (entry.color && entry.color.startsWith('url(#')) {
-                // If it's already a URL, we don't need to define a new gradient here
                 return null;
               }
-              // If it's a solid color, we can create a simple gradient for consistency or just use it directly
-              // For now, let's assume solid colors are passed directly to Cell fill
               return null;
             })}
           </defs>
@@ -245,11 +179,31 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
             ))}
           </Pie>
           <Tooltip
-            cursor={true} // Make tooltip follow the mouse
-            content={<CustomDonutTooltipContent
-              chartOuterRadius={outerRadius}
-              formatValue={formatValue || formatCurrency}
-            />}
+            cursor={false}
+            position={mousePos}
+            wrapperStyle={{
+              pointerEvents: 'none',
+              transition: 'transform 0.1s ease-out',
+              transform: 'translateY(-5px)',
+            }}
+            contentStyle={{
+              backgroundColor: 'hsl(var(--card))',
+              color: '#fff',
+              borderRadius: '10px',
+              border: '1px solid rgba(255,255,255,0.15)',
+              padding: '10px 12px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+            }}
+            itemStyle={{
+              color: '#fff',
+              fontSize: '0.9rem',
+              fontWeight: 500,
+            }}
+            formatter={(value: number) =>
+              formatValue ? formatValue(value) : `$${Number(value).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}`
+            }
           />
         </PieChart>
       </ResponsiveContainer>
