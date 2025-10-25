@@ -134,7 +134,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
         {chartData.length > 0 ? (
           <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}> {/* Added margin */}
                 <defs>
                   {chartData.map((entry, index) => (
                     <linearGradient key={`grad-${index}`} id={`color-${index}`} x1="0" y1="0" x2="0" y2="1">
@@ -164,6 +164,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                   ))}
                 </Pie>
                 <Tooltip
+                  offset={10} {/* Added offset */}
                   contentStyle={{
                     fontSize: '12px',
                     backgroundColor: 'hsl(var(--tooltip-bg))',

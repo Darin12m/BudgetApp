@@ -151,7 +151,7 @@ const BudgetView: React.FC<BudgetViewProps> = memo(({
           {/* Donut Chart */}
           <div className="w-40 h-40 relative flex-shrink-0">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart onMouseEnter={onPieEnter} onMouseLeave={onPieLeave}>
+              <PieChart onMouseEnter={onPieEnter} onPieLeave={onPieLeave} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}> {/* Added margin */}
                 <defs>
                   <linearGradient id="gradientPrimary" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="hsl(var(--blue))" />
@@ -205,6 +205,7 @@ const BudgetView: React.FC<BudgetViewProps> = memo(({
                   ))}
                 </Pie>
                 <Tooltip
+                  offset={10} {/* Added offset */}
                   content={<CustomDonutTooltip
                     totalBudgeted={totalBudgeted}
                     totalSpent={totalSpent}

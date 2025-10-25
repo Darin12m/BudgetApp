@@ -116,7 +116,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   const { formatCurrency } = useCurrency();
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [showPercentageLabel, setShowPercentageLabel] = useState(false);
+  // Removed showPercentageLabel state as animate-scale-in handles initial visibility
 
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
   const isOverBudget = remainingBudget < 0;
@@ -143,14 +143,6 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
 
   // Animate the remaining budget number
   const animatedRemainingBudget = useCountUp(remainingBudget, 1000);
-
-  // Animation for percentage label fade-in
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowPercentageLabel(true);
-    }, 800); // After ring animation duration
-    return () => clearTimeout(timer);
-  }, []);
 
   const onPieEnter = useCallback((_: any, index: number) => {
     setActiveIndex(index);
@@ -198,7 +190,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
         {/* Donut Chart */}
         <div className="w-40 h-40 relative flex-shrink-0"> {/* Increased container size */}
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart onMouseEnter={onPieEnter} onMouseLeave={onPieLeave}>
+            <PieChart onMouseEnter={onPieEnter} onMouseLeave={onPieLeave} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}> {/* Added margin */}
               <defs>
                 {/* Gradient for main spent portion */}
                 <linearGradient id="gradientPrimary" x1="0" y1="0" x2="0" y2="1">
@@ -254,6 +246,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                 ))}
               </Pie>
               <Tooltip
+                offset={10} {/* Added offset */}
                 content={<CustomDonutTooltip
                     totalBudgeted={totalBudgeted}
                     totalSpent={totalSpent}
@@ -271,7 +264,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
             containerSize={textContainerDiameter}
             maxFontSizePx={28} // Adjusted max font size for better fit
             minFontSizePx={10}
-            className={showPercentageLabel ? 'opacity-100' : 'opacity-0'}
+            // Removed className={showPercentageLabel ? 'opacity-100' : 'opacity-0'} to rely on animate-scale-in
           />
         </div>
       </div>
