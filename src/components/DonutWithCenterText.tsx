@@ -177,7 +177,7 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
             ))}
           </Pie>
           <Tooltip
-            offset={10}
+            offset={outerRadius + 20} // Adjusted offset to appear outside the donut
             contentStyle={{
               backgroundColor: 'hsl(var(--card))',
               color: 'hsl(0 0% 100%)', // White text
@@ -185,7 +185,6 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
               border: '1px solid hsl(var(--border))',
               padding: '10px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-              pointerEvents: 'none',
             }}
             itemStyle={{ color: 'hsl(0 0% 100%)' }} // White text for items
             formatter={(value: number) => formatValue ? formatValue(value) : value.toLocaleString()}
