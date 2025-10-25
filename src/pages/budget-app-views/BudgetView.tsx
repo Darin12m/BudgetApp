@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { CustomProgress } from '@/components/common/CustomProgress';
 import { PieSectorDataItem } from 'recharts/types/polar/Pie';
+import DynamicTextInCircle from '@/components/common/DynamicTextInCircle'; // Import the new component
 
 interface BudgetViewProps {
   totalBudgeted: number;
@@ -110,6 +111,11 @@ const BudgetView: React.FC<BudgetViewProps> = memo(({
     setActiveIndex(null);
   }, []);
 
+  // Determine the size of the circular area for the text
+  const donutOuterRadius = 75; // From Pie component props
+  const donutInnerRadius = 65; // From Pie component props
+  const textContainerSize = (donutOuterRadius + donutInnerRadius) * 1.2; // A bit larger than inner radius for padding
+
   return (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
       {/* Overall Budget Summary Card */}
@@ -160,8 +166,8 @@ const BudgetView: React.FC<BudgetViewProps> = memo(({
                   data={backgroundPieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={65}
-                  outerRadius={75}
+                  innerRadius={donutInnerRadius}
+                  outerRadius={donutOuterRadius}
                   fill="hsl(var(--muted)/50%)"
                   dataKey="value"
                   isAnimationActive={false}
@@ -174,8 +180,8 @@ const BudgetView: React.FC<BudgetViewProps> = memo(({
                   data={pieChartData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={65}
-                  outerRadius={75}
+                  innerRadius={donutInnerRadius}
+                  outerRadius={donutOuterRadius}
                   startAngle={90}
                   endAngle={-270}
                   paddingAngle={0}
@@ -208,12 +214,13 @@ const BudgetView: React.FC<BudgetViewProps> = memo(({
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center pointer-events-none animate-scale-in">
-              <span className="font-bold text-foreground" style={{ fontSize: 'clamp(1.25rem, 5vw, 2.5rem)' }}>
-                {totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
-              </span>
-              <span className="text-xs text-muted-foreground">Used</span>
-            </div>
+            <DynamicTextInCircle
+              mainText={totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
+              subText="Used"
+              containerSize={textContainerSize}
+              maxFontSizePx={28} // Adjusted max font size for better fit
+              minFontSizePx={10}
+            />
           </div>
         </div>
 

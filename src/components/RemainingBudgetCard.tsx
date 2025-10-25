@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge'; // Import Badge component
 import { PieSectorDataItem } from 'recharts/types/polar/Pie'; // Import PieSectorDataItem
 import { CustomProgress } from '@/components/common/CustomProgress'; // Import CustomProgress
+import DynamicTextInCircle from '@/components/common/DynamicTextInCircle'; // Import the new component
 
 interface RemainingBudgetCardProps {
   totalBudgeted: number;
@@ -170,6 +171,11 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
     { day: 7, value: 400 },
   ];
 
+  // Determine the size of the circular area for the text
+  const donutOuterRadius = 75; // From Pie component props
+  const donutInnerRadius = 65; // From Pie component props
+  const textContainerSize = (donutOuterRadius + donutInnerRadius) * 1.2; // A bit larger than inner radius for padding
+
   return (
     <div className="bg-card rounded-xl sm:rounded-2xl p-6 card-shadow animate-in fade-in slide-in-from-top-2 duration-300 border border-border/50 backdrop-blur-lg">
       <div className="flex flex-col sm:flex-row items-center sm:justify-between mb-4">
@@ -209,8 +215,8 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                 data={backgroundPieData}
                 cx="50%"
                 cy="50%"
-                innerRadius={65} // Adjusted radius
-                outerRadius={75} // Adjusted radius
+                innerRadius={donutInnerRadius} // Adjusted radius
+                outerRadius={donutOuterRadius} // Adjusted radius
                 fill="hsl(var(--muted)/50%)"
                 dataKey="value"
                 isAnimationActive={false}
@@ -223,8 +229,8 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                 data={pieChartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={65} // Adjusted radius
-                outerRadius={75} // Adjusted radius
+                innerRadius={donutInnerRadius} // Adjusted radius
+                outerRadius={donutOuterRadius} // Adjusted radius
                 startAngle={90}
                 endAngle={-270}
                 paddingAngle={0}
@@ -247,20 +253,24 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }}
-                formatter={(value, name) => [`${formatCurrency(Number(value))}`, name]}
+                content={<CustomDonutTooltip
+                    totalBudgeted={totalBudgeted}
+                    totalSpent={totalSpent}
+                    remainingBudget={remainingBudget}
+                    isOverBudget={isOverBudget}
+                    formatCurrency={formatCurrency}
+                  />}
               />
             </PieChart>
           </ResponsiveContainer>
-          <div className={cn(
-            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center transition-opacity duration-300 animate-scale-in pointer-events-none", // Added pointer-events-none
-            showPercentageLabel ? 'opacity-100' : 'opacity-0'
-          )}>
-            <span className="font-bold text-foreground" style={{ fontSize: 'clamp(1.25rem, 5vw, 2.5rem)' }}>
-              {totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
-            </span>
-            <span className="text-xs text-muted-foreground">Used</span>
-          </div>
+          <DynamicTextInCircle
+            mainText={totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
+            subText="Used"
+            containerSize={textContainerSize}
+            maxFontSizePx={28} // Adjusted max font size for better fit
+            minFontSizePx={10}
+            className={showPercentageLabel ? 'opacity-100' : 'opacity-0'}
+          />
         </div>
       </div>
 

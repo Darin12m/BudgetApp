@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recha
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
+import DynamicTextInCircle from '@/components/common/DynamicTextInCircle'; // Import the new component
 
 interface AllocationData {
   name: string;
@@ -118,6 +119,11 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
 
   const activeItem = activeIndex !== null ? chartData[activeIndex] : null;
 
+  // Determine the size of the circular area for the text
+  const donutOuterRadius = 90; // From Pie component props
+  const donutInnerRadius = 60; // From Pie component props
+  const textContainerSize = (donutOuterRadius + donutInnerRadius) * 1.2; // A bit larger than inner radius for padding
+
   return (
     <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -142,8 +148,8 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                   data={chartData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
+                  innerRadius={donutInnerRadius}
+                  outerRadius={donutOuterRadius}
                   dataKey="value"
                   isAnimationActive={true}
                   animationDuration={800}
@@ -171,15 +177,14 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                 />
               </PieChart>
             </ResponsiveContainer>
-            {/* Center Label */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center pointer-events-none animate-scale-in">
-              <p className="font-bold text-foreground" style={{ fontSize: 'clamp(1.25rem, 5vw, 2.5rem)' }}>
-                {activeItem ? formatCurrency(activeItem.value) : formatCurrency(totalPortfolioValue)} {/* Changed to formatCurrency */}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {activeItem ? `${activeItem.name} (${activeItem.percentage.toFixed(0)}%)` : 'Total Allocated'}
-              </p>
-            </div>
+            {/* Center Label using DynamicTextInCircle */}
+            <DynamicTextInCircle
+              mainText={activeItem ? formatCurrency(activeItem.value) : formatCurrency(totalPortfolioValue)}
+              subText={activeItem ? `${activeItem.name} (${activeItem.percentage.toFixed(0)}%)` : 'Total Allocated'}
+              containerSize={textContainerSize}
+              maxFontSizePx={28} // Adjusted max font size for better fit
+              minFontSizePx={10}
+            />
           </div>
         ) : (
           <p className="text-muted-foreground w-full text-center">{emptyMessage}</p>
