@@ -253,10 +253,10 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
             </PieChart>
           </ResponsiveContainer>
           <div className={cn(
-            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center transition-opacity duration-300 animate-scale-in",
+            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center transition-opacity duration-300 animate-scale-in pointer-events-none", // Added pointer-events-none
             showPercentageLabel ? 'opacity-100' : 'opacity-0'
           )}>
-            <span className="font-bold text-foreground" style={{ fontSize: 'clamp(1.25rem, 4vw, 1.5rem)' }}>
+            <span className="font-bold text-foreground" style={{ fontSize: 'clamp(1.25rem, 5vw, 2.5rem)' }}>
               {totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
             </span>
             <span className="text-xs text-muted-foreground">Used</span>

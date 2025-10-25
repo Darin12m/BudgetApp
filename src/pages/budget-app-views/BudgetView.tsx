@@ -209,7 +209,7 @@ const BudgetView: React.FC<BudgetViewProps> = memo(({
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center pointer-events-none animate-scale-in">
-              <span className="font-bold text-foreground" style={{ fontSize: 'clamp(1.25rem, 4vw, 1.5rem)' }}>
+              <span className="font-bold text-foreground" style={{ fontSize: 'clamp(1.25rem, 5vw, 2.5rem)' }}>
                 {totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
               </span>
               <span className="text-xs text-muted-foreground">Used</span>
