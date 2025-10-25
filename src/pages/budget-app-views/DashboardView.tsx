@@ -4,6 +4,7 @@ import React, { memo, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { TrendingUp, DollarSign, CreditCard, PiggyBank, Lightbulb, LucideIcon, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button'; // Added missing import for Button
 import { Account, RecurringTransaction, Transaction, Category } from '@/hooks/use-finance-data';
 import { formatDate } from '@/lib/utils';
 import RemainingBudgetCard from '@/components/RemainingBudgetCard';
