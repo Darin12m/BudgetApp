@@ -106,8 +106,14 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
         ];
 
         defaultInvestments.forEach(async (inv) => {
+          const sanitizedInv = { ...inv };
+          Object.keys(sanitizedInv).forEach(key => {
+            if (sanitizedInv[key] === undefined) {
+              delete sanitizedInv[key];
+            }
+          });
           try {
-            await addDoc(collection(db, "investments"), inv);
+            await addDoc(collection(db, "investments"), sanitizedInv);
           } catch (e) {
             console.error("Error adding default investment:", e);
             toast.error("Failed to add default investment data.");
@@ -350,15 +356,23 @@ export const useInvestmentData = (userUid: string | null, startDate: Date | unde
       toast.error("Authentication required to update data.");
       return;
     }
+
+    const sanitizedData = { ...data };
+    Object.keys(sanitizedData).forEach(key => {
+      if (sanitizedData[key] === undefined) {
+        delete sanitizedData[key];
+      }
+    });
+
     try {
       await updateDoc(doc(db, "investments", id), {
-        ...data,
+        ...sanitizedData,
         updatedAt: serverTimestamp(),
       });
       toast.success("Investment updated successfully!");
-    } catch (e) {
-      console.error("Error updating investment:", e);
-      toast.error("Failed to update investment.");
+    } catch (e: any) {
+      console.error("Error updating investment:", e.code, e.message);
+      toast.error(`Failed to update investment: ${e.message}`);
     }
   }, [userUid]);
 

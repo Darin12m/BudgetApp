@@ -215,9 +215,20 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       toast.error("You must be logged in to save data.");
       return;
     }
+
+    // Create a mutable copy of data for sanitation
+    const sanitizedData = { ...data };
+
+    // Remove undefined fields
+    Object.keys(sanitizedData).forEach(key => {
+      if (sanitizedData[key] === undefined) {
+        delete sanitizedData[key];
+      }
+    });
+
     try {
       const docRef = await addDoc(collection(db, collectionName), {
-        ...data,
+        ...sanitizedData, // Use sanitized data
         ownerUid: userUid,
         createdAt: serverTimestamp(),
       });
@@ -235,9 +246,20 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
       toast.error("Authentication required to update data.");
       return;
     }
+
+    // Create a mutable copy of data for sanitation
+    const sanitizedData = { ...data };
+
+    // Remove undefined fields
+    Object.keys(sanitizedData).forEach(key => {
+      if (sanitizedData[key] === undefined) {
+        delete sanitizedData[key];
+      }
+    });
+
     try {
       await updateDoc(doc(db, collectionName, id), {
-        ...data,
+        ...sanitizedData, // Use sanitized data
         updatedAt: serverTimestamp(),
       });
       toast.success(`${collectionName.slice(0, -1)} updated successfully!`);
