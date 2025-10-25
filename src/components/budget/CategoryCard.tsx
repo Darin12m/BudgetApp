@@ -1,0 +1,101 @@
+"use client";
+
+import React, { memo } from 'react';
+import { Edit, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Category } from '@/hooks/use-finance-data'; // Import Category type
+import { cn } from '@/lib/utils';
+
+interface HealthStatus {
+  status: 'over' | 'warning' | 'good';
+  color: string;
+  bg: string;
+}
+
+// Utility Functions (moved from BudgetApp.tsx)
+const getHealthStatus = (spent: number, budgeted: number): HealthStatus => {
+  const percentage = (spent / budgeted) * 100;
+  if (percentage >= 100) return { status: 'over', color: 'text-destructive', bg: 'bg-red-50 dark:bg-red-900/20' };
+  if (percentage >= 80) return { status: 'warning', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' };
+  return { status: 'good', color: 'text-emerald', bg: 'bg-emerald-50 dark:bg-emerald-900/20' };
+};
+
+interface CategoryCardProps {
+  category: Category;
+  onEdit: (category: Category) => void;
+  onDelete: (id: string) => void;
+  formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
+}
+
+const CategoryCard: React.FC<CategoryCardProps> = memo(({ category, onEdit, onDelete, formatCurrency }) => {
+  const percentage = (category.spent / category.budgeted) * 100;
+  const health = getHealthStatus(category.spent, category.budgeted);
+
+  return (
+    <div className="p-4 sm:p-6 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <span className="text-2xl flex-shrink-0">{category.emoji}</span>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-semibold text-foreground text-sm sm:text-base truncate">{category.name}</h4>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {formatCurrency(category.spent)} of {formatCurrency(category.budgeted)}
+            </p>
+          </div>
+        </div>
+        <div className="text-right ml-2 flex-shrink-0 flex items-center space-x-2">
+          <p className={`font-semibold text-sm sm:text-base ${health.color}`}>
+            {formatCurrency(category.budgeted - category.spent)}
+          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground">{Math.round(percentage)}%</p>
+          <Button variant="ghost" size="icon" onClick={() => onEdit(category)} className="h-8 w-8 text-muted-foreground hover:bg-muted/50">
+            <Edit className="h-4 w-4" />
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the category "{category.name}" and all associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(category.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+      <div className="relative">
+        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+          <div
+            className="h-full transition-all duration-500"
+            style={{
+              width: `${Math.min(percentage, 100)}%`,
+              backgroundColor: category.color
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export default CategoryCard;
