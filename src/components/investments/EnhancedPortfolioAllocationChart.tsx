@@ -164,7 +164,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
                   ))}
                 </Pie>
                 <Tooltip
-                  offset={10} {/* Added offset */}
+                  offset={10}
                   contentStyle={{
                     fontSize: '12px',
                     backgroundColor: 'hsl(var(--tooltip-bg))',

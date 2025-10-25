@@ -206,7 +206,7 @@ const BudgetView: React.FC<BudgetViewProps> = ({
                   ))}
                 </Pie>
                 <Tooltip
-                  offset={10} {/* Added offset */}
+                  offset={10}
                   content={<CustomDonutTooltip
                     totalBudgeted={totalBudgeted}
                     totalSpent={totalSpent}
