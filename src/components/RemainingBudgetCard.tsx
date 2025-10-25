@@ -69,35 +69,34 @@ const CustomDonutTooltip = ({ active, payload, totalBudgeted, totalSpent, remain
 const useCountUp = (end: number, duration: number = 1000) => {
   const [count, setCount] = useState(0);
   const requestRef = useRef<number>();
-  const previousTimeRef = useRef<number>();
+  const startTimeRef = useRef<number>(); // To track animation start time
 
   const animate = useCallback((time: number) => {
-    if (previousTimeRef.current !== undefined) {
-      const deltaTime = time - previousTimeRef.current;
-      setCount(prevCount => {
-        const progress = Math.min(deltaTime / duration, 1);
-        const newCount = end * progress;
-        return newCount;
-      });
+    if (!startTimeRef.current) {
+      startTimeRef.current = time;
     }
-    previousTimeRef.current = time;
-    if (count < end) {
+    const elapsed = time - startTimeRef.current;
+    const progress = Math.min(elapsed / duration, 1);
+    const newCount = end * progress;
+
+    setCount(newCount);
+
+    if (progress < 1) {
       requestRef.current = requestAnimationFrame(animate);
     } else {
       setCount(end); // Ensure it lands exactly on the end value
     }
-  }, [end, duration, count]);
+  }, [end, duration]); // Dependencies are just end and duration
 
   useEffect(() => {
-    setCount(0); // Reset count when end value changes
-    previousTimeRef.current = undefined; // Reset previous time
+    startTimeRef.current = undefined; // Reset start time
     requestRef.current = requestAnimationFrame(animate);
     return () => {
       if (requestRef.current) {
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [end, animate]);
+  }, [end, animate]); // Dependencies are end and animate
 
   return count;
 };
@@ -220,7 +219,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
               {/* Main Data Ring */}
               <Pie
                 activeIndex={activeIndex !== null ? activeIndex : undefined}
-                activeShape={activeIndex !== null ? (props: PieSectorDataItem) => <CustomActiveShape {...props} /> : undefined} {/* Fix: Explicitly type props */}
+                activeShape={activeIndex !== null ? (props: PieSectorDataItem) => <CustomActiveShape {...props} /> : undefined}
                 data={pieChartData}
                 cx="50%"
                 cy="50%"
