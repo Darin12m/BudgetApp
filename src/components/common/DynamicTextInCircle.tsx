@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 interface DynamicTextInCircleProps {
   mainText: string;
   subText?: string;
-  containerSize: number; // Diameter of the circular area where text should fit
-  maxFontSizePx?: number; // Maximum font size in pixels
-  minFontSizePx?: number; // Minimum font size in pixels
-  mainTextColorClass?: string;
-  subTextColorClass?: string;
+  containerSize: number; // Diameter of the circle containing the text
+  maxFontSizePx?: number;
+  minFontSizePx?: number;
   mainFontWeightClass?: string;
   subFontWeightClass?: string;
   className?: string; // Additional classes for the outer div
@@ -19,89 +17,73 @@ interface DynamicTextInCircleProps {
 const DynamicTextInCircle: React.FC<DynamicTextInCircleProps> = ({
   mainText,
   subText,
-  containerSize, // e.g., 180 for a 180px diameter circle
-  maxFontSizePx = 40,
-  minFontSizePx = 12,
-  mainTextColorClass = 'text-foreground',
-  subTextColorClass = 'text-muted-foreground',
+  containerSize,
+  maxFontSizePx = 24,
+  minFontSizePx = 10,
   mainFontWeightClass = 'font-bold',
   subFontWeightClass = 'font-normal',
   className,
 }) => {
-  const textRef = useRef<HTMLDivElement>(null);
-  const [currentFontSize, setCurrentFontSize] = useState(maxFontSizePx);
+  const centerX = containerSize / 2;
+  const centerY = containerSize / 2;
 
-  const adjustFontSize = useCallback(() => {
-    if (!textRef.current) return;
+  // Dynamic font sizing for SVG text
+  const calculateFontSize = useCallback((text: string, maxDiameter: number, baseSize: number, charFactor: number) => {
+    if (!text) return 0;
+    const estimatedLengthFactor = text.length > 0 ? Math.sqrt(text.length) : 1;
+    const calculatedSize = (maxDiameter / estimatedLengthFactor) * charFactor;
+    return Math.max(minFontSizePx, Math.min(baseSize, calculatedSize));
+  }, [minFontSizePx]);
 
-    const textElement = textRef.current;
-    const parentWidth = containerSize; // Use containerSize as the target width/height
-    const parentHeight = containerSize;
+  const textDiameter = containerSize * 0.9; // Text should fit within 90% of container diameter
 
-    // Reset font size to max to measure actual content size
-    textElement.style.fontSize = `${maxFontSizePx}px`;
-    // Also reset subtext font size for accurate measurement
-    const subTextElement = textElement.querySelector('.dynamic-subtext');
-    if (subTextElement) {
-      (subTextElement as HTMLElement).style.fontSize = `${maxFontSizePx * 0.4}px`;
-    }
-
-
-    let newFontSize = maxFontSizePx;
-    let currentTextWidth = textElement.scrollWidth;
-    let currentTextHeight = textElement.scrollHeight;
-
-    // Shrink font size until it fits within the parent's dimensions
-    while (
-      (currentTextWidth > parentWidth * 0.95 || currentTextHeight > parentHeight * 0.95) && // Increased factor for more breathing room
-      newFontSize > minFontSizePx
-    ) {
-      newFontSize -= 1;
-      textElement.style.fontSize = `${newFontSize}px`;
-      if (subTextElement) {
-        (subTextElement as HTMLElement).style.fontSize = `${newFontSize * 0.4}px`;
-      }
-      currentTextWidth = textElement.scrollWidth;
-      currentTextHeight = textElement.scrollHeight;
-    }
-
-    // Ensure it doesn't grow beyond maxFontSizePx if it was already small
-    if (newFontSize > maxFontSizePx) {
-      newFontSize = maxFontSizePx;
-    }
-
-    setCurrentFontSize(newFontSize);
-  }, [mainText, subText, containerSize, maxFontSizePx, minFontSizePx]);
-
-  useEffect(() => {
-    adjustFontSize();
-    window.addEventListener('resize', adjustFontSize);
-    return () => window.removeEventListener('resize', adjustFontSize);
-  }, [adjustFontSize]);
+  const mainTextFontSize = calculateFontSize(mainText, textDiameter, maxFontSizePx, 0.3);
+  const subTextFontSize = calculateFontSize(subText || '', textDiameter, maxFontSizePx * 0.6, 0.2);
 
   return (
     <div
-      ref={textRef}
-      className={cn(
-        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center pointer-events-none animate-scale-in",
-        className
-      )}
+      className={cn("absolute flex items-center justify-center pointer-events-none", className)}
       style={{
-        // Set initial font size for measurement, will be updated by adjustFontSize
-        fontSize: `${currentFontSize}px`,
-        lineHeight: 'normal', // Changed to normal for better browser handling
-        maxWidth: `${containerSize * 0.98}px`, // Constrain max width for initial render, slightly more generous
-        maxHeight: `${containerSize * 0.98}px`, // Constrain max height for initial render
+        width: `${containerSize}px`,
+        height: `${containerSize}px`,
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
       }}
     >
-      <span className={cn(mainTextColorClass, mainFontWeightClass)} style={{ fontSize: `${currentFontSize}px`, display: 'block', lineHeight: 1 }}>
-        {mainText}
-      </span>
-      {subText && (
-        <span className={cn("text-xs dynamic-subtext", subTextColorClass, subFontWeightClass)} style={{ fontSize: `${currentFontSize * 0.4}px`, display: 'block', lineHeight: 1 }}> {/* Added dynamic-subtext class */}
-          {subText}
-        </span>
-      )}
+      <svg
+        width={containerSize}
+        height={containerSize}
+        viewBox={`0 0 ${containerSize} ${containerSize}`}
+      >
+        <text
+          x={centerX}
+          y={centerY}
+          textAnchor="middle"
+          dominantBaseline="middle"
+        >
+          <tspan
+            x={centerX}
+            dy={subText ? "-0.3em" : "0em"} // Adjust vertical position for main text
+            className={cn(mainFontWeightClass)}
+            style={{ fontSize: `${mainTextFontSize}px` }}
+            fill="white" // Explicitly set fill to white
+          >
+            {mainText}
+          </tspan>
+          {subText && (
+            <tspan
+              x={centerX}
+              dy="1.2em" // Adjust vertical position for sub text relative to main text
+              className={cn("text-xs", subFontWeightClass)}
+              style={{ fontSize: `${subTextFontSize}px` }}
+              fill="white" // Explicitly set fill to white
+            >
+              {subText}
+            </tspan>
+          )}
+        </text>
+      </svg>
     </div>
   );
 };
