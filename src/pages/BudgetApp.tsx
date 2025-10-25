@@ -27,7 +27,7 @@ import DashboardView from './budget-app-views/DashboardView';
 import BudgetView from './budget-app-views/BudgetView';
 import GoalsView from './budget-app-views/GoalsView';
 import TransactionsView from './budget-app-views/TransactionsView';
-import CategoriesView from './budget-app-views/CategoriesView'; // Import new CategoriesView
+
 
 interface BudgetAppProps {
   userUid: string | null;
@@ -566,15 +566,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                   handleAddCategory={handleAddCategory}
                   handleEditCategory={handleEditCategory}
                   handleDeleteCategory={handleDeleteCategory}
-                />
-              )}
-              {activeView === 'categories' && ( // New route for CategoriesView
-                <CategoriesView
-                  categories={categories}
-                  handleAddCategory={handleAddCategory}
-                  handleEditCategory={handleEditCategory}
-                  handleDeleteCategory={handleDeleteCategory}
-                  formatCurrency={formatCurrency}
                 />
               )}
               {activeView === 'goals' && (

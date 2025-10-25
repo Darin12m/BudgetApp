@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, DollarSign, List, Wallet, Settings, Bell, X, Target, Tag } from 'lucide-react'; // Added Tag icon
+import { Home, DollarSign, List, Wallet, Settings, Bell, X, Target } from 'lucide-react'; // Removed Tag icon
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -20,7 +20,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
     { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
     { id: 'transactions', label: 'Transactions', icon: List, path: '/budget-app?view=transactions' },
     { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app?view=budget' },
-    { id: 'categories', label: 'Categories', icon: Tag, path: '/budget-app?view=categories' }, // New Categories item
     { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app?view=goals' },
     { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
   ];

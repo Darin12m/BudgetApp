@@ -167,7 +167,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
       console.error("Error adding transaction:", e.code, e.message);
       toast.error(`Failed to add transaction: ${e.message}`);
     }
-  }, [addDocument, accounts, userUid, categories]); // Added accounts to dependency array
+  }, [addDocument, accounts, userUid, categories]);
 
   const handleSaveNewInvestment = useCallback(async (newInvestment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
     await addInvestment(newInvestment);
@@ -209,7 +209,6 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
     if (view === 'dashboard') navigate('/');
     else if (view === 'investments') navigate('/investments');
     else if (view === 'settings') navigate('/settings');
-    else if (view === 'categories') navigate('/budget-app?view=categories'); // New route
     else navigate(`/budget-app?view=${view}`);
   }, [navigate]);
 
