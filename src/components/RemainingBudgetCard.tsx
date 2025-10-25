@@ -1,15 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { PiggyBank, TrendingUp, TrendingDown, LucideIcon, AlertTriangle } from 'lucide-react';
+import { ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PiggyBank, AlertTriangle } from 'lucide-react';
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge'; // Import Badge component
-import { PieSectorDataItem } from 'recharts/types/polar/Pie'; // Import PieSectorDataItem
-import { CustomProgress } from '@/components/common/CustomProgress'; // Import CustomProgress
-import DynamicTextInCircle from '@/components/common/DynamicTextInCircle'; // Import the new component
-import DonutChartWithCentralText from '@/components/common/DonutChartWithCentralText'; // Import the new unified component
+import { Badge } from '@/components/ui/badge';
+import { CustomProgress } from '@/components/common/CustomProgress';
+import SvgDonutChart from '@/components/common/SvgDonutChart'; // Import the new SVG donut component
 
 interface RemainingBudgetCardProps {
   totalBudgeted: number;
@@ -21,46 +19,6 @@ interface RemainingBudgetCardProps {
   previousMonthLeftover: number;
   smartSummary: string;
 }
-
-// Custom Active Shape for hover effect on Donut Chart
-const CustomActiveShape: React.FC<PieSectorDataItem> = (props) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
-
-  return (
-    <g>
-      <Sector
-        cx={cx}
-        cy={cy}
-        innerRadius={innerRadius}
-        outerRadius={outerRadius + 8} // Slightly larger on hover
-        startAngle={startAngle}
-        endAngle={endAngle}
-        fill={fill}
-        className="transition-all duration-150 ease-out"
-        style={{ filter: `drop-shadow(0 0 8px ${fill}80)` }} // Enhanced glow
-      />
-    </g>
-  );
-};
-
-// Custom Tooltip Content for Donut Chart
-const CustomDonutTooltip = ({ active, payload, totalBudgeted, totalSpent, remainingBudget, isOverBudget, formatCurrency }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-tooltip-bg border border-tooltip-border-color rounded-lg p-3 text-sm text-tooltip-text-color shadow-lg">
-        <p className="font-semibold mb-1">Budget Overview</p>
-        <p>Budgeted: <span className="font-medium">{formatCurrency(totalBudgeted)}</span></p>
-        <p>Spent: <span className="font-medium">{formatCurrency(totalSpent)}</span></p>
-        {isOverBudget ? (
-          <p className="text-destructive">Over Budget: <span className="font-medium">{formatCurrency(Math.abs(remainingBudget))}</span></p>
-        ) : (
-          <p className="text-emerald">Remaining: <span className="font-medium">{formatCurrency(remainingBudget)}</span></p>
-        )}
-      </div>
-    );
-  }
-  return null;
-};
 
 // Custom Hook for Number Counting Animation
 const useCountUp = (end: number, duration: number = 1000) => {
@@ -98,7 +56,6 @@ const useCountUp = (end: number, duration: number = 1000) => {
   return count;
 };
 
-
 const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   totalBudgeted,
   totalSpent,
@@ -114,15 +71,6 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
   const isOverBudget = remainingBudget < 0;
   const isCloseToLimit = !isOverBudget && spentPercentage >= 80;
-
-  // Visually cap the spent percentage at 100% for the chart ring
-  const visualSpentPercentage = Math.min(spentPercentage, 100);
-  const visualRemainingPercentage = Math.max(0, 100 - visualSpentPercentage); // Ensure non-negative
-
-  const pieChartData = [
-    { name: 'Spent', value: visualSpentPercentage, color: 'url(#gradientPrimary-budget)' },
-    { name: 'Remaining', value: visualRemainingPercentage, color: 'hsl(var(--emerald))' },
-  ];
 
   // Determine color for remaining budget text
   const remainingBudgetTextColor = isOverBudget
@@ -169,22 +117,17 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
 
         {/* Donut Chart */}
         <div className="w-40 h-40 relative flex-shrink-0">
-          <DonutChartWithCentralText
-            data={pieChartData}
+          <SvgDonutChart
             mainText={totalBudgeted > 0 ? `${Math.round(spentPercentage)}%` : '0%'}
             subText="Used"
+            percentage={Math.min(spentPercentage, 100)} // Cap at 100% for visual progress
             innerRadius={donutInnerRadius}
             outerRadius={donutOuterRadius}
             chartId="budget"
             formatValue={formatCurrency}
-            tooltipContent={CustomDonutTooltip}
-            activeShape={CustomActiveShape}
-            totalBudgeted={totalBudgeted}
-            totalSpent={totalSpent}
-            remainingBudget={remainingBudget}
+            gradientColors={{ from: 'hsl(var(--blue))', to: 'hsl(var(--primary))' }}
+            backgroundColor="hsl(var(--muted)/50%)"
             isOverBudget={isOverBudget}
-            spentPercentage={spentPercentage}
-            // Removed pieChartClassName={cn(isOverBudget && 'animate-pulse-red-glow')}
           />
         </div>
       </div>
@@ -192,7 +135,6 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
       {/* Spending Trend Line Graph */}
       <div className="mt-6">
         <p className="text-sm font-semibold text-foreground mb-2">Spending Trend</p>
-        {/* Fix: ResponsiveContainer must be the only child of its parent div */}
         <div className="h-[80px] w-full"> 
           <ResponsiveContainer width="100%" height="100%"> 
             <AreaChart data={sparklineData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
