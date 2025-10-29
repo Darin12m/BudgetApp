@@ -100,7 +100,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
       totalGainLoss += (current - invested);
     });
 
-    const totalGainLossPercentage = totalInvested === 0 ? 0 : (totalGainLoss / invested) * 100;
+    const totalGainLossPercentage = totalInvested === 0 ? 0 : (totalGainLoss / totalInvested) * 100;
 
     return {
       totalInvested,
