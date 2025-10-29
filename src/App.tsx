@@ -14,6 +14,7 @@ import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, User, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { CurrencyProvider } from "./context/CurrencyContext";
 import { DateRangeProvider } from "./context/DateRangeContext";
+import { useTheme } from "./hooks/use-theme"; // Import the new useTheme hook
 
 const queryClient = new QueryClient();
 
@@ -35,14 +36,9 @@ const App = () => {
   const [userUid, setUserUid] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const { toggleTheme } = useTheme(); // Use the new useTheme hook
 
-  // Theme initialization using useLayoutEffect to prevent FOUC
-  useLayoutEffect(() => {
-    const htmlElement = document.documentElement;
-    // Always start with dark mode and save it to localStorage
-    htmlElement.classList.add('dark');
-    localStorage.setItem('theme', 'dark');
-  }, []); // Run once on mount
+  // Removed the previous useLayoutEffect for theme, as useTheme hook now handles it.
 
   useEffect(() => {
     const setupAuth = async () => {
@@ -72,6 +68,21 @@ const App = () => {
 
     setupAuth();
   }, []);
+
+  // Add global keyboard shortcut for theme toggle (Ctrl + T)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 't') {
+        event.preventDefault(); // Prevent default browser behavior (e.g., opening new tab)
+        toggleTheme();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [toggleTheme]); // Depend on toggleTheme to ensure it's always the latest version
 
   if (authLoading) {
     return (

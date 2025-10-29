@@ -19,13 +19,14 @@ import { format } from 'date-fns'; // Import format for date display
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
 import { useCurrency, CURRENCIES } from '@/context/CurrencyContext'; // Import useCurrency and CURRENCIES
 import { useDateRange } from '@/context/DateRangeContext'; // Import useDateRange
+import { useTheme } from '@/hooks/use-theme'; // Import the new useTheme hook
 
 interface SettingsPageProps {
   userUid: string | null;
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode, toggleTheme } = useTheme(); // Use the new useTheme hook
   const [monthlyBudgetInput, setMonthlyBudgetInput] = useState<string>('');
   const [microInvestingEnabled, setMicroInvestingEnabled] = useState<boolean>(true);
   const [microInvestingPercentage, setMicroInvestingPercentage] = useState<string>('30');
@@ -38,19 +39,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else if (savedTheme === 'light') {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove('dark');
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
+  // Removed the previous useEffect for theme initialization, as useTheme hook now handles it.
 
   useEffect(() => {
     if (budgetSettings && budgetSettings.id) {
@@ -61,20 +50,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
       setPriceAlertThresholdInput(budgetSettings.priceAlertThreshold?.toString() || '5');
     }
   }, [budgetSettings, convertUSDToSelected]);
-
-  const toggleTheme = () => {
-    setIsDarkMode(prev => {
-      const newMode = !prev;
-      if (newMode) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-      }
-      return newMode;
-    });
-  };
 
   const handleSaveMonthlyBudget = async () => {
     if (!userUid || !budgetSettings?.id) {
