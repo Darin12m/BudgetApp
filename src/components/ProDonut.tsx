@@ -93,6 +93,20 @@ const ProDonut: React.FC<ProDonutProps> = memo(({
       role="img"
       aria-label={`${displayedTotalLabel}: ${totalValueText} with allocation details.`}
     >
+      {/* Background gradient halo */}
+      <motion.div
+        className="absolute rounded-full bg-gradient-to-br from-primary/30 via-lilac/30 to-emerald/30 animate-pulse-glow"
+        style={{
+          width: outerRadius * 2 * 1.1, // Slightly larger than outerRadius
+          height: outerRadius * 2 * 1.1,
+          filter: 'blur(15px)', // Soft blur effect
+          zIndex: -1, // Behind the chart
+        }}
+        initial={{ opacity: 0.5, scale: 0.9 }}
+        animate={{ opacity: 0.8, scale: 1.0 }}
+        transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+      />
+
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie

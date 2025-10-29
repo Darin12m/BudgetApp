@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
+import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, ChevronRight, LayoutDashboard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +25,7 @@ import Header from '@/components/layout/Header';
 import AddInvestmentModal from '@/components/AddInvestmentModal';
 import ProDonut from '@/components/ProDonut'; // New ProDonut chart
 import RechartsTooltip from '@/components/common/RechartsTooltip'; // Reusing existing tooltip
+import AllocationCard from '@/components/investments/AllocationCard'; // Import new AllocationCard
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -302,64 +303,14 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
               </TabsList>
 
               <TabsContent value="all" className="mt-6 space-y-6">
-                <Card className="glassmorphic-card">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.overallAllocation")}</CardTitle>
-                    <div className="flex space-x-2">
-                      <Button onClick={() => handleAddInvestment('Stock')} className="flex items-center space-x-1 px-3 py-2 rounded-xl transition-colors text-sm active:bg-primary/80">
-                        <Plus className="w-4 h-4" />
-                        <span className="hidden sm:inline">{t("investments.addStock")}</span>
-                        <span className="sm:hidden">{t("common.add")}</span>
-                      </Button>
-                      <Button onClick={() => handleAddInvestment('Crypto')} className="flex items-center space-x-1 px-3 py-2 rounded-xl transition-colors text-sm active:bg-primary/80">
-                        <Plus className="w-4 h-4" />
-                        <span className="hidden sm:inline">{t("investments.addCrypto")}</span>
-                        <span className="sm:hidden">{t("common.add")}</span>
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
-                    {overallAllocationData.length > 0 ? (
-                      <>
-                        <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-                          <ProDonut
-                            chartId="overall-portfolio-allocation"
-                            data={overallAllocationData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
-                            totalValue={overallPortfolioSummary.currentValue}
-                            totalLabel={t("dashboard.totalAllocated")}
-                            innerRadius={60}
-                            outerRadius={90}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
-                          {overallAllocationData.map((entry, index) => (
-                            <motion.div
-                              key={`legend-item-${index}`}
-                              className={cn(
-                                "flex items-center justify-between p-2 rounded-md transition-colors"
-                              )}
-                              whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
-                              whileTap={{ scale: 0.98 }}
-                            >
-                              <div className="flex items-center space-x-2">
-                                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
-                                <span className="text-sm text-foreground truncate">{entry.name}</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-sm text-muted-foreground font-mono">
-                                  {overallPortfolioSummary.currentValue > 0 ? ((entry.value / overallPortfolioSummary.currentValue) * 100).toFixed(0) : 0}%
-                                </span>
-                                <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-muted-foreground w-full text-center">{t("investments.noInvestmentsFound")}</p>
-                    )}
-                  </CardContent>
-                </Card>
+                <AllocationCard
+                  title={t("investments.overallAllocation")}
+                  data={overallAllocationData}
+                  emptyMessage={t("investments.noInvestmentsFound")}
+                  totalPortfolioValue={overallPortfolioSummary.currentValue}
+                  icon={LayoutDashboard}
+                  sevenDayChange={{ value: 2.3, isPositive: true }} // Placeholder
+                />
                 <InvestmentHoldingsList
                   title={t("investments.allHoldings")}
                   investments={getSortedInvestments(investments)}
@@ -382,57 +333,14 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                   currentValue={stockSummary.currentValue}
                   gainLossPercentage={stockSummary.totalGainLossPercentage}
                 />
-                <Card className="glassmorphic-card">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.stockAllocation")}</CardTitle>
-                    <Button onClick={() => handleAddInvestment('Stock')} className="flex items-center space-x-1 px-3 py-2 rounded-xl transition-colors text-sm active:bg-primary/80">
-                      <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">{t("investments.addStock")}</span>
-                      <span className="sm:hidden">{t("common.add")}</span>
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="h-[250px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
-                    {stockAllocationData.length > 0 ? (
-                      <>
-                        <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-                          <ProDonut
-                            chartId="stock-allocation"
-                            data={stockAllocationData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
-                            totalValue={stockSummary.currentValue}
-                            totalLabel={t("dashboard.totalAllocated")}
-                            innerRadius={60}
-                            outerRadius={90}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
-                          {stockAllocationData.map((entry, index) => (
-                            <motion.div
-                              key={`legend-item-${index}`}
-                              className={cn(
-                                "flex items-center justify-between p-2 rounded-md transition-colors"
-                              )}
-                              whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
-                              whileTap={{ scale: 0.98 }}
-                            >
-                              <div className="flex items-center space-x-2">
-                                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
-                                <span className="text-sm text-foreground truncate">{entry.name}</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-sm text-muted-foreground font-mono">
-                                  {stockSummary.currentValue > 0 ? ((entry.value / stockSummary.currentValue) * 100).toFixed(0) : 0}%
-                                </span>
-                                <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-muted-foreground w-full text-center">{t("investments.noStockData")}</p>
-                    )}
-                  </CardContent>
-                </Card>
+                <AllocationCard
+                  title={t("investments.stockAllocation")}
+                  data={stockAllocationData}
+                  emptyMessage={t("investments.noStockData")}
+                  totalPortfolioValue={stockSummary.currentValue}
+                  icon={DollarSign}
+                  sevenDayChange={{ value: -1.2, isPositive: false }} // Placeholder
+                />
                 <InvestmentHoldingsList
                   title={t("investments.stockHoldings")}
                   investments={sortedStockInvestments}
@@ -455,57 +363,14 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                   currentValue={cryptoSummary.currentValue}
                   gainLossPercentage={cryptoSummary.totalGainLossPercentage}
                 />
-                <Card className="glassmorphic-card">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.cryptoAllocation")}</CardTitle>
-                    <Button onClick={() => handleAddInvestment('Crypto')} className="flex items-center space-x-1 px-3 py-2 rounded-xl transition-colors text-sm active:bg-primary/80">
-                      <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">{t("investments.addCrypto")}</span>
-                      <span className="sm:hidden">{t("common.add")}</span>
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="h-[250px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
-                    {cryptoAllocationData.length > 0 ? (
-                      <>
-                        <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-                          <ProDonut
-                            chartId="crypto-allocation"
-                            data={cryptoAllocationData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
-                            totalValue={cryptoSummary.currentValue}
-                            totalLabel={t("dashboard.totalAllocated")}
-                            innerRadius={60}
-                            outerRadius={90}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
-                          {cryptoAllocationData.map((entry, index) => (
-                            <motion.div
-                              key={`legend-item-${index}`}
-                              className={cn(
-                                "flex items-center justify-between p-2 rounded-md transition-colors"
-                              )}
-                              whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
-                              whileTap={{ scale: 0.98 }}
-                            >
-                              <div className="flex items-center space-x-2">
-                                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
-                                <span className="text-sm text-foreground truncate">{entry.name}</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-sm text-muted-foreground font-mono">
-                                  {cryptoSummary.currentValue > 0 ? ((entry.value / cryptoSummary.currentValue) * 100).toFixed(0) : 0}%
-                                </span>
-                                <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-muted-foreground w-full text-center">{t("investments.noCryptoData")}</p>
-                    )}
-                  </CardContent>
-                </Card>
+                <AllocationCard
+                  title={t("investments.cryptoAllocation")}
+                  data={cryptoAllocationData}
+                  emptyMessage={t("investments.noCryptoData")}
+                  totalPortfolioValue={cryptoSummary.currentValue}
+                  icon={Bitcoin}
+                  sevenDayChange={{ value: 5.1, isPositive: true }} // Placeholder
+                />
                 <InvestmentHoldingsList
                   title={t("investments.cryptoHoldings")}
                   investments={sortedCryptoInvestments}

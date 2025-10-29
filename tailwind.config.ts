@@ -138,6 +138,10 @@ export default {
             transform: "translateX(100%)",
           },
         },
+        "pulse-glow": { // New keyframe for pulsing halo glow
+          "0%, 100%": { opacity: "0.5", transform: "scale(0.9)" },
+          "50%": { opacity: "0.8", transform: "scale(1.0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -152,6 +156,7 @@ export default {
         "scale-in": "scale-in 0.3s ease-out forwards", // New animation
         "rotate-gradient": "rotate-gradient 3s ease-in-out infinite alternate", // Apply to gradient border
         "shimmer": "shimmer 1.5s infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite alternate", // Apply new animation
       },
       boxShadow: {
         glass: '0 10px 30px rgba(0,0,0,0.35)', // Soft, diffused shadow for glassmorphism
