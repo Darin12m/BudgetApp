@@ -22,6 +22,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
 import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
 import CategoryOverviewCard from '@/components/dashboard/CategoryOverviewCard';
+import OverallPortfolioSummaryCard from '@/components/investments/OverallPortfolioSummaryCard'; // Added missing import
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
