@@ -156,7 +156,7 @@
     "budgetCategories": "Категории на буџет",
     "noCategoriesDefined": "Сè уште нема дефинирани категории. Одете на табулаторот Буџет за да додадете!",
     "portfolioAllocation": "Алокација на портфолио",
-    "totalAllocated": "Вкупно алоцирано",
+    "totalAllocated": "Вкупна алокација",
     "upcomingRecurringBills": "Претстојни повторливи сметки",
     "total": "Вкупно",
     "manage": "Управувај",
@@ -260,7 +260,8 @@
     "quickAddTransaction": "Брзо додавање трансакција",
     "merchantPlaceholder": "на пр. Кафуле",
     "noTransactionsFoundDescription": "Изгледа дека сè уште немате додадено трансакции. Започнете со следење на вашето трошење!",
-    "transaction": "Трансакција"
+    "transaction": "Трансакција",
+    "noCategory": "Без категорија"
   },
   "goals": {
     "title": "Цели за штедење",

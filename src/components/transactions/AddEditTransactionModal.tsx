@@ -97,7 +97,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
         setAmount('');
         if (categories.length > 0) {
           const uncategorized = categories.find(cat => cat.name === 'Uncategorized');
-          setSelectedCategoryId(uncategorized ? uncategorized.id : categories[0].id);
+          setSelectedCategoryId(uncategorized ? uncategorized.id : ''); // Default to empty string for 'None'
         } else {
           setSelectedCategoryId('');
         }
@@ -273,6 +273,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
               <SelectValue placeholder={categories.length > 0 ? t("transactions.selectCategory") : t("transactions.noCategoriesAvailable")} />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">{t("transactions.noCategory")}</SelectItem> {/* Added 'No Category' option */}
               {categories.length > 0 ? (
                 categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>

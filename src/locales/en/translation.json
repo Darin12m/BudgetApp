@@ -192,7 +192,7 @@
     "goodEvening": "Good evening",
     "underBudget": "You’ve stayed {{percentage}}% under budget this month. Keep it up!",
     "overBudgetBy": "You’re {{amount}} over budget this month. Time to review!",
-    "noBudgetSet": "Set up your budget to get insights!"
+    "noBudgetSet": "Set up your budget to get insight!"
   },
   "budget": {
     "monthlyBudget": "Monthly Budget",
@@ -260,7 +260,8 @@
     "quickAddTransaction": "Quick Add Transaction",
     "merchantPlaceholder": "e.g., Coffee Shop",
     "noTransactionsFoundDescription": "It looks like you haven't added any transactions yet. Start tracking your spending!",
-    "transaction": "Transaction"
+    "transaction": "Transaction",
+    "noCategory": "No Category"
   },
   "goals": {
     "title": "Savings Goals",
