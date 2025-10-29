@@ -211,7 +211,7 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
 
       {/* Central Text Overlay */}
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+        className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none gap-y-1" // Added gap-y-1 here
         style={{
           width: `${textContainerDiameter}px`, // Corrected to use textContainerDiameter
           height: `${textContainerDiameter}px`, // Corrected to use textContainerDiameter
