@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -154,3 +154,7 @@ const ProDonut: React.FC<ProDonutProps> = memo(({
         )}
       </div>
     </motion.div>
+  );
+});
+
+export default ProDonut;
