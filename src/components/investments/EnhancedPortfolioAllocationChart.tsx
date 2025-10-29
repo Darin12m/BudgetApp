@@ -81,7 +81,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
       percentage: total > 0 ? (item.value / total) * 100 : 0,
       color: CHART_PALETTE[index % CHART_PALETTE.length],
     }));
-  }, [data, palette]); // Added palette to dependencies
+  }, [data, CHART_PALETTE]); // Corrected: changed 'palette' to 'CHART_PALETTE'
 
   return (
     <motion.div
