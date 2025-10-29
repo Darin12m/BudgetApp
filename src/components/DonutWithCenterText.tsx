@@ -212,8 +212,8 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
       <div
         className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
         style={{
-          width: `${outerRadius * 2}px`, // Use outerRadius to define the container size
-          height: `${outerRadius * 2}px`,
+          width: `${textContainerDiameter}px`, // Corrected to use textContainerDiameter
+          height: `${textContainerDiameter}px`, // Corrected to use textContainerDiameter
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
