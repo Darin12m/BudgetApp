@@ -5,7 +5,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, DollarSign, List, Wallet, Settings, Bell, X, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/context/AuthContext'; // Import useAuth
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,8 +16,9 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
-  const { t } = useTranslation(); // Initialize useTranslation hook
+  const { t } = useTranslation();
   const location = useLocation();
+  const { user } = useAuth(); // Get user from AuthContext
 
   const navItems = [
     { id: 'dashboard', label: t("navigation.dashboard"), icon: Home, path: '/' },
@@ -25,6 +27,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
     { id: 'goals', label: t("navigation.goals"), icon: Target, path: '/budget-app?view=goals' },
     { id: 'investments', label: t("navigation.investments"), icon: Wallet, path: '/investments' },
   ];
+
+  const userDisplayName = user?.displayName || "John Doe";
+  const userEmail = user?.email || "john@example.com";
+  const userInitials = userDisplayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   return (
     <>
@@ -43,15 +49,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
               </button>
             </div>
 
-            <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-xl">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold">
-                JD
+            {/* User Profile Link */}
+            <Link
+              to="/settings"
+              onClick={() => { onViewChange('settings'); onClose(); }}
+              className="flex items-center space-x-3 p-3 bg-muted/50 rounded-xl hover:bg-muted active:bg-muted/70 transition-colors duration-200"
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                {userInitials}
               </div>
               <div>
-                <p className="font-semibold text-foreground text-sm">John Doe</p>
-                <p className="text-xs text-muted-foreground">john@example.com</p>
+                <p className="font-semibold text-foreground text-sm">{userDisplayName}</p>
+                <p className="text-xs text-muted-foreground">{userEmail}</p>
               </div>
-            </div>
+            </Link>
           </div>
 
           <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
