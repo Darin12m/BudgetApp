@@ -65,10 +65,10 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{t("transactions.title")}</h2>
         <motion.button
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02, boxShadow: "var(--tw-shadow-glass-sm)" }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setIsAddEditTransactionModalOpen(true)}
-          className="flex items-center space-x-2 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform"
+          className="flex items-center space-x-2 glassmorphic-card text-primary dark:text-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-transform px-4 py-2 rounded-lg min-h-[44px]"
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">{t("transactions.addTransaction")}</span>
