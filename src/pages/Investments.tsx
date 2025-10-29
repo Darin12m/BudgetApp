@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +23,7 @@ import BottomNavBar from '@/components/BottomNavBar';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import AddInvestmentModal from '@/components/AddInvestmentModal';
-import RadialAllocationChart from '@/components/charts/RadialAllocationChart'; // New radial chart
+import ProDonut from '@/components/ProDonut'; // New ProDonut chart
 import RechartsTooltip from '@/components/common/RechartsTooltip'; // Reusing existing tooltip
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -40,7 +40,7 @@ interface PortfolioSummary {
 interface AllocationData {
   name: string;
   value: number;
-  color: string;
+  color?: string; // Optional color for ProDonut
 }
 
 interface PortfolioSnapshotData {
@@ -48,7 +48,16 @@ interface PortfolioSnapshotData {
   value: number;
 }
 
-const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))', '#f59e0b', '#ef4444', '#06b6d4'];
+const ALLOCATION_COLORS = [
+  'hsl(var(--blue))',
+  'hsl(var(--emerald))',
+  'hsl(var(--lilac))',
+  'hsl(25 95% 53%)', // Amber
+  'hsl(220 70% 50%)', // Indigo
+  'hsl(340 80% 60%)', // Pink
+  'hsl(175 70% 40%)', // Cyan
+  'hsl(60 90% 50%)',  // Yellow
+];
 
 interface InvestmentsPageProps {
   userUid: string | null;
@@ -157,32 +166,38 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
   const sortedStockInvestments = useMemo(() => getSortedInvestments(stockInvestments), [stockInvestments, getSortedInvestments]);
   const sortedCryptoInvestments = useMemo(() => getSortedInvestments(cryptoInvestments), [cryptoInvestments, getSortedInvestments]);
 
-  // --- Chart Data ---
-  const overallAllocationData: AllocationData[] = useMemo(() => {
-    const stockValue = stockInvestments.reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice), 0);
-    const cryptoValue = cryptoInvestments.reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice), 0);
+  // --- Allocation Data for ProDonut ---
+  const getAllocationDataForDonut = useCallback((investmentsList: Investment[], totalPortfolioValue: number): AllocationData[] => {
+    const allocationMap = new Map<string, number>();
+    investmentsList.forEach(inv => {
+      const categoryName = inv.name; // Use asset name as category for allocation
+      const value = inv.quantity * inv.currentPrice;
+      allocationMap.set(categoryName, (allocationMap.get(categoryName) || 0) + value);
+    });
 
-    const data = [];
-    if (stockValue > 0) data.push({ name: t("investments.stocks"), value: stockValue, color: ALLOCATION_COLORS[0] });
-    if (cryptoValue > 0) data.push({ name: t("investments.crypto"), value: cryptoValue, color: ALLOCATION_COLORS[1] });
-    return data;
-  }, [stockInvestments, cryptoInvestments, t]);
+    let data = Array.from(allocationMap.entries()).map(([name, value]) => ({ name, value }));
 
-  const stockAllocationData: AllocationData[] = useMemo(() => {
-    return stockInvestments.map((inv, index) => ({
-      name: inv.name,
-      value: inv.quantity * inv.currentPrice,
+    // Group "Other" if more than 5 categories
+    if (data.length > 5) {
+      data.sort((a, b) => b.value - a.value); // Sort by value descending
+      const top5 = data.slice(0, 5);
+      const otherValue = data.slice(5).reduce((sum, item) => sum + item.value, 0);
+      if (otherValue > 0) {
+        top5.push({ name: t("common.other"), value: otherValue });
+      }
+      data = top5;
+    }
+
+    // Assign colors
+    return data.map((item, index) => ({
+      ...item,
       color: ALLOCATION_COLORS[index % ALLOCATION_COLORS.length],
-    })).filter(item => item.value > 0);
-  }, [stockInvestments]);
+    }));
+  }, [t]);
 
-  const cryptoAllocationData: AllocationData[] = useMemo(() => {
-    return cryptoInvestments.map((inv, index) => ({
-      name: inv.name,
-      value: inv.quantity * inv.currentPrice,
-      color: ALLOCATION_COLORS[index % ALLOCATION_COLORS.length],
-    })).filter(item => item.value > 0);
-  }, [cryptoInvestments]);
+  const overallAllocationData = useMemo(() => getAllocationDataForDonut(investments, overallPortfolioSummary.currentValue), [investments, overallPortfolioSummary.currentValue, getAllocationDataForDonut]);
+  const stockAllocationData = useMemo(() => getAllocationDataForDonut(stockInvestments, stockSummary.currentValue), [stockInvestments, stockSummary.currentValue, getAllocationDataForDonut]);
+  const cryptoAllocationData = useMemo(() => getAllocationDataForDonut(cryptoInvestments, cryptoSummary.currentValue), [cryptoInvestments, cryptoSummary.currentValue, getAllocationDataForDonut]);
 
   // Portfolio Growth Chart Data
   const portfolioGrowthChartData: PortfolioSnapshotData[] = useMemo(() => {
@@ -288,46 +303,43 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                   </CardHeader>
                   <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
                     {overallAllocationData.length > 0 ? (
-                      <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-                        <RadialAllocationChart
-                          chartId="overall-portfolio-allocation"
-                          data={overallAllocationData.map(item => ({ name: item.name, value: item.value, fill: item.color }))}
-                          totalValue={overallPortfolioSummary.currentValue}
-                          mainLabel={t("dashboard.totalAllocated")}
-                          innerRadius={60}
-                          outerRadius={90}
-                          barSize={10}
-                          formatValue={formatCurrency}
-                          gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
-                        />
-                      </div>
+                      <>
+                        <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
+                          <ProDonut
+                            chartId="overall-portfolio-allocation"
+                            data={overallAllocationData}
+                            totalValue={overallPortfolioSummary.currentValue}
+                            totalLabel={t("dashboard.totalAllocated")}
+                            innerRadius={60}
+                            outerRadius={90}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
+                          {overallAllocationData.map((entry, index) => (
+                            <motion.div
+                              key={`legend-item-${index}`}
+                              className={cn(
+                                "flex items-center justify-between p-2 rounded-md transition-colors"
+                              )}
+                              whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+                                <span className="text-sm text-foreground truncate">{entry.name}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm text-muted-foreground font-mono">
+                                  {overallPortfolioSummary.currentValue > 0 ? ((entry.value / overallPortfolioSummary.currentValue) * 100).toFixed(0) : 0}%
+                                </span>
+                                <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </>
                     ) : (
                       <p className="text-muted-foreground w-full text-center">{t("investments.noInvestmentsFound")}</p>
-                    )}
-                    {overallAllocationData.length > 0 && (
-                      <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
-                        {overallAllocationData.map((entry, index) => (
-                          <motion.div
-                            key={`legend-item-${index}`}
-                            className={cn(
-                              "flex items-center justify-between p-2 rounded-md transition-colors"
-                            )}
-                            whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <div className="flex items-center space-x-2">
-                              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
-                              <span className="text-sm text-foreground truncate">{entry.name}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm text-muted-foreground font-mono">
-                                {overallPortfolioSummary.currentValue > 0 ? ((entry.value / overallPortfolioSummary.currentValue) * 100).toFixed(0) : 0}%
-                              </span>
-                              <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -357,21 +369,45 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.stockAllocation")}</CardTitle>
                   </CardHeader>
-                  <CardContent className="h-[250px] flex items-center justify-center">
+                  <CardContent className="h-[250px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
                     {stockAllocationData.length > 0 ? (
-                      <RadialAllocationChart
-                        chartId="stock-allocation"
-                        data={stockAllocationData.map(item => ({ name: item.name, value: item.value, fill: item.color }))}
-                        totalValue={stockSummary.currentValue}
-                        mainLabel={t("dashboard.totalAllocated")}
-                        innerRadius={60}
-                        outerRadius={90}
-                        barSize={10}
-                        formatValue={formatCurrency}
-                        gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
-                      />
+                      <>
+                        <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
+                          <ProDonut
+                            chartId="stock-allocation"
+                            data={stockAllocationData}
+                            totalValue={stockSummary.currentValue}
+                            totalLabel={t("dashboard.totalAllocated")}
+                            innerRadius={60}
+                            outerRadius={90}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
+                          {stockAllocationData.map((entry, index) => (
+                            <motion.div
+                              key={`legend-item-${index}`}
+                              className={cn(
+                                "flex items-center justify-between p-2 rounded-md transition-colors"
+                              )}
+                              whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+                                <span className="text-sm text-foreground truncate">{entry.name}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm text-muted-foreground font-mono">
+                                  {stockSummary.currentValue > 0 ? ((entry.value / stockSummary.currentValue) * 100).toFixed(0) : 0}%
+                                </span>
+                                <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </>
                     ) : (
-                      <p className="text-muted-foreground">{t("investments.noStockData")}</p>
+                      <p className="text-muted-foreground w-full text-center">{t("investments.noStockData")}</p>
                     )}
                   </CardContent>
                 </Card>
@@ -401,21 +437,45 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.cryptoAllocation")}</CardTitle>
                   </CardHeader>
-                  <CardContent className="h-[250px] flex items-center justify-center">
+                  <CardContent className="h-[250px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
                     {cryptoAllocationData.length > 0 ? (
-                      <RadialAllocationChart
-                        chartId="crypto-allocation"
-                        data={cryptoAllocationData.map(item => ({ name: item.name, value: item.value, fill: item.color }))}
-                        totalValue={cryptoSummary.currentValue}
-                        mainLabel={t("dashboard.totalAllocated")}
-                        innerRadius={60}
-                        outerRadius={90}
-                        barSize={10}
-                        formatValue={formatCurrency}
-                        gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
-                      />
+                      <>
+                        <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
+                          <ProDonut
+                            chartId="crypto-allocation"
+                            data={cryptoAllocationData}
+                            totalValue={cryptoSummary.currentValue}
+                            totalLabel={t("dashboard.totalAllocated")}
+                            innerRadius={60}
+                            outerRadius={90}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
+                          {cryptoAllocationData.map((entry, index) => (
+                            <motion.div
+                              key={`legend-item-${index}`}
+                              className={cn(
+                                "flex items-center justify-between p-2 rounded-md transition-colors"
+                              )}
+                              whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+                                <span className="text-sm text-foreground truncate">{entry.name}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm text-muted-foreground font-mono">
+                                  {cryptoSummary.currentValue > 0 ? ((entry.value / cryptoSummary.currentValue) * 100).toFixed(0) : 0}%
+                                </span>
+                                <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </>
                     ) : (
-                      <p className="text-muted-foreground">{t("investments.noCryptoData")}</p>
+                      <p className="text-muted-foreground w-full text-center">{t("investments.noCryptoData")}</p>
                     )}
                   </CardContent>
                 </Card>
@@ -521,7 +581,3 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
         <BottomNavBar />
       </div>
     </div>
-  );
-};
-
-export default InvestmentsPage;
