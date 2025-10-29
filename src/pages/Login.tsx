@@ -13,6 +13,7 @@ import { Loader2, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation(); // Initialize useTranslation hook
@@ -154,13 +155,10 @@ const LoginPage: React.FC = () => {
                 />
               </div>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit" className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isRegisterMode ? t("login.signUp") : t("login.logIn")}
-            </motion.button>
+            </Button>
           </form>
 
           <div className="flex items-center my-6">
@@ -169,17 +167,15 @@ const LoginPage: React.FC = () => {
             <Separator className="flex-1" />
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <Button
             variant="outline"
-            className="w-full flex items-center justify-center space-x-2 bg-muted/50 hover:bg-muted text-foreground min-h-[44px]"
+            className="w-full flex items-center justify-center space-x-2"
             onClick={handleGoogleLogin}
             disabled={loading}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("login.signInWithGoogle")}
-          </motion.button>
+          </Button>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {isRegisterMode ? t("login.alreadyHaveAccount") : t("login.dontHaveAccount")}{' '}

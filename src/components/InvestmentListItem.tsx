@@ -90,12 +90,9 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
         )}
         <p className={`text-xs ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]} font-mono`}>{formatCurrency(gainLoss)}</p>
       </div>
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        variant="ghost" size="icon" onClick={() => onEdit(investment)} className="ml-2 flex-shrink-0 text-muted-foreground hover:bg-muted/50">
+      <Button variant="ghost" size="icon" onClick={() => onEdit(investment)} className="ml-2 flex-shrink-0 text-muted-foreground">
         <Edit className="h-4 w-4" />
-      </motion.button>
+      </Button>
     </motion.div>
   );
 };

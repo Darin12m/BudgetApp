@@ -254,7 +254,7 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
         </Tooltip>
 
         {/* Export Data */}
-        <Button variant="ghost" onClick={handleExportData} className="w-full justify-start text-sm px-2 py-2 h-auto hover:bg-muted/50">
+        <Button variant="ghost" onClick={handleExportData} className="w-full justify-start text-sm px-2 py-2 h-auto">
           <FileText className="w-4 h-4 mr-2" /> {t("settings.exportData")}
         </Button>
       </div>
@@ -271,7 +271,7 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </Link>
-        <Button variant="ghost" onClick={() => setShowLogoutConfirm(true)} className="w-full justify-start text-sm px-2 py-2 h-auto text-destructive hover:bg-destructive/10">
+        <Button variant="ghost" onClick={() => setShowLogoutConfirm(true)} className="w-full justify-start text-sm px-2 py-2 h-auto text-destructive">
           <LogOut className="w-4 h-4 mr-2" /> {t("settings.signOut")}
         </Button>
       </div>
@@ -287,7 +287,7 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLogout} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("settings.signOut")}</AlertDialogAction>
+            <AlertDialogAction onClick={handleLogout} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("common.delete")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

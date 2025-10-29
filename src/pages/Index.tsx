@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import SmartDonutChart from '@/components/SmartDonutChart'; // Ensure SmartDonutChart is imported
+import { cn } from '@/lib/utils'; // Import cn for conditional classNames
 
 interface IndexPageProps {
   userUid: string | null;
@@ -353,19 +354,21 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
               {/* Quick Action Buttons */}
               <div className="grid grid-cols-2 gap-4">
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                   onClick={() => setIsQuickAddModalOpen(true)}
-                  className="flex flex-col h-auto py-4 items-center justify-center text-center bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground rounded-xl shadow-sm transition-transform"
+                  className={cn(
+                    "flex flex-col h-auto py-4 items-center justify-center text-center rounded-xl shadow-sm transition-transform",
+                    "glassmorphic-card text-primary dark:text-primary hover:bg-primary/10 dark:hover:bg-primary/20"
+                  )}
                 >
                   <Plus className="w-5 h-5 mb-1" />
                   <span className="text-xs font-medium">{t("dashboard.addExpense")}</span>
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                   onClick={() => setIsAddInvestmentModalOpen(true)}
-                  className="flex flex-col h-auto py-4 items-center justify-center text-center bg-emerald hover:bg-emerald/90 dark:bg-emerald dark:hover:bg-emerald/90 text-white rounded-xl shadow-sm transition-transform"
+                  className={cn(
+                    "flex flex-col h-auto py-4 items-center justify-center text-center rounded-xl shadow-sm transition-transform",
+                    "glassmorphic-card text-emerald dark:text-emerald hover:bg-emerald/10 dark:hover:bg-emerald/20"
+                  )}
                 >
                   <DollarSign className="w-5 h-5 mb-1" />
                   <span className="text-xs font-medium">{t("dashboard.addInvestment")}</span>

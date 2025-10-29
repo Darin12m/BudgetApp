@@ -47,16 +47,14 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
     >
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{t("goals.title")}</h2>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+        <Button
           onClick={handleAddGoal}
-          className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80"
+          className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-xl transition-colors text-sm active:bg-primary/80"
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">{t("goals.newGoal")}</span>
           <span className="sm:hidden">{t("common.new")}</span>
-        </motion.button>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -99,28 +97,20 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
                   </p>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <Button
                     onClick={() => handleOpenAddFunds(goal)}
-                    className="flex-1 bg-muted/50 hover:bg-muted text-foreground transition-transform"
+                    className="flex-1"
                   >
                     {t("goals.addFunds")}
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    variant="ghost" size="icon" onClick={() => handleEditGoal(goal)} className="h-10 w-10 text-muted-foreground hover:bg-muted/50">
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleEditGoal(goal)} className="h-10 w-10 text-muted-foreground">
                     <Edit className="h-4 w-4" />
-                  </motion.button>
+                  </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10">
+                      <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive">
                         <Trash2 className="h-4 w-4" />
-                      </motion.button>
+                      </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent className="glassmorphic-card">
                       <AlertDialogHeader>
@@ -144,7 +134,7 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
             <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-lg font-semibold text-foreground">{t("goals.noGoalsSetup")}</p>
             <p className="text-sm mt-2 text-muted-foreground">{t("goals.createFirstGoalDescription")}</p>
-            <Button onClick={handleAddGoal} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
+            <Button onClick={handleAddGoal} className="mt-4">
               {t("goals.createFirstGoal")}
             </Button>
           </div>

@@ -207,32 +207,28 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
           {t("transactions.type")}
         </Label>
         <div className="col-span-3 flex items-center space-x-2">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <Button
             type="button"
             variant={isExpense ? "default" : "outline"}
             onClick={() => setIsExpense(true)}
             className={cn(
-              "flex-1 min-h-[44px]",
+              "flex-1",
               isExpense ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "bg-muted/50 border-none hover:bg-muted text-foreground"
             )}
           >
             <ArrowDownCircle className="h-4 w-4 mr-2" /> {t("transactions.expense")}
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          </Button>
+          <Button
             type="button"
             variant={!isExpense ? "default" : "outline"}
             onClick={() => setIsExpense(false)}
             className={cn(
-              "flex-1 min-h-[44px]",
+              "flex-1",
               !isExpense ? "bg-emerald hover:bg-emerald/90 text-white" : "bg-muted/50 border-none hover:bg-muted text-foreground"
             )}
           >
             <ArrowUpCircle className="h-4 w-4 mr-2" /> {t("transactions.income")}
-          </motion.button>
+          </Button>
         </div>
       </div>
 
@@ -387,12 +383,9 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
         {isEditing && (
           <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
             <AlertDialogTrigger asChild>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="button" variant="destructive" className="w-full sm:w-auto transition-transform min-h-[44px]">
+              <Button type="button" variant="destructive" className="w-full sm:w-auto">
                 <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
-              </motion.button>
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="glassmorphic-card">
               <AlertDialogHeader>
@@ -410,18 +403,12 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
           </AlertDialog>
         )}
         <div className="flex gap-2 w-full sm:w-auto">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
+          <Button type="button" variant="outline" onClick={onClose} className="flex-1">
             <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit" className="flex-1 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform min-h-[44px]">
+          </Button>
+          <Button type="submit" className="flex-1">
             <Save className="h-4 w-4 mr-2" /> {t("common.save")} {t("transactions.transaction")}
-          </motion.button>
+          </Button>
         </div>
       </DialogFooter>
     </form>

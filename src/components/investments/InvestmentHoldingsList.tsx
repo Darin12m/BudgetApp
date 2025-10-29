@@ -10,6 +10,7 @@ import { Investment } from '@/hooks/use-investment-data';
 import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 interface InvestmentHoldingsListProps {
   title: string;
@@ -63,12 +64,9 @@ const InvestmentHoldingsList: React.FC<InvestmentHoldingsListProps> = ({
               <SelectItem value="totalValue">{t("investments.totalValue")}</SelectItem>
             </SelectContent>
           </Select>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            variant="outline" size="icon" onClick={onToggleSortOrder} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform">
+          <Button variant="outline" size="icon" onClick={onToggleSortOrder} className="h-9 w-9 bg-muted/50 border-none">
             {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4 text-muted-foreground" /> : <TrendingDown className="h-4 w-4 text-muted-foreground" />}
-          </motion.button>
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -88,7 +86,7 @@ const InvestmentHoldingsList: React.FC<InvestmentHoldingsListProps> = ({
               <EmptyIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg font-semibold text-foreground">{emptyMessage}</p>
               <p className="text-sm mt-2">Add your first holding to track its live performance.</p>
-              <Button onClick={onAddInvestment} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
+              <Button onClick={onAddInvestment} className="mt-4">
                 {emptyButtonText}
               </Button>
             </div>

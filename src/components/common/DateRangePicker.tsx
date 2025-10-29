@@ -67,9 +67,7 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
     <div className={cn("flex items-center space-x-2", className)}>
       <Popover>
         <PopoverTrigger asChild>
-          <motion.button
-            whileHover={{ scale: 1.02, boxShadow: "var(--tw-shadow-glass-sm)" }}
-            whileTap={{ scale: 0.98 }}
+          <Button
             id="date"
             className={cn(
               "w-full justify-start text-left font-normal glassmorphic-card px-4 py-2 min-h-[44px]", // Applied glassmorphic-card
@@ -78,15 +76,15 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {selectedRange.label}
-          </motion.button>
+          </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 glassmorphic-card" align="start">
           <div className="flex flex-col sm:flex-row">
             <div className="flex flex-col p-4 border-b sm:border-b-0 sm:border-r border-border/50">
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} variant="ghost" onClick={() => setQuickPeriod('today')} className="justify-start">{t("dateRangePicker.today")}</motion.button>
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} variant="ghost" onClick={() => setQuickPeriod('thisWeek')} className="justify-start">{t("dateRangePicker.thisWeek")}</motion.button>
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} variant="ghost" onClick={() => setQuickPeriod('thisMonth')} className="justify-start">{t("dateRangePicker.thisMonth")}</motion.button>
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} variant="ghost" onClick={() => setQuickPeriod('lastMonth')} className="justify-start">{t("dateRangePicker.lastMonth")}</motion.button>
+              <Button variant="ghost" onClick={() => setQuickPeriod('today')} className="justify-start">{t("dateRangePicker.today")}</Button>
+              <Button variant="ghost" onClick={() => setQuickPeriod('thisWeek')} className="justify-start">{t("dateRangePicker.thisWeek")}</Button>
+              <Button variant="ghost" onClick={() => setQuickPeriod('thisMonth')} className="justify-start">{t("dateRangePicker.thisMonth")}</Button>
+              <Button variant="ghost" onClick={() => setQuickPeriod('lastMonth')} className="justify-start">{t("dateRangePicker.lastMonth")}</Button>
             </div>
             <Calendar
               initialFocus

@@ -99,18 +99,12 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
       </div>
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
+        <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
           <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform min-h-[44px]">
+        </Button>
+        <Button type="submit" className="flex-1 sm:flex-none">
           <Save className="h-4 w-4 mr-2" /> {t("goals.addFunds")}
-        </motion.button>
+        </Button>
       </DialogFooter>
     </form>
   );

@@ -138,32 +138,28 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
           {t("transactions.type")}
         </Label>
         <div className="col-span-3 flex items-center space-x-2">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <Button
             type="button"
             variant={isExpense ? "default" : "outline"}
             onClick={() => setIsExpense(true)}
             className={cn(
-              "flex-1 min-h-[44px]",
+              "flex-1",
               isExpense ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "bg-muted/50 border-none hover:bg-muted text-foreground"
             )}
           >
             <ArrowDownCircle className="h-4 w-4 mr-2" /> {t("transactions.expense")}
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          </Button>
+          <Button
             type="button"
             variant={!isExpense ? "default" : "outline"}
             onClick={() => setIsExpense(false)}
             className={cn(
-              "flex-1 min-h-[44px]",
+              "flex-1",
               !isExpense ? "bg-emerald hover:bg-emerald/90 text-white" : "bg-muted/50 border-none hover:bg-muted text-foreground"
             )}
           >
             <ArrowUpCircle className="h-4 w-4 mr-2" /> {t("transactions.income")}
-          </motion.button>
+          </Button>
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
@@ -278,18 +274,12 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       )}
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
+        <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
           <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform min-h-[44px]">
+        </Button>
+        <Button type="submit" className="flex-1 sm:flex-none">
           <Save className="h-4 w-4 mr-2" /> {t("common.save")} {t("transactions.transaction")}
-        </motion.button>
+        </Button>
       </DialogFooter>
     </form>
   );

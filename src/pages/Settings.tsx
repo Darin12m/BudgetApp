@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Sun, Moon, DollarSign, Key, User, LogOut, ChevronRight, Palette, Zap, BellRing, Menu, Calendar, Landmark, FileText, Trash2,
   Lock, Mail, UserCircle, ShieldCheck, Clock, Database, Upload, Download, Globe, Info, Gavel, Link as LinkIcon, ArrowRight,
-  Eye, EyeOff, Loader2, AtSign, KeyRound, User as UserIcon, Save // Added Save icon
+  Eye, EyeOff, Loader2, AtSign, KeyRound, User as UserIcon, Save // Added Eye, EyeOff, Loader2, AtSign, KeyRound, UserIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -474,7 +474,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
                     disabled={isUpdatingName}
                   />
-                  <Button onClick={handleUpdateName} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={isUpdatingName}>
+                  <Button onClick={handleUpdateName} className="w-full" disabled={isUpdatingName}>
                     {isUpdatingName ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserIcon className="w-4 h-4 mr-2" />}
                     {t("common.save")} {t("settings.name")}
                   </Button>
@@ -508,15 +508,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <Separator />
                 <AlertDialog open={showDeleteAccountConfirm} onOpenChange={setShowDeleteAccountConfirm}>
                   <AlertDialogTrigger asChild>
-                    <motion.button
-                      whileHover={{ scale: 1.01, x: 5 }}
-                      whileTap={{ scale: 0.99 }}
-                      className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all"
-                      disabled={isDeletingAccount}
-                    >
+                    <Button variant="destructive" className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg" disabled={isDeletingAccount}>
                       {isDeletingAccount ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="w-5 h-5 mr-2" />}
                       {t("settings.deleteAccount")}
-                    </motion.button>
+                    </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="glassmorphic-card">
                     <AlertDialogHeader>
@@ -551,10 +546,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <motion.button
-                  whileHover={{ scale: 1.01, x: 5 }}
-                  whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                <Button
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg"
                   onClick={handleConnectGoogle}
                   disabled={isConnectingGoogle || isGoogleLinked}
                 >
@@ -563,7 +556,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     {isGoogleLinked ? t("settings.googleAccountLinked") : t("settings.connectGoogleAccount")}
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </motion.button>
+                </Button>
               </CardContent>
             </Card>
 
@@ -586,7 +579,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     placeholder={`${selectedCurrency.symbol} 3000.00`}
                     className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
                   />
-                  <Button onClick={handleSaveMonthlyBudget} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]">
+                  <Button onClick={handleSaveMonthlyBudget} className="w-full">
                     {t("settings.saveMonthlyBudget")}
                   </Button>
                 </div>
@@ -631,7 +624,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     placeholder="e.g., 30"
                     className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
                   />
-                  <Button onClick={handleSaveMicroInvestingSettings} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]">
+                  <Button onClick={handleSaveMicroInvestingSettings} className="w-full">
                     {t("settings.saveMicroInvestingSettings")}
                   </Button>
                 </div>
@@ -650,7 +643,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     placeholder="e.g., 5 for ±5%"
                     className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
                   />
-                  <Button onClick={handleSavePriceAlertThreshold} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]">
+                  <Button onClick={handleSavePriceAlertThreshold} className="w-full">
                     {t("settings.saveAlertThreshold")}
                   </Button>
                 </div>
@@ -810,13 +803,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <Separator />
                 <AlertDialog open={isDeleteDataConfirmOpen} onOpenChange={setIsDeleteDataConfirmOpen}>
                   <AlertDialogTrigger asChild>
-                    <motion.button
-                      whileHover={{ scale: 1.01, x: 5 }}
-                      whileTap={{ scale: 0.99 }}
-                      className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all"
-                    >
+                    <Button variant="destructive" className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg">
                       <Trash2 className="w-5 h-5 mr-2" /> {t("settings.deleteAllPersonalData")}
-                    </motion.button>
+                    </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="glassmorphic-card">
                     <AlertDialogHeader>
@@ -883,10 +872,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </div>
           </div>
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setShowChangeEmailModal(false)} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
+            <Button variant="outline" onClick={() => setShowChangeEmailModal(false)} className="flex-1 sm:flex-none">
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleChangeEmail} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={isUpdatingEmail}>
+            <Button onClick={handleChangeEmail} className="flex-1 sm:flex-none" disabled={isUpdatingEmail}>
               {isUpdatingEmail ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               {t("common.save")}
             </Button>
@@ -969,10 +958,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </div>
           </div>
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setShowChangePasswordModal(false)} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
+            <Button variant="outline" onClick={() => setShowChangePasswordModal(false)} className="flex-1 sm:flex-none">
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleChangePassword} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={isUpdatingPassword}>
+            <Button onClick={handleChangePassword} className="flex-1 sm:flex-none" disabled={isUpdatingPassword}>
               {isUpdatingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               {t("common.save")}
             </Button>

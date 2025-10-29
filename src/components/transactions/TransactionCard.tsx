@@ -38,12 +38,9 @@ const TransactionCard: React.FC<TransactionCardProps> = memo(({ transaction, cat
         <p className={`font-semibold text-sm font-mono ${transaction.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>
           {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
         </p>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          variant="ghost" size="icon" onClick={() => onEdit(transaction)} className="h-8 w-8 text-muted-foreground hover:bg-muted/50">
+        <Button variant="ghost" size="icon" onClick={() => onEdit(transaction)} className="h-8 w-8 text-muted-foreground">
           <Edit className="h-4 w-4" />
-        </motion.button>
+        </Button>
       </div>
     </motion.div>
   );

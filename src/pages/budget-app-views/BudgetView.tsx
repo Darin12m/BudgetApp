@@ -159,16 +159,14 @@ const BudgetView: React.FC<BudgetViewProps> = ({
         <div className="p-4 sm:p-6 border-b border-border">
           <div className="flex items-center justify-between">
             <h3 className="text-base sm:text-lg font-semibold text-foreground tracking-tight">{t("budget.budgetCategories")}</h3>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <Button
               onClick={handleAddCategory}
-              className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80"
+              className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-xl transition-colors text-sm active:bg-primary/80"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">{t("budget.addCategory")}</span>
               <span className="sm:hidden">{t("common.add")}</span>
-            </motion.button>
+            </Button>
           </div>
         </div>
 
@@ -180,9 +178,9 @@ const BudgetView: React.FC<BudgetViewProps> = ({
           ) : (
             <div className="p-6 text-center text-muted-foreground">
               <PiggyBank className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-semibold">{t("budget.noCategoriesSetup")}</p>
+              <p className="text-lg font-semibold text-foreground">{t("budget.noCategoriesSetup")}</p>
               <p className="text-sm mt-2">{t("budget.addFirstCategoryDescription")}</p>
-              <Button onClick={handleAddCategory} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
+              <Button onClick={handleAddCategory} className="mt-4">
                 {t("budget.addFirstCategory")}
               </Button>
             </div>

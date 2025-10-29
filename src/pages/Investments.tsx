@@ -27,6 +27,7 @@ import AddInvestmentModal from '@/components/AddInvestmentModal';
 import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils'; // Import cn for conditional classNames
 
 // --- Interfaces ---
 interface PortfolioSummary {
@@ -415,9 +416,10 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
 
         {/* Fixed Add Button for Mobile (now above BottomNavBar) */}
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="fixed bottom-20 right-4 sm:hidden rounded-full p-3 shadow-lg bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground z-30 animate-in fade-in zoom-in duration-300 transition-transform"
+          className={cn(
+            "fixed bottom-20 right-4 sm:hidden rounded-xl p-3 shadow-lg z-30 animate-in fade-in zoom-in duration-300 transition-transform",
+            "glassmorphic-card bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground"
+          )}
           onClick={handleAddInvestment}
         >
           <Plus className="w-6 h-6" />

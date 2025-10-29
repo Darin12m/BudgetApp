@@ -65,20 +65,14 @@ const CategoryCard: React.FC<CategoryCardProps> = memo(({ category, onEdit, onDe
             {formatCurrency(category.budgeted - category.spent)}
           </p>
           <p className="text-xs sm:text-sm text-muted-foreground font-mono">{Math.round(percentage)}%</p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            variant="ghost" size="icon" onClick={() => onEdit(category)} className="h-8 w-8 text-muted-foreground hover:bg-muted/50">
+          <Button variant="ghost" size="icon" onClick={() => onEdit(category)} className="h-8 w-8 text-muted-foreground">
             <Edit className="h-4 w-4" />
-          </motion.button>
+          </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
                 <Trash2 className="h-4 w-4" />
-              </motion.button>
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="glassmorphic-card">
               <AlertDialogHeader>
