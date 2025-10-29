@@ -6,7 +6,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
-import RadialAllocationChart from '@/components/charts/RadialAllocationChart'; // Import new chart
+import ProDonut from '@/components/ProDonut'; // Import new ProDonut chart
 
 interface AllocationData {
   name: string;
@@ -95,16 +95,13 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
       <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
         {chartData.length > 0 ? (
           <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-            <RadialAllocationChart
+            <ProDonut
               chartId="portfolio-allocation"
-              data={chartData.map(item => ({ name: item.name, value: item.value, fill: item.color }))}
+              data={chartData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
               totalValue={totalPortfolioValue}
-              mainLabel={t("dashboard.totalAllocated")}
+              totalLabel={t("dashboard.totalAllocated")}
               innerRadius={60}
               outerRadius={90}
-              barSize={10}
-              formatValue={formatCurrency}
-              gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
             />
           </div>
         ) : (

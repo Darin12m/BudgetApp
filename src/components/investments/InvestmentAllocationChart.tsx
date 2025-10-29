@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
-import RadialAllocationChart from '@/components/charts/RadialAllocationChart'; // Import new chart
+import ProDonut from '@/components/ProDonut'; // Import new ProDonut chart
 
 interface AllocationData {
   name: string;
@@ -36,16 +36,13 @@ const InvestmentAllocationChart: React.FC<InvestmentAllocationChartProps> = ({ t
       </CardHeader>
       <CardContent className="h-[250px] flex items-center justify-center">
         {data.length > 0 ? (
-          <RadialAllocationChart
+          <ProDonut
             chartId={`investment-allocation-${title.replace(/\s/g, '-')}`}
-            data={data.map(item => ({ name: item.name, value: item.value, fill: item.color }))}
+            data={data.map(item => ({ name: item.name, value: item.value, color: item.color }))}
             totalValue={totalValue}
-            mainLabel={t("dashboard.totalAllocated")}
+            totalLabel={t("dashboard.totalAllocated")}
             innerRadius={60}
             outerRadius={90}
-            barSize={10}
-            formatValue={formatCurrency}
-            gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
           />
         ) : (
           <p className="text-muted-foreground">{emptyMessage}</p>
