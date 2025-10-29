@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarIcon } from "lucide-react"; // Removed ChevronLeft and ChevronRight
+import { CalendarIcon } from "lucide-react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, addMonths, subWeeks, addWeeks, startOfDay, endOfDay } from "date-fns";
 import { DateRange } from "react-day-picker";
 
@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useDateRange } from "@/context/DateRangeContext"; // Import the context
+import { useDateRange } from "@/context/DateRangeContext";
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
@@ -19,7 +19,7 @@ interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function DateRangePicker({ className }: DateRangePickerProps) {
   const { t } = useTranslation();
-  const { selectedRange, setRange, setQuickPeriod } = useDateRange(); // Removed goToPreviousPeriod, goToNextPeriod
+  const { selectedRange, setRange, setQuickPeriod } = useDateRange();
   const [calendarMonth, setCalendarMonth] = React.useState<Date>(selectedRange.from || new Date());
 
   // Update calendar month when selectedRange.from changes
@@ -50,8 +50,8 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
 
   const generateLabel = (from: Date | undefined, to: Date | undefined): string => {
     if (!from && !to) return t("dateRangePicker.selectDateRange");
-    if (from && !to) return format(from, 'MMM dd, yyyy');
-    if (!from && to) return format(to, 'MMM dd, yyyy');
+    if (from && !to) return format(from!, 'MMM dd, yyyy');
+    if (!from && to) return format(to!, 'MMM dd, yyyy');
 
     // If both are defined
     if (format(from!, 'yyyy-MM-dd') === format(to!, 'yyyy-MM-dd')) {
@@ -65,16 +65,14 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
 
   return (
     <div className={cn("flex items-center space-x-2", className)}>
-      {/* Removed Previous Period Button */}
       <Popover>
         <PopoverTrigger asChild>
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, boxShadow: "var(--tw-shadow-glass-sm)" }}
             whileTap={{ scale: 0.98 }}
             id="date"
-            variant={"outline"}
             className={cn(
-              "w-full justify-start text-left font-normal bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]",
+              "w-full justify-start text-left font-normal glassmorphic-card px-4 py-2 min-h-[44px]", // Applied glassmorphic-card
               !selectedRange.from && "text-muted-foreground"
             )}
           >
@@ -102,7 +100,6 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
           </div>
         </PopoverContent>
       </Popover>
-      {/* Removed Next Period Button */}
     </div>
   );
 }
