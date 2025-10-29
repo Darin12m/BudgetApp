@@ -121,19 +121,25 @@ const RadialAllocationChart: React.FC<RadialAllocationChartProps> = ({
           transform: 'translate(-50%, -50%)',
         }}
       >
-        <span
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.5, ease: "easeOut" }}
           className={cn(mainTextColorClass, mainFontWeightClass, "text-center font-mono")}
           style={{ fontSize: `${mainTextFontSize(outerRadius * 2)}px`, lineHeight: 1 }}
         >
           {formatValue ? formatValue(totalValue) : formatCurrency(totalValue)}
-        </span>
+        </motion.span>
         {mainLabel && (
-          <span
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.7, ease: "easeOut" }}
             className={cn(subTextColorClass, subFontWeightClass, "text-center")}
             style={{ fontSize: `${subTextFontSize(outerRadius * 2)}px`, lineHeight: 1 }}
           >
             {mainLabel}
-          </span>
+          </motion.span>
         )}
       </div>
     </motion.div>
