@@ -9,66 +9,43 @@ import BudgetApp from "./pages/BudgetApp";
 import InvestmentsPage from "./pages/Investments";
 import SettingsPage from "./pages/Settings";
 import LoginPage from "./pages/Login";
-import { useEffect, useState, useLayoutEffect } from "react";
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, User, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { useEffect } from "react";
+import { useTheme } from "./hooks/use-theme";
+import { I18nextProvider } from 'react-i18next';
+import i18n from './i18n';
+import SyncStatusIndicator from "./components/common/SyncStatusIndicator";
+import { AuthProvider, useAuth } from "./context/AuthContext"; // Import AuthProvider and useAuth
 import { CurrencyProvider } from "./context/CurrencyContext";
 import { DateRangeProvider } from "./context/DateRangeContext";
-import { useTheme } from "./hooks/use-theme";
-import { I18nextProvider } from 'react-i18next'; // Import I18nextProvider
-import i18n from './i18n'; // Import i18n configuration
-import SyncStatusIndicator from "./components/common/SyncStatusIndicator"; // Import SyncStatusIndicator
 
 const queryClient = new QueryClient();
 
 // ProtectedRoute component to guard authenticated routes
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  userUid: string | null;
-  isAuthenticated: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, userUid, isAuthenticated }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { isAuthenticated, authLoading } = useAuth(); // Use useAuth hook
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <span className="ml-4 text-lg text-muted-foreground">Loading authentication...</span>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
   return <>{children}</>;
 };
 
-const App = () => {
-  const [userUid, setUserUid] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [authLoading, setAuthLoading] = useState(true);
+const AppContent = () => {
+  const { userUid, isAuthenticated, authLoading } = useAuth(); // Use useAuth hook
   const { toggleTheme } = useTheme();
-
-  useEffect(() => {
-    const setupAuth = async () => {
-      try {
-        // Set persistence to local storage
-        await setPersistence(auth, browserLocalPersistence);
-
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          if (user && !user.isAnonymous) {
-            // User is signed in and is NOT anonymous
-            setUserUid(user.uid);
-            setIsAuthenticated(true);
-          } else {
-            // No user is signed in, or it's an anonymous user
-            setUserUid(null);
-            setIsAuthenticated(false);
-          }
-          setAuthLoading(false);
-        });
-        return () => unsubscribe(); // Clean up the listener
-      } catch (error) {
-        console.error("Error setting Firebase persistence:", error);
-        setAuthLoading(false);
-        // Handle error, e.g., show a message to the user
-      }
-    };
-
-    setupAuth();
-  }, []);
 
   // Add global keyboard shortcut for theme toggle (Ctrl + T)
   useEffect(() => {
@@ -95,7 +72,7 @@ const App = () => {
   }
 
   return (
-    <I18nextProvider i18n={i18n}> {/* Wrap with I18nextProvider */}
+    <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
@@ -108,7 +85,7 @@ const App = () => {
                   <Route
                     path="/"
                     element={
-                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                      <ProtectedRoute>
                         <Index userUid={userUid} />
                       </ProtectedRoute>
                     }
@@ -116,7 +93,7 @@ const App = () => {
                   <Route
                     path="/budget-app"
                     element={
-                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                      <ProtectedRoute>
                         <BudgetApp userUid={userUid} />
                       </ProtectedRoute>
                     }
@@ -124,7 +101,7 @@ const App = () => {
                   <Route
                     path="/budget-app/:view"
                     element={
-                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                      <ProtectedRoute>
                         <BudgetApp userUid={userUid} />
                       </ProtectedRoute>
                     }
@@ -132,7 +109,7 @@ const App = () => {
                   <Route
                     path="/investments"
                     element={
-                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                      <ProtectedRoute>
                         <InvestmentsPage userUid={userUid} />
                       </ProtectedRoute>
                     }
@@ -140,14 +117,14 @@ const App = () => {
                   <Route
                     path="/settings"
                     element={
-                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                      <ProtectedRoute>
                         <SettingsPage userUid={userUid} />
                       </ProtectedRoute>
                     }
                   />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-                <SyncStatusIndicator /> {/* Add SyncStatusIndicator here */}
+                <SyncStatusIndicator />
               </DateRangeProvider>
             </CurrencyProvider>
           </BrowserRouter>
@@ -156,5 +133,11 @@ const App = () => {
     </I18nextProvider>
   );
 };
+
+const App = () => (
+  <AuthProvider>
+    <AppContent />
+  </AuthProvider>
+);
 
 export default App;

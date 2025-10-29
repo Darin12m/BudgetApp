@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useFirestoreStatus } from '@/hooks/use-firestore-status';
-import { useAuth } from '@/hooks/use-auth'; // Assuming you have a useAuth hook
+import { useAuth } from '@/context/AuthContext'; // Corrected import path for useAuth
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Wifi, WifiOff, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
