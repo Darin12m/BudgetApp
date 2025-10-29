@@ -34,6 +34,7 @@ interface CurrencyContextType {
   formatUSD: (valueInUSD: number, options?: Intl.NumberFormatOptions) => string; // New function for explicit USD formatting
   convertInputToUSD: (value: number) => number; // New: Converts value from selectedCurrency to USD
   convertUSDToSelected: (valueInUSD: number) => number; // New: Converts USD value to selectedCurrency
+  formatCurrencySymbolOnly: (valueInUSD: number, options?: Intl.NumberFormatOptions) => string; // New: Formats with symbol only
 }
 
 // Create the context
@@ -89,6 +90,19 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     }).format(valueInUSD);
   }, []);
 
+  // New function to format currency with only the symbol
+  const formatCurrencySymbolOnly = useCallback((valueInUSD: number, options?: Intl.NumberFormatOptions): string => {
+    const valueInSelectedCurrency = valueInUSD / selectedCurrency.conversionRateToUSD;
+
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: selectedCurrency.code,
+      currencyDisplay: 'symbol', // Display only the symbol
+      minimumFractionDigits: 2,
+      ...options,
+    }).format(valueInSelectedCurrency);
+  }, [selectedCurrency]);
+
   // New: Converts a value (assumed to be in selectedCurrency) to USD
   const convertInputToUSD = useCallback((value: number): number => {
     return value * selectedCurrency.conversionRateToUSD;
@@ -100,7 +114,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, [selectedCurrency]);
 
   return (
-    <CurrencyContext.Provider value={{ selectedCurrency, setCurrency, formatCurrency, formatUSD, convertInputToUSD, convertUSDToSelected }}>
+    <CurrencyContext.Provider value={{ selectedCurrency, setCurrency, formatCurrency, formatUSD, convertInputToUSD, convertUSDToSelected, formatCurrencySymbolOnly }}>
       {children}
     </CurrencyContext.Provider>
   );
