@@ -71,7 +71,7 @@
     "signOutSuccess": "Успешно одјавување!",
     "signOutError": "Неуспешно одјавување.",
     "exportDataSuccess": "Податоците се успешно извезени!",
-    "exportDataError": "Неуспешно извезување податоци.",
+    "exportDataError": "Неуспешно извозување податоци.",
     "accountInfo": "Информации за сметка",
     "changeName": "Промени име",
     "changeEmail": "Промени е-пошта",
@@ -153,7 +153,13 @@
     "noNetWorthGrowth": "Сè уште нема податоци за раст на нето вредност.",
     "addAccountsAndTransactions": "Додадете сметки и трансакции за да ја видите вашата нето вредност како расте.",
     "autoPay": "Автоматско плаќање",
-    "addRegularExpenses": "Додадете редовни трошоци за да ги следите овде."
+    "addRegularExpenses": "Додадете редовни трошоци за да ги следите овде.",
+    "goodMorning": "Добро утро",
+    "goodAfternoon": "Добар ден",
+    "goodEvening": "Добра вечер",
+    "underBudget": "Останавте {{percentage}}% под буџетот овој месец. Продолжете така!",
+    "overBudgetBy": "Вие сте {{amount}} над буџетот овој месец. Време е за преглед!",
+    "noBudgetSet": "Поставете го вашиот буџет за да добиете увид!"
   },
   "budget": {
     "monthlyBudget": "Месечен буџет",
@@ -307,7 +313,9 @@
     "live": "Во живо",
     "tickerSymbolPlaceholder": "на пр. AAPL",
     "coinSymbolOrIdPlaceholder": "на пр. bitcoin или BTC",
-    "noDataToDisplay": "Нема податоци за прикажување."
+    "noDataToDisplay": "Нема податоци за прикажување.",
+    "gainLossPercentage": "Добивка/Загуба %",
+    "totalValue": "Вкупна вредност"
   },
   "microInvesting": {
     "leftThisWeek": "Имате {{amount}} преостанато оваа недела.",
@@ -366,5 +374,12 @@
     "manageAccount": "Управувај со сметка",
     "openProfile": "Отвори профил",
     "yourProfile": "Вашиот профил"
+  },
+  "dateRangePicker": {
+    "selectDateRange": "Изберете временски опсег",
+    "today": "Денес",
+    "thisWeek": "Оваа недела",
+    "thisMonth": "Овој месец",
+    "lastMonth": "Минатиот месец"
   }
 }
