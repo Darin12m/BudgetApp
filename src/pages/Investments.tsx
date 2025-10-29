@@ -307,7 +307,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                         <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
                           <ProDonut
                             chartId="overall-portfolio-allocation"
-                            data={overallAllocationData}
+                            data={overallAllocationData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
                             totalValue={overallPortfolioSummary.currentValue}
                             totalLabel={t("dashboard.totalAllocated")}
                             innerRadius={60}
@@ -375,7 +375,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                         <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
                           <ProDonut
                             chartId="stock-allocation"
-                            data={stockAllocationData}
+                            data={stockAllocationData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
                             totalValue={stockSummary.currentValue}
                             totalLabel={t("dashboard.totalAllocated")}
                             innerRadius={60}
@@ -443,7 +443,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                         <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
                           <ProDonut
                             chartId="crypto-allocation"
-                            data={cryptoAllocationData}
+                            data={cryptoAllocationData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
                             totalValue={cryptoSummary.currentValue}
                             totalLabel={t("dashboard.totalAllocated")}
                             innerRadius={60}
@@ -581,3 +581,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
         <BottomNavBar />
       </div>
     </div>
+  );
+};
+
+export default InvestmentsPage;
