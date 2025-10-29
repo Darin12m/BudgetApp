@@ -6,6 +6,7 @@ import { Wallet, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface OverallPortfolioSummaryCardProps {
   currentValue: number;
@@ -17,10 +18,12 @@ const OverallPortfolioSummaryCard: React.FC<OverallPortfolioSummaryCardProps> = 
   gainLossPercentage,
 }) => {
   const { t } = useTranslation(); // Initialize useTranslation hook
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, formatCurrencyToParts } = useCurrency();
   const isPositive = gainLossPercentage >= 0;
   const gainLossColor = isPositive ? 'text-arrowUp' : 'text-arrowDown';
   const Icon: LucideIcon = isPositive ? TrendingUp : TrendingDown;
+
+  const formattedCurrentValue = formatCurrencyToParts(currentValue);
 
   return (
     <motion.div
@@ -33,7 +36,10 @@ const OverallPortfolioSummaryCard: React.FC<OverallPortfolioSummaryCardProps> = 
           <p className="caption">{t("investments.totalPortfolioValue")}</p>
           <Wallet className="h-5 w-5 text-muted-foreground" />
         </div>
-        <p className="text-4xl font-bold font-mono tracking-tight mb-1">{formatCurrency(currentValue)}</p>
+        <p className={cn("text-4xl font-bold font-mono tracking-tight flex items-baseline")}>
+          <span className="mr-1">{formattedCurrentValue.symbol}</span>
+          <span>{formattedCurrentValue.value}</span>
+        </p>
         <div className="flex items-center space-x-2">
           {Icon && <Icon className={`w-4 h-4 ${gainLossColor}`} />}
           <span className={`p ${gainLossColor} font-mono`}>

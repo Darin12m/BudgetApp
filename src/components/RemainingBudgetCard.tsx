@@ -68,7 +68,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   smartSummary,
 }) => {
   const { t } = useTranslation(); // Initialize useTranslation hook
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, formatCurrencyToParts } = useCurrency();
 
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
   const isOverBudget = remainingBudget < 0;
@@ -81,6 +81,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
       : 'text-emerald';
 
   const animatedRemainingBudget = useCountUp(remainingBudget, 1000);
+  const formattedRemainingBudget = formatCurrencyToParts(animatedRemainingBudget);
 
   const sparklineData = [
     { day: 1, value: 1000 },
@@ -106,8 +107,9 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
               <AlertTriangle className="w-3 h-3 mr-1" /> {t("dashboard.overBudget")}
             </Badge>
           )}
-          <p className={cn("font-bold font-mono tracking-tight", remainingBudgetTextColor)} style={{ fontSize: 'clamp(2.25rem, 8vw, 3.75rem)' }}>
-            {formatCurrency(animatedRemainingBudget)}
+          <p className={cn("font-bold font-mono tracking-tight flex items-baseline justify-center sm:justify-start", remainingBudgetTextColor)} style={{ fontSize: 'clamp(2.25rem, 8vw, 3.75rem)' }}>
+            <span className="mr-1">{formattedRemainingBudget.symbol}</span>
+            <span>{formattedRemainingBudget.value}</span>
           </p>
           <p className="p mt-1">
             {formatCurrency(remainingPerDay)} {t("dashboard.leftPerDay")} • {daysLeft} {t("dashboard.daysLeft")}

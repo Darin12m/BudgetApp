@@ -11,6 +11,7 @@ import { CustomProgress } from '@/components/common/CustomProgress';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
 import CircularProgressChart from '@/components/charts/CircularProgressChart'; // Import new chart
+import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
 
 interface BudgetViewProps {
   totalBudgeted: number;
@@ -40,6 +41,8 @@ const BudgetView: React.FC<BudgetViewProps> = ({
   handleDeleteCategory,
 }) => {
   const { t } = useTranslation(); // Initialize useTranslation hook
+  const { formatCurrencyToParts } = useCurrency(); // Destructure new function
+
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
   const isOverBudget = remainingBudget < 0;
   const isCloseToLimit = !isOverBudget && spentPercentage >= 80;
@@ -49,6 +52,9 @@ const BudgetView: React.FC<BudgetViewProps> = ({
     : isCloseToLimit
       ? 'text-amber-500'
       : 'text-emerald';
+
+  const formattedTotalBudgeted = formatCurrencyToParts(totalBudgeted);
+  const formattedTotalSpent = formatCurrencyToParts(totalSpent);
 
   return (
     <motion.div
@@ -106,14 +112,16 @@ const BudgetView: React.FC<BudgetViewProps> = ({
         <div className="flex flex-wrap justify-between items-end gap-x-4 gap-y-3 mb-4 border-t border-border pt-4">
           <div className="flex flex-col items-center text-center w-full sm:w-auto flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 sm:items-start sm:text-left">
             <p className="caption mb-1">{t("dashboard.totalBudgeted")}</p>
-            <p className="h3 font-mono overflow-hidden text-ellipsis whitespace-nowrap">
-              {formatCurrency(totalBudgeted)}
+            <p className="h3 font-mono overflow-hidden text-ellipsis whitespace-nowrap flex items-baseline">
+              <span className="mr-1">{formattedTotalBudgeted.symbol}</span>
+              <span>{formattedTotalBudgeted.value}</span>
             </p>
           </div>
           <div className="flex flex-col items-center text-center w-full sm:w-auto flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 sm:items-start sm:text-left">
             <p className="caption mb-1">{t("dashboard.totalSpent")}</p>
-            <p className="h3 font-mono overflow-hidden text-ellipsis whitespace-nowrap">
-              {formatCurrency(totalSpent)}
+            <p className="h3 font-mono overflow-hidden text-ellipsis whitespace-nowrap flex items-baseline">
+              <span className="mr-1">{formattedTotalSpent.symbol}</span>
+              <span>{formattedTotalSpent.value}</span>
             </p>
           </div>
         </div>

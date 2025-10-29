@@ -33,6 +33,7 @@ interface CurrencyContextType {
   convertUSDToSelected: (valueInUSD: number) => number; // New: Converts USD value to selectedCurrency
   formatCurrencySymbolOnly: (valueInUSD: number, options?: Intl.NumberFormatOptions) => string; // New: Formats with symbol only
   formatCurrencyValueSymbol: (valueInUSD: number, options?: Intl.NumberFormatOptions) => string; // New: Formats as 'Value Symbol'
+  formatCurrencyToParts: (valueInUSD: number, options?: Intl.NumberFormatOptions) => { symbol: string; value: string; }; // New: Formats into symbol and value parts
 }
 
 // Create the context
@@ -171,8 +172,30 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     return valueInUSD / selectedCurrency.conversionRateToUSD;
   }, [selectedCurrency]);
 
+  // New: Function to format currency into parts for flexible rendering
+  const formatCurrencyToParts = useCallback((valueInUSD: number, options?: Intl.NumberFormatOptions) => {
+    const valueInSelectedCurrency = valueInUSD / selectedCurrency.conversionRateToUSD;
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: selectedCurrency.code,
+      minimumFractionDigits: 2,
+      ...options,
+    });
+    const parts = formatter.formatToParts(valueInSelectedCurrency);
+    let symbol = '';
+    let value = '';
+    for (const part of parts) {
+      if (part.type === 'currency') {
+        symbol = part.value;
+      } else if (part.type === 'integer' || part.type === 'group' || part.type === 'decimal' || part.type === 'fraction') {
+        value += part.value;
+      }
+    }
+    return { symbol, value };
+  }, [selectedCurrency]);
+
   return (
-    <CurrencyContext.Provider value={{ selectedCurrency, setCurrency, formatCurrency, formatUSD, convertInputToUSD, convertUSDToSelected, formatCurrencySymbolOnly, formatCurrencyValueSymbol }}>
+    <CurrencyContext.Provider value={{ selectedCurrency, setCurrency, formatCurrency, formatUSD, convertInputToUSD, convertUSDToSelected, formatCurrencySymbolOnly, formatCurrencyValueSymbol, formatCurrencyToParts }}>
       {children}
     </CurrencyContext.Provider>
   );
