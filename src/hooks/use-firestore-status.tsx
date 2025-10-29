@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { onSnapshot, collection, query, limit } from 'firebase/firestore';
+import { onSnapshot, collection, query, limit, where } from 'firebase/firestore'; // Added 'where'
 
 export type SyncStatus = 'synced' | 'offline' | 'syncing' | 'error';
 
