@@ -10,6 +10,7 @@ import { CustomProgress } from '@/components/common/CustomProgress';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
 import CircularProgressChart from '@/components/charts/CircularProgressChart'; // Import new chart
+import RemainingBudgetDisplay from '@/components/common/RemainingBudgetDisplay'; // Import new component
 
 interface RemainingBudgetCardProps {
   totalBudgeted: number;
@@ -21,41 +22,6 @@ interface RemainingBudgetCardProps {
   previousMonthLeftover: number;
   smartSummary: string;
 }
-
-const useCountUp = (end: number, duration: number = 1000) => {
-  const [count, setCount] = useState(0);
-  const requestRef = useRef<number>();
-  const startTimeRef = useRef<number>();
-
-  const animate = useCallback((time: number) => {
-    if (!startTimeRef.current) {
-      startTimeRef.current = time;
-    }
-    const elapsed = time - startTimeRef.current;
-    const progress = Math.min(elapsed / duration, 1);
-    const newCount = end * progress;
-
-    setCount(newCount);
-
-    if (progress < 1) {
-      requestRef.current = requestAnimationFrame(animate);
-    } else {
-      setCount(end);
-    }
-  }, [end, duration]);
-
-  useEffect(() => {
-    startTimeRef.current = undefined;
-    requestRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-      }
-    };
-  }, [end, animate]);
-
-  return count;
-};
 
 const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   totalBudgeted,
@@ -80,9 +46,6 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
       ? 'text-amber-500'
       : 'text-emerald';
 
-  const animatedRemainingBudget = useCountUp(remainingBudget, 1000);
-  const formattedRemainingBudget = formatCurrencyToParts(animatedRemainingBudget);
-
   const sparklineData = [
     { day: 1, value: 1000 },
     { day: 2, value: 950 },
@@ -100,20 +63,14 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
       transition={{ duration: 0.2, ease: "easeOut" }}
     >
       <div className="flex flex-col sm:flex-row items-center sm:justify-between mb-4">
-        <div className="flex-1 text-center sm:text-left mb-6 sm:mb-0">
-          <p className="caption mb-1">{t("dashboard.remainingBudget")}</p>
-          {isOverBudget && (
-            <Badge variant="destructive" className="mb-2 flex items-center justify-center mx-auto sm:mx-0 w-fit px-3 py-1 text-xs animate-pulse-red-glow">
-              <AlertTriangle className="w-3 h-3 mr-1" /> {t("dashboard.overBudget")}
-            </Badge>
-          )}
-          <p className={cn("font-bold font-mono tracking-tight flex items-baseline justify-center sm:justify-start", remainingBudgetTextColor)} style={{ fontSize: 'clamp(2.25rem, 8vw, 3.75rem)' }}>
-            <span className="mr-1">{formattedRemainingBudget.symbol}</span>
-            <span>{formattedRemainingBudget.value}</span>
-          </p>
-          <p className="p mt-1">
-            {formatCurrency(remainingPerDay)} {t("dashboard.leftPerDay")} • {daysLeft} {t("dashboard.daysLeft")}
-          </p>
+        <div className="flex-1 mb-6 sm:mb-0">
+          <RemainingBudgetDisplay
+            remainingBudget={remainingBudget}
+            remainingPerDay={remainingPerDay}
+            daysLeft={daysLeft}
+            totalBudgeted={totalBudgeted}
+            totalSpent={totalSpent}
+          />
         </div>
 
         <div className="w-40 h-40 relative flex-shrink-0 flex items-center justify-center">

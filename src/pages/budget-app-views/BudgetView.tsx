@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
 import CircularProgressChart from '@/components/charts/CircularProgressChart'; // Import new chart
 import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import RemainingBudgetDisplay from '@/components/common/RemainingBudgetDisplay'; // Import new component
 
 interface BudgetViewProps {
   totalBudgeted: number;
@@ -79,19 +80,14 @@ const BudgetView: React.FC<BudgetViewProps> = ({
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <div className="flex-1 text-center sm:text-left mb-6 sm:mb-0">
-            <p className="caption mb-1">{t("dashboard.remainingBudget")}</p>
-            {isOverBudget && (
-              <Badge variant="destructive" className="mb-2 flex items-center justify-center mx-auto sm:mx-0 w-fit px-3 py-1 text-xs animate-pulse-red-glow">
-                <AlertTriangle className="w-3 h-3 mr-1" /> {t("dashboard.overBudget")}
-              </Badge>
-            )}
-            <p className={cn("font-bold font-mono tracking-tight", remainingBudgetTextColor)} style={{ fontSize: 'clamp(2.25rem, 8vw, 3.75rem)' }}>
-              {formatCurrency(remainingBudget)}
-            </p>
-            <p className="p mt-1">
-              {formatCurrency(remainingPerDay)} {t("dashboard.leftPerDay")} • {daysLeft} {t("dashboard.daysLeft")}
-            </p>
+          <div className="flex-1 mb-6 sm:mb-0">
+            <RemainingBudgetDisplay
+              remainingBudget={remainingBudget}
+              remainingPerDay={remainingPerDay}
+              daysLeft={daysLeft}
+              totalBudgeted={totalBudgeted}
+              totalSpent={totalSpent}
+            />
           </div>
 
           <div className="w-40 h-40 relative flex-shrink-0 flex items-center justify-center">
