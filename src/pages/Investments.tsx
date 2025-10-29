@@ -20,13 +20,14 @@ import { DateRangePicker } from '@/components/common/DateRangePicker';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import OverallPortfolioSummaryCard from '@/components/investments/OverallPortfolioSummaryCard';
-import InvestmentAllocationChart from '@/components/investments/InvestmentAllocationChart'; // Keep for section-specific charts
+import InvestmentAllocationChart from '@/components/investments/InvestmentAllocationChart';
 import InvestmentHoldingsList from '@/components/investments/InvestmentHoldingsList';
 import InvestmentForm from '@/components/investments/InvestmentForm';
 import BottomNavBar from '@/components/BottomNavBar';
 import Sidebar from '@/components/layout/Sidebar';
 import AddInvestmentModal from '@/components/AddInvestmentModal';
-import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart'; // Import the new component
+import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // --- Interfaces ---
 interface PortfolioSummary {
@@ -54,7 +55,8 @@ interface InvestmentsPageProps {
 }
 
 const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
-  const { formatCurrency, selectedCurrency } = useCurrency(); // Use formatCurrency
+  const { t } = useTranslation(); // Initialize useTranslation hook
+  const { formatCurrency, selectedCurrency } = useCurrency();
   const { selectedRange } = useDateRange();
 
   const {
@@ -160,10 +162,10 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
     const cryptoValue = cryptoInvestments.reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice), 0);
 
     const data = [];
-    if (stockValue > 0) data.push({ name: 'Stocks', value: stockValue, color: ALLOCATION_COLORS[0] });
-    if (cryptoValue > 0) data.push({ name: 'Crypto', value: cryptoValue, color: ALLOCATION_COLORS[1] });
+    if (stockValue > 0) data.push({ name: t("investments.stocks"), value: stockValue, color: ALLOCATION_COLORS[0] });
+    if (cryptoValue > 0) data.push({ name: t("investments.crypto"), value: cryptoValue, color: ALLOCATION_COLORS[1] });
     return data;
-  }, [stockInvestments, cryptoInvestments]);
+  }, [stockInvestments, cryptoInvestments, t]);
 
   const stockAllocationData: AllocationData[] = useMemo(() => {
     return stockInvestments.map((inv, index) => ({
@@ -258,8 +260,8 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                 <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
               </button>
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg sm:text-xl font-semibold text-foreground capitalize truncate">Investments</h2>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Track your portfolio performance.</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground capitalize truncate">{t("navigation.investments")}</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t("investments.trackPortfolio")}</p>
               </div>
             </div>
 
@@ -284,20 +286,20 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
           {/* Tabs for Stocks and Crypto */}
           <Tabs value={activeTab} onValueChange={(value: 'all' | 'stocks' | 'crypto') => setActiveTab(value)} className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-card rounded-xl p-1 card-shadow backdrop-blur-lg">
-              <TabsTrigger value="all" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">All Holdings</TabsTrigger>
-              <TabsTrigger value="stocks" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">Stocks</TabsTrigger>
-              <TabsTrigger value="crypto" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">Crypto</TabsTrigger>
+              <TabsTrigger value="all" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">{t("investments.allHoldings")}</TabsTrigger>
+              <TabsTrigger value="stocks" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">{t("investments.stocks")}</TabsTrigger>
+              <TabsTrigger value="crypto" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">{t("investments.crypto")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="mt-6 space-y-6">
               <EnhancedPortfolioAllocationChart
-                title="Overall Allocation"
+                title={t("investments.overallAllocation")}
                 data={overallAllocationData}
-                emptyMessage="No data to display."
+                emptyMessage={t("investments.noInvestmentsFound")}
                 totalPortfolioValue={overallPortfolioSummary.currentValue}
               />
               <InvestmentHoldingsList
-                title="All Holdings"
+                title={t("investments.allHoldings")}
                 investments={getSortedInvestments(investments)}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
@@ -306,9 +308,9 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                 onEditInvestment={handleEditInvestment}
                 priceChange={priceChange}
                 onAddInvestment={handleAddInvestment}
-                emptyMessage="No investments found."
+                emptyMessage={t("investments.noInvestmentsFound")}
                 emptyIcon={Wallet}
-                emptyButtonText="Add First Investment"
+                emptyButtonText={t("investments.addFirstInvestment")}
                 alertedInvestments={alertedInvestments}
               />
             </TabsContent>
@@ -319,12 +321,12 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                 gainLossPercentage={stockSummary.totalGainLossPercentage}
               />
               <InvestmentAllocationChart
-                title="Stock Allocation"
+                title={t("investments.stockAllocation")}
                 data={stockAllocationData}
-                emptyMessage="No stock data to display."
+                emptyMessage={t("investments.noStockData")}
               />
               <InvestmentHoldingsList
-                title="Stock Holdings"
+                title={t("investments.stockHoldings")}
                 investments={sortedStockInvestments}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
@@ -333,9 +335,9 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                 onEditInvestment={handleEditInvestment}
                 priceChange={priceChange}
                 onAddInvestment={handleAddInvestment}
-                emptyMessage="No stock investments found."
+                emptyMessage={t("investments.noStockInvestments")}
                 emptyIcon={DollarSign}
-                emptyButtonText="Add First Stock"
+                emptyButtonText={t("investments.addFirstStock")}
                 alertedInvestments={alertedInvestments}
               />
             </TabsContent>
@@ -346,12 +348,12 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                 gainLossPercentage={cryptoSummary.totalGainLossPercentage}
               />
               <InvestmentAllocationChart
-                title="Crypto Allocation"
+                title={t("investments.cryptoAllocation")}
                 data={cryptoAllocationData}
-                emptyMessage="No crypto data to display."
+                emptyMessage={t("investments.noCryptoData")}
               />
               <InvestmentHoldingsList
-                title="Crypto Holdings"
+                title={t("investments.cryptoHoldings")}
                 investments={sortedCryptoInvestments}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
@@ -360,9 +362,9 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                 onEditInvestment={handleEditInvestment}
                 priceChange={priceChange}
                 onAddInvestment={handleAddInvestment}
-                emptyMessage="No crypto investments found."
+                emptyMessage={t("investments.noCryptoInvestments")}
                 emptyIcon={Bitcoin}
-                emptyButtonText="Add First Crypto"
+                emptyButtonText={t("investments.addFirstCrypto")}
                 alertedInvestments={alertedInvestments}
               />
             </TabsContent>
@@ -371,7 +373,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
           {/* Portfolio Growth Visualization */}
           <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-semibold">Portfolio Growth</CardTitle>
+              <CardTitle className="text-lg font-semibold">{t("investments.portfolioGrowth")}</CardTitle>
             </CardHeader>
             <CardContent className="h-[250px] flex items-center justify-center">
               {portfolioGrowthChartData.length > 1 ? (
@@ -387,21 +389,21 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
                     <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       style={{ fontSize: '10px' }}
-                      tickFormatter={(value) => formatCurrency(Number(value))} // Use formatCurrency here
+                      tickFormatter={(value) => formatCurrency(Number(value))}
                     />
                     <Tooltip
                       contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
-                      formatter={(value) => formatCurrency(Number(value))} // Use formatCurrency here
+                      formatter={(value) => formatCurrency(Number(value))}
                       labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                     />
-                    <Line type="monotone" dataKey="value" stroke="hsl(var(--emerald))" strokeWidth={2} name="Portfolio Value" dot={false} />
+                    <Line type="monotone" dataKey="value" stroke="hsl(var(--emerald))" strokeWidth={2} name={t("investments.portfolioValue")} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="p-6 text-center text-muted-foreground">
                   <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-lg font-semibold text-foreground">No sufficient growth data yet.</p>
-                  <p className="text-sm mt-2">Add more investments and check back tomorrow to see your portfolio grow!</p>
+                  <p className="text-lg font-semibold text-foreground">{t("investments.noGrowthData")}</p>
+                  <p className="text-sm mt-2">{t("investments.addMoreInvestmentsGrowth")}</p>
                 </div>
               )}
             </CardContent>

@@ -4,6 +4,7 @@ import React from 'react';
 import { TooltipProps } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface RechartsTooltipProps extends TooltipProps<ValueType, NameType> {
   formatValue: (value: number, options?: Intl.NumberFormatOptions) => string;
@@ -17,6 +18,7 @@ const RechartsTooltip: React.FC<RechartsTooltipProps> = ({
   formatValue,
   nameFormatter,
 }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   if (active && payload && payload.length) {
     return (
       <div className={cn(

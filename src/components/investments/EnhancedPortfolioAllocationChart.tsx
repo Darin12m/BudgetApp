@@ -4,12 +4,13 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
-import DonutWithCenterText from '@/components/DonutWithCenterText'; // Import the new DonutWithCenterText component
+import DonutWithCenterText from '@/components/DonutWithCenterText';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface AllocationData {
   name: string;
   value: number;
-  color?: string; // Color will be assigned internally
+  color?: string;
 }
 
 interface EnhancedPortfolioAllocationChartProps {
@@ -19,18 +20,17 @@ interface EnhancedPortfolioAllocationChartProps {
   totalPortfolioValue: number;
 }
 
-// Define a new, high-contrast color palette for the chart
 const CHART_PALETTE = [
-  'hsl(var(--primary))',     // Electric Cyan
-  'hsl(var(--emerald))',     // Green
-  'hsl(var(--lilac))',       // Lilac
-  'hsl(25 95% 53%)',         // A vibrant orange
-  'hsl(220 70% 50%)',        // A distinct blue
-  'hsl(340 80% 60%)',        // A strong pink/magenta
-  'hsl(175 70% 40%)',        // A deep teal
-  'hsl(60 90% 50%)',         // A bright yellow
-  'hsl(280 50% 70%)',        // A softer purple
-  'hsl(10 80% 60%)',         // A warm red-orange
+  'hsl(var(--primary))',
+  'hsl(var(--emerald))',
+  'hsl(var(--lilac))',
+  'hsl(25 95% 53%)',
+  'hsl(220 70% 50%)',
+  'hsl(340 80% 60%)',
+  'hsl(175 70% 40%)',
+  'hsl(60 90% 50%)',
+  'hsl(280 50% 70%)',
+  'hsl(10 80% 60%)',
 ];
 
 interface AllocationLegendListProps {
@@ -42,6 +42,7 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
   chartData,
   formatCurrency,
 }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   return (
     <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
       {chartData.map((entry, index) => (
@@ -67,14 +68,15 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
 
 
 const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChartProps> = ({ title, data, emptyMessage, totalPortfolioValue }) => {
-  const { formatCurrency, formatCurrencyValueSymbol } = useCurrency(); // Import formatCurrencyValueSymbol
+  const { t } = useTranslation(); // Initialize useTranslation hook
+  const { formatCurrency, formatCurrencyValueSymbol } = useCurrency();
 
   const chartData = useMemo(() => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
     return data.map((item, index) => ({
       ...item,
       percentage: total > 0 ? (item.value / total) * 100 : 0,
-      color: CHART_PALETTE[index % CHART_PALETTE.length], // Assign color from new palette
+      color: CHART_PALETTE[index % CHART_PALETTE.length],
     }));
   }, [data]);
 
@@ -88,18 +90,18 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
           <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
             <DonutWithCenterText
               chartId="portfolio-allocation"
-              mainValue={formatCurrencyValueSymbol(totalPortfolioValue)} // Use the new function here
-              mainLabel="Total Allocated"
-              data={chartData.map(item => ({ ...item, color: item.color || 'hsl(var(--primary))' }))} // Ensure color is always set
+              mainValue={formatCurrencyValueSymbol(totalPortfolioValue)}
+              mainLabel={t("dashboard.totalAllocated")}
+              data={chartData.map(item => ({ ...item, color: item.color || 'hsl(var(--primary))' }))}
               innerRadius={60}
               outerRadius={90}
-              formatValue={formatCurrency} // Keep currency formatting for tooltips
+              formatValue={formatCurrency}
               startAngle={90}
               endAngle={-270}
               paddingAngle={2}
               strokeWidth={1}
-              strokeColor="transparent" // No stroke for individual slices
-              backgroundFill="hsl(var(--muted)/50%)" // Background for the full circle
+              strokeColor="transparent"
+              backgroundFill="hsl(var(--muted)/50%)"
             />
           </div>
         ) : (

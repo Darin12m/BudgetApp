@@ -24,6 +24,7 @@ import TransactionsView from './budget-app-views/TransactionsView';
 
 // New custom hook
 import { useBudgetAppLogic } from '@/hooks/use-budget-app-logic';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 
 interface BudgetAppProps {
@@ -31,6 +32,7 @@ interface BudgetAppProps {
 }
 
 const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const navigate = useNavigate();
   const {
     // Data & Derived Values
@@ -103,9 +105,9 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
     handleOpenAddFunds,
     handleAddFundsToGoal,
     handleQuickAddTransaction,
-    setIsAddEditCategoryModalOpen, // Destructure here
-    setIsAddEditGoalModalOpen,     // Destructure here
-    setIsAddFundsModalOpen,        // Destructure here
+    setIsAddEditCategoryModalOpen,
+    setIsAddEditGoalModalOpen,
+    setIsAddFundsModalOpen,
   } = useBudgetAppLogic(userUid);
 
 
@@ -129,8 +131,8 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid }) => {
                 <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
               </button>
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg sm:text-xl font-semibold text-foreground capitalize truncate">{activeView}</h2>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Welcome back! Here's your financial overview.</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground capitalize truncate">{t(`navigation.${activeView}`)}</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t("dashboard.welcomeMessage")}</p>
               </div>
             </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
-import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, ChevronRight, Palette, Zap, BellRing, Menu, Calendar, Landmark } from 'lucide-react'; // Added Menu, Calendar icons, Landmark for currency
+import React, { useState, useEffect, useCallback } from 'react';
+import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, ChevronRight, Palette, Zap, BellRing, Menu, Calendar, Landmark, FileText, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -11,39 +11,52 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from 'sonner';
 import BottomNavBar from '@/components/BottomNavBar';
 import { useFinanceData } from '@/hooks/use-finance-data';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase'; // Import db for data deletion
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '@/components/layout/Sidebar'; // Import Sidebar
-import { format } from 'date-fns'; // Import format for date display
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
-import { useCurrency, CURRENCIES } from '@/context/CurrencyContext'; // Import useCurrency and CURRENCIES
-import { useDateRange } from '@/context/DateRangeContext'; // Import useDateRange
-import { useTheme } from '@/hooks/use-theme'; // Import the new useTheme hook
+import Sidebar from '@/components/layout/Sidebar';
+import { format } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCurrency, CURRENCIES } from '@/context/CurrencyContext';
+import { useDateRange } from '@/context/DateRangeContext';
+import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
+import i18n from '@/i18n'; // Import i18n instance
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore'; // Firestore imports for deletion
 
 interface SettingsPageProps {
   userUid: string | null;
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
-  const { isDarkMode, toggleTheme } = useTheme(); // Use the new useTheme hook
+  const { t } = useTranslation(); // Initialize useTranslation hook
+  const { isDarkMode, toggleTheme } = useTheme();
   const [monthlyBudgetInput, setMonthlyBudgetInput] = useState<string>('');
   const [microInvestingEnabled, setMicroInvestingEnabled] = useState<boolean>(true);
   const [microInvestingPercentage, setMicroInvestingPercentage] = useState<string>('30');
   const [priceAlertThresholdInput, setPriceAlertThresholdInput] = useState<string>('5');
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false); // State for sidebar
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [isDeleteDataConfirmOpen, setIsDeleteDataConfirmOpen] = useState(false); // State for delete data confirmation
 
-  const { selectedRange } = useDateRange(); // Get selectedRange from context
-  const { budgetSettings, updateDocument, loading: financeLoading } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
-  const { selectedCurrency, setCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency(); // Use the currency context
+  const { selectedRange } = useDateRange();
+  const { budgetSettings, updateDocument, loading: financeLoading, transactions, categories, goals } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
+  const { selectedCurrency, setCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
 
   const navigate = useNavigate();
 
-  // Removed the previous useEffect for theme initialization, as useTheme hook now handles it.
-
   useEffect(() => {
     if (budgetSettings && budgetSettings.id) {
-      // Convert USD value from Firestore to selected currency for display
       setMonthlyBudgetInput(convertUSDToSelected(budgetSettings.totalBudgeted || 0).toString());
       setMicroInvestingEnabled(budgetSettings.microInvestingEnabled ?? true);
       setMicroInvestingPercentage(budgetSettings.microInvestingPercentage?.toString() || '30');
@@ -53,36 +66,35 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
 
   const handleSaveMonthlyBudget = async () => {
     if (!userUid || !budgetSettings?.id) {
-      toast.error("User not authenticated or budget settings not loaded.");
+      toast.error(t("common.error"));
       return;
     }
     const newBudget = parseFloat(monthlyBudgetInput);
     if (isNaN(newBudget) || newBudget <= 0) {
-      toast.error("Please enter a valid positive number for the monthly budget.");
+      toast.error(t("common.error"));
       return;
     }
-    // Convert input amount to USD before saving
     const newBudgetInUSD = convertInputToUSD(newBudget);
     try {
       await updateDocument('budgetSettings', budgetSettings.id, {
         totalBudgeted: newBudgetInUSD,
-        inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
+        inputCurrencyCode: selectedCurrency.code,
       });
-      toast.success("Monthly budget updated successfully!");
+      toast.success(t("common.success"));
     } catch (error) {
       console.error("Error updating monthly budget:", error);
-      toast.error("Failed to update monthly budget.");
+      toast.error(t("common.error"));
     }
   };
 
   const handleSaveMicroInvestingSettings = async () => {
     if (!userUid || !budgetSettings?.id) {
-      toast.error("User not authenticated or budget settings not loaded.");
+      toast.error(t("common.error"));
       return;
     }
     const newPercentage = parseFloat(microInvestingPercentage);
     if (isNaN(newPercentage) || newPercentage < 0 || newPercentage > 100) {
-      toast.error("Please enter a valid percentage between 0 and 100.");
+      toast.error(t("common.error"));
       return;
     }
     try {
@@ -90,40 +102,40 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
         microInvestingEnabled: microInvestingEnabled,
         microInvestingPercentage: newPercentage,
       });
-      toast.success("Micro-investing settings updated successfully!");
+      toast.success(t("common.success"));
     } catch (error) {
       console.error("Error updating micro-investing settings:", error);
-      toast.error("Failed to update micro-investing settings.");
+      toast.error(t("common.error"));
     }
   };
 
   const handleSavePriceAlertThreshold = async () => {
     if (!userUid || !budgetSettings?.id) {
-      toast.error("User not authenticated or budget settings not loaded.");
+      toast.error(t("common.error"));
       return;
     }
     const newThreshold = parseFloat(priceAlertThresholdInput);
     if (isNaN(newThreshold) || newThreshold < 0) {
-      toast.error("Please enter a valid non-negative number for the price alert threshold.");
+      toast.error(t("common.error"));
       return;
     }
     try {
       await updateDocument('budgetSettings', budgetSettings.id, { priceAlertThreshold: newThreshold });
-      toast.success("Price alert threshold updated successfully!");
+      toast.success(t("common.success"));
     } catch (error) {
       console.error("Error updating price alert threshold:", error);
-      toast.error("Failed to update price alert threshold.");
+      toast.error(t("common.error"));
     }
   };
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      toast.success("Signed out successfully!");
+      toast.success(t("common.success"));
       window.location.href = '/';
     } catch (error) {
       console.error("Error signing out:", error);
-      toast.error("Failed to sign out.");
+      toast.error(t("common.error"));
     }
   };
 
@@ -142,6 +154,86 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
     else navigate(`/budget-app?view=${view}`);
   }, [navigate]);
 
+  const handleLanguageChange = (lng: string) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem('i18nextLng', lng); // Persist language choice
+    toast.success(t("common.success"));
+  };
+
+  const exportDataAsCsv = useCallback(() => {
+    if (!userUid) {
+      toast.error(t("common.error"));
+      return;
+    }
+
+    const date = format(new Date(), 'yyyy-MM-dd');
+    const filename = `FinanceFlow_Export_${date}.csv`;
+
+    let csvContent = '';
+
+    // Helper to convert array of objects to CSV string
+    const arrayToCsv = (arr: any[], title: string) => {
+      if (arr.length === 0) return '';
+      const headers = Object.keys(arr[0]);
+      const headerRow = headers.join(',');
+      const dataRows = arr.map(row => headers.map(header => {
+        const value = row[header];
+        // Handle potential commas in string values by wrapping in quotes
+        return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
+      }).join(','));
+      return `${title}\n${headerRow}\n${dataRows.join('\n')}\n\n`;
+    };
+
+    csvContent += arrayToCsv(transactions, 'Transactions');
+    csvContent += arrayToCsv(categories, 'Categories');
+    csvContent += arrayToCsv(goals, 'Goals');
+    // Add other collections as needed (e.g., investments, recurringTransactions)
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success(t("common.success"));
+    } else {
+      toast.error(t("common.error"));
+    }
+  }, [userUid, transactions, categories, goals, t]);
+
+  const handleDeleteAllUserData = useCallback(async () => {
+    if (!userUid) {
+      toast.error(t("common.error"));
+      return;
+    }
+
+    const collectionsToDelete = [
+      'accounts', 'budgetSettings', 'categories', 'goals',
+      'investments', 'portfolioSnapshots', 'recurringTransactions', 'transactions'
+    ];
+
+    try {
+      for (const collectionName of collectionsToDelete) {
+        const q = query(collection(db, collectionName), where("ownerUid", "==", userUid));
+        const querySnapshot = await getDocs(q);
+        const deletePromises = querySnapshot.docs.map(d => deleteDoc(doc(db, collectionName, d.id)));
+        await Promise.all(deletePromises);
+      }
+      await signOut(auth); // Sign out after deleting data
+      toast.success(t("common.success"));
+      navigate('/login');
+    } catch (error) {
+      console.error("Error deleting all user data:", error);
+      toast.error(t("common.error"));
+    } finally {
+      setIsDeleteDataConfirmOpen(false);
+    }
+  }, [userUid, navigate, t]);
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} onViewChange={handleViewChange} userUid={userUid} />
@@ -155,7 +247,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
             >
               <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
             </button>
-            <h1 className="text-lg sm:text-xl font-bold">Settings</h1>
+            <h1 className="text-lg sm:text-xl font-bold">{t("settings.title")}</h1>
           </div>
         </header>
 
@@ -165,14 +257,14 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
             <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <Palette className="w-5 h-5 mr-2 text-muted-foreground" /> Theme
+                  <Palette className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.theme")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="dark-mode-toggle" className="flex items-center text-base">
                     {isDarkMode ? <Moon className="w-4 h-4 mr-2" /> : <Sun className="w-4 h-4 mr-2" />}
-                    Dark Mode
+                    {t("settings.darkMode")}
                   </Label>
                   <Switch
                     id="dark-mode-toggle"
@@ -183,19 +275,42 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
               </CardContent>
             </Card>
 
-            {/* Currency Settings */}
+            {/* Language Settings */}
             <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <Landmark className="w-5 h-5 mr-2 text-muted-foreground" /> Currency
+                  <Calendar className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.language")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="main-currency" className="text-base">Main Currency</Label>
+                  <Label htmlFor="app-language" className="text-base">{t("settings.appLanguage")}</Label>
+                  <Select value={i18n.language} onValueChange={handleLanguageChange}>
+                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
+                      <SelectValue placeholder={t("settings.selectLanguage")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English 🇬🇧</SelectItem>
+                      <SelectItem value="mk">Македонски 🇲🇰</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Currency Settings */}
+            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center">
+                  <Landmark className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.currency")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="main-currency" className="text-base">{t("settings.mainCurrency")}</Label>
                   <Select value={selectedCurrency.code} onValueChange={setCurrency}>
                     <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
-                      <SelectValue placeholder="Select a currency" />
+                      <SelectValue placeholder={t("settings.selectCurrency")} />
                     </SelectTrigger>
                     <SelectContent>
                       {CURRENCIES.map((currency) => (
@@ -213,12 +328,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
             <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <DollarSign className="w-5 h-5 mr-2 text-muted-foreground" /> Budget
+                  <DollarSign className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.budget")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="monthly-budget" className="text-base">Monthly Budget</Label>
+                  <Label htmlFor="monthly-budget" className="text-base">{t("settings.monthlyBudget")}</Label>
                   <Input
                     id="monthly-budget"
                     type="number"
@@ -229,7 +344,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                     className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
                   />
                   <Button onClick={handleSaveMonthlyBudget} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground">
-                    Save Monthly Budget
+                    {t("settings.saveMonthlyBudget")}
                   </Button>
                 </div>
               </CardContent>
@@ -239,13 +354,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
             <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <Zap className="w-5 h-5 mr-2 text-muted-foreground" /> Micro-Investing
+                  <Zap className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.microInvesting")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="micro-investing-toggle" className="flex items-center text-base">
-                    Enable Suggestions
+                    {t("settings.enableSuggestions")}
                   </Label>
                   <Switch
                     id="micro-investing-toggle"
@@ -255,7 +370,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="micro-investing-percentage" className="text-base">
-                    Suggestion Percentage (%)
+                    {t("settings.suggestionPercentage")}
                   </Label>
                   <Input
                     id="micro-investing-percentage"
@@ -269,7 +384,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                     className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
                   />
                   <Button onClick={handleSaveMicroInvestingSettings} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground">
-                    Save Micro-Investing Settings
+                    {t("settings.saveMicroInvestingSettings")}
                   </Button>
                 </div>
               </CardContent>
@@ -279,13 +394,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
             <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <BellRing className="w-5 h-5 mr-2 text-muted-foreground" /> Price Alerts
+                  <BellRing className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.priceAlerts")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="price-alert-threshold" className="text-base">
-                    Alert Threshold (%)
+                    {t("settings.alertThreshold")}
                   </Label>
                   <Input
                     id="price-alert-threshold"
@@ -298,9 +413,47 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                     className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
                   />
                   <Button onClick={handleSavePriceAlertThreshold} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground">
-                    Save Alert Threshold
+                    {t("settings.saveAlertThreshold")}
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Data Management */}
+            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center">
+                  <FileText className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.dataManagement")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button onClick={exportDataAsCsv} variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  {t("settings.exportData")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  {t("settings.readPrivacyNotice")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <AlertDialog open={isDeleteDataConfirmOpen} onOpenChange={setIsDeleteDataConfirmOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 text-destructive hover:bg-destructive/10">
+                      <Trash2 className="w-5 h-5 mr-2" /> {t("settings.deleteMyData")}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("settings.deleteDataConfirmationTitle")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("settings.deleteDataConfirmationDescription")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">{t("common.cancel")}</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAllUserData} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("common.delete")}</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardContent>
             </Card>
 
@@ -308,20 +461,20 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
             <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <User className="w-5 h-5 mr-2 text-muted-foreground" /> Account
+                  <User className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.account")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
-                  Manage Profile <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  {t("settings.manageProfile")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </Button>
                 <Separator />
                 <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
-                  Connected Accounts <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  {t("settings.connectedAccounts")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </Button>
                 <Separator />
                 <Button onClick={handleSignOut} variant="ghost" className="w-full justify-between text-base px-4 py-6 text-destructive hover:bg-destructive/10">
-                  <LogOut className="w-5 h-5 mr-2" /> Sign Out
+                  <LogOut className="w-5 h-5 mr-2" /> {t("settings.signOut")}
                 </Button>
               </CardContent>
             </Card>
@@ -330,15 +483,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
             <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <Key className="w-5 h-5 mr-2 text-muted-foreground" /> API Integrations
+                  <Key className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.apiIntegrations")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-sm">
-                  Manage connections to external services like banks, crypto exchanges, or other financial tools.
+                  {t("settings.apiIntegrationsDescription")}
                 </p>
                 <Button variant="outline" className="mt-4 w-full bg-muted/50 hover:bg-muted">
-                  View Integrations
+                  {t("settings.viewIntegrations")}
                 </Button>
               </CardContent>
             </Card>

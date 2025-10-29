@@ -11,8 +11,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,15 +29,15 @@ const LoginPage: React.FC = () => {
     try {
       if (isRegisterMode) {
         await createUserWithEmailAndPassword(auth, email, password);
-        toast.success('Account created successfully! You are now logged in.');
+        toast.success(t('common.success'));
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        toast.success('Logged in successfully!');
+        toast.success(t('common.success'));
       }
       navigate('/');
     } catch (error: any) {
       console.error(`Firebase Auth Error during ${isRegisterMode ? 'registration' : 'login'}:`, error.code, error.message, error);
-      let errorMessage = `${isRegisterMode ? 'Registration' : 'Login'} failed.`;
+      let errorMessage = `${isRegisterMode ? t('login.registration') : t('login.login')} ${t('common.error')}.`;
 
       switch (error.code) {
         case 'auth/invalid-email':
@@ -43,7 +45,7 @@ const LoginPage: React.FC = () => {
           break;
         case 'auth/user-not-found':
         case 'auth/wrong-password':
-        case 'auth/invalid-credential': // Covers cases where email/password don't match
+        case 'auth/invalid-credential':
           errorMessage = 'Invalid email or password.';
           break;
         case 'auth/email-already-in-use':
@@ -62,7 +64,7 @@ const LoginPage: React.FC = () => {
           errorMessage = 'This domain is not authorized for Firebase authentication. Please check your Firebase project settings.';
           break;
         default:
-          errorMessage = `An unexpected error occurred: ${error.message}`;
+          errorMessage = `${t('common.error')}: ${error.message}`;
       }
       toast.error(errorMessage);
     } finally {
@@ -76,11 +78,11 @@ const LoginPage: React.FC = () => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      toast.success('Logged in with Google successfully!');
+      toast.success(t('common.success'));
       navigate('/');
     } catch (error: any) {
       console.error('Firebase Auth Error during Google login:', error.code, error.message, error);
-      let errorMessage = 'Google login failed.';
+      let errorMessage = `${t('login.googleLogin')} ${t('common.error')}.`;
       switch (error.code) {
         case 'auth/popup-closed-by-user':
           errorMessage = 'Google login window closed.';
@@ -95,7 +97,7 @@ const LoginPage: React.FC = () => {
           errorMessage = 'This domain is not authorized for Firebase authentication. Please check your Firebase project settings.';
           break;
         default:
-          errorMessage = `An unexpected error occurred: ${error.message}`;
+          errorMessage = `${t('common.error')}: ${error.message}`;
       }
       toast.error(errorMessage);
     } finally {
@@ -108,16 +110,16 @@ const LoginPage: React.FC = () => {
       <Card className="w-full max-w-md card-shadow border border-border/50 backdrop-blur-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-blue bg-clip-text text-transparent">
-            FinanceFlow
+            {t("login.title")}
           </CardTitle>
           <CardDescription className="mt-2 text-muted-foreground">
-            {isRegisterMode ? 'Create your account to get started.' : 'Log in to manage your finances.'}
+            {isRegisterMode ? t("login.createAccount") : t("login.loginToManage")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmitAuth} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("login.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -132,7 +134,7 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("login.password")}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -148,13 +150,13 @@ const LoginPage: React.FC = () => {
             </div>
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isRegisterMode ? 'Sign Up' : 'Log In'}
+              {isRegisterMode ? t("login.signUp") : t("login.logIn")}
             </Button>
           </form>
 
           <div className="flex items-center my-6">
             <Separator className="flex-1" />
-            <span className="px-3 text-xs text-muted-foreground uppercase">OR</span>
+            <span className="px-3 text-xs text-muted-foreground uppercase">{t("login.or")}</span>
             <Separator className="flex-1" />
           </div>
 
@@ -165,11 +167,11 @@ const LoginPage: React.FC = () => {
             disabled={loading}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign in with Google
+            {t("login.signInWithGoogle")}
           </Button>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            {isRegisterMode ? 'Already have an account?' : "Don't have an account?"}{' '}
+            {isRegisterMode ? t("login.alreadyHaveAccount") : t("login.dontHaveAccount")}{' '}
             <a
               href="#"
               onClick={(e) => {
@@ -180,7 +182,7 @@ const LoginPage: React.FC = () => {
               }}
               className="text-primary hover:underline"
             >
-              {isRegisterMode ? 'Log In' : 'Sign Up'}
+              {isRegisterMode ? t("login.logIn") : t("login.signUp")}
             </a>
           </p>
         </CardContent>

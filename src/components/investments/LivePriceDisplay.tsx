@@ -1,7 +1,8 @@
 "use client";
 
 import React from 'react';
-import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import { useCurrency } from '@/context/CurrencyContext';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface LivePriceDisplayProps {
   price: number | null;
@@ -10,7 +11,8 @@ interface LivePriceDisplayProps {
 }
 
 const LivePriceDisplay: React.FC<LivePriceDisplayProps> = ({ price, loading, error }) => {
-  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const { t } = useTranslation(); // Initialize useTranslation hook
+  const { formatCurrency } = useCurrency();
 
   if (loading) {
     return (
@@ -19,7 +21,7 @@ const LivePriceDisplay: React.FC<LivePriceDisplayProps> = ({ price, loading, err
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
         </span>
-        <span>Fetching live price...</span>
+        <span>{t("investments.fetchingLivePrice")}</span>
       </div>
     );
   }
@@ -29,7 +31,7 @@ const LivePriceDisplay: React.FC<LivePriceDisplayProps> = ({ price, loading, err
   }
 
   if (price === null || price === 0) {
-    return <p className="text-muted-foreground text-xs">Price not available.</p>;
+    return <p className="text-muted-foreground text-xs">{t("investments.priceNotAvailable")}</p>;
   }
 
   return (

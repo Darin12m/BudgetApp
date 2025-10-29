@@ -7,7 +7,8 @@ import { Link } from 'react-router-dom';
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { CustomProgress } from '@/components/common/CustomProgress';
-import DonutWithCenterText from '@/components/DonutWithCenterText'; // Import the new DonutWithCenterText component
+import DonutWithCenterText from '@/components/DonutWithCenterText';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface Category {
   id: string;
@@ -29,31 +30,31 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
   totalBudgetedMonthly,
   totalSpentMonthly,
 }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { formatCurrency } = useCurrency();
 
   const remainingBudget = totalBudgetedMonthly - totalSpentMonthly;
   const spentPercentage = totalBudgetedMonthly > 0 ? (totalSpentMonthly / totalBudgetedMonthly) * 100 : 0;
   const isOverBudget = remainingBudget < 0;
 
-  // Data for DonutWithCenterText
   const donutData = useMemo(() => {
     const clampedSpentPercentage = Math.min(spentPercentage, 100);
     const remainingPercentage = 100 - clampedSpentPercentage;
 
     return [
-      { name: 'Spent', value: clampedSpentPercentage, color: 'hsl(var(--primary))' },
-      { name: 'Remaining', value: remainingPercentage, color: 'hsl(var(--muted)/50%)' },
+      { name: t("dashboard.spent"), value: clampedSpentPercentage, color: 'hsl(var(--primary))' },
+      { name: t("dashboard.remaining"), value: remainingPercentage, color: 'hsl(var(--muted)/50%)' },
     ];
-  }, [spentPercentage]);
+  }, [spentPercentage, t]);
 
   return (
     <Card className="card-shadow border-none bg-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold flex items-center">
-          <PiggyBank className="w-5 h-5 mr-2 text-primary" /> Budget Categories
+          <PiggyBank className="w-5 h-5 mr-2 text-primary" /> {t("dashboard.budgetCategories")}
         </CardTitle>
         <Link to="/budget-app?view=budget" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:bg-primary/90 font-medium flex items-center">
-          View All
+          {t("common.viewAll")}
           <ChevronRight className="w-4 h-4 ml-1" />
         </Link>
       </CardHeader>
@@ -64,7 +65,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
               <DonutWithCenterText
                 chartId="category-overview"
                 mainValue={`${Math.round(spentPercentage)}%`}
-                mainLabel="Spent"
+                mainLabel={t("dashboard.spent")}
                 data={donutData}
                 innerRadius={40}
                 outerRadius={60}
@@ -78,21 +79,21 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
               />
             ) : (
               <div className="text-center text-muted-foreground">
-                <p className="text-sm">No budget data yet.</p>
+                <p className="text-sm">{t("dashboard.noBudgetYet")}</p>
               </div>
             )}
           </div>
           <div className="w-full sm:w-1/2 space-y-2">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">Total Budgeted</span>
+              <span className="text-muted-foreground">{t("dashboard.totalBudgeted")}</span>
               <span className="font-semibold text-foreground">{formatCurrency(totalBudgetedMonthly)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">Total Spent</span>
+              <span className="text-muted-foreground">{t("dashboard.totalSpent")}</span>
               <span className="font-semibold text-foreground">{formatCurrency(totalSpentMonthly)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">Remaining</span>
+              <span className="text-muted-foreground">{t("dashboard.remaining")}</span>
               <span className={`font-semibold ${remainingBudget >= 0 ? 'text-emerald' : 'text-destructive'}`}>
                 {formatCurrency(remainingBudget)}
               </span>
@@ -106,9 +107,8 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
           </div>
         </div>
 
-        {/* List of Categories */}
         <div className="mt-4 border-t border-border pt-4">
-          <h3 className="text-base font-semibold text-foreground mb-3">Your Categories</h3>
+          <h3 className="text-base font-semibold text-foreground mb-3">{t("dashboard.yourCategories")}</h3>
           <div className="space-y-3">
             {categories.length > 0 ? (
               categories.map((cat) => {
@@ -134,7 +134,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
                 );
               })
             ) : (
-              <p className="text-muted-foreground text-sm text-center">No categories defined yet. Go to the Budget tab to add some!</p>
+              <p className="text-muted-foreground text-sm text-center">{t("dashboard.noCategoriesDefined")}</p>
             )}
           </div>
         </div>

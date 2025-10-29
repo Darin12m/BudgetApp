@@ -14,7 +14,10 @@ import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, User, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { CurrencyProvider } from "./context/CurrencyContext";
 import { DateRangeProvider } from "./context/DateRangeContext";
-import { useTheme } from "./hooks/use-theme"; // Import the new useTheme hook
+import { useTheme } from "./hooks/use-theme";
+import { I18nextProvider } from 'react-i18next'; // Import I18nextProvider
+import i18n from './i18n'; // Import i18n configuration
+import SyncStatusIndicator from "./components/common/SyncStatusIndicator"; // Import SyncStatusIndicator
 
 const queryClient = new QueryClient();
 
@@ -36,9 +39,7 @@ const App = () => {
   const [userUid, setUserUid] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const { toggleTheme } = useTheme(); // Use the new useTheme hook
-
-  // Removed the previous useLayoutEffect for theme, as useTheme hook now handles it.
+  const { toggleTheme } = useTheme();
 
   useEffect(() => {
     const setupAuth = async () => {
@@ -82,7 +83,7 @@ const App = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [toggleTheme]); // Depend on toggleTheme to ensure it's always the latest version
+  }, [toggleTheme]);
 
   if (authLoading) {
     return (
@@ -94,62 +95,65 @@ const App = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <CurrencyProvider>
-            <DateRangeProvider>
-              <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                      <Index userUid={userUid} />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/budget-app"
-                  element={
-                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                      <BudgetApp userUid={userUid} />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/budget-app/:view"
-                  element={
-                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                      <BudgetApp userUid={userUid} />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/investments"
-                  element={
-                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                      <InvestmentsPage userUid={userUid} />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
-                      <SettingsPage userUid={userUid} />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </DateRangeProvider>
-          </CurrencyProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <I18nextProvider i18n={i18n}> {/* Wrap with I18nextProvider */}
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <CurrencyProvider>
+              <DateRangeProvider>
+                <Routes>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                        <Index userUid={userUid} />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/budget-app"
+                    element={
+                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                        <BudgetApp userUid={userUid} />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/budget-app/:view"
+                    element={
+                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                        <BudgetApp userUid={userUid} />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/investments"
+                    element={
+                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                        <InvestmentsPage userUid={userUid} />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute userUid={userUid} isAuthenticated={isAuthenticated}>
+                        <SettingsPage userUid={userUid} />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <SyncStatusIndicator /> {/* Add SyncStatusIndicator here */}
+              </DateRangeProvider>
+            </CurrencyProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </I18nextProvider>
   );
 };
 

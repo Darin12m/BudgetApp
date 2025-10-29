@@ -3,7 +3,8 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import { useCurrency } from '@/context/CurrencyContext';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface AllocationData {
   name: string;
@@ -18,7 +19,8 @@ interface InvestmentAllocationChartProps {
 }
 
 const InvestmentAllocationChart: React.FC<InvestmentAllocationChartProps> = ({ title, data, emptyMessage }) => {
-  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const { t } = useTranslation(); // Initialize useTranslation hook
+  const { formatCurrency } = useCurrency();
 
   return (
     <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
@@ -38,7 +40,6 @@ const InvestmentAllocationChart: React.FC<InvestmentAllocationChartProps> = ({ t
                 fill="#8884d8"
                 dataKey="value"
                 labelLine={false}
-                // Removed label prop to prevent overlap
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />

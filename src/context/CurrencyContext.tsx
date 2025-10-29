@@ -23,9 +23,6 @@ const CURRENCIES: Currency[] = [
   { code: 'JPY', symbol: '¥', conversionRateToUSD: 1 / 158 }, // 1 JPY = 1/158 USD (placeholder rate)
 ];
 
-// Find the default MKD currency object, fallback to USD if MKD is not found (shouldn't happen with static list)
-const MKD_CURRENCY = CURRENCIES.find(c => c.code === 'MKD') || CURRENCIES.find(c => c.code === 'USD')!;
-
 // Define the shape of the context value
 interface CurrencyContextType {
   selectedCurrency: Currency;
@@ -41,21 +38,58 @@ interface CurrencyContextType {
 // Create the context
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
+// Helper to detect currency based on browser locale
+const detectCurrency = (): Currency => {
+  if (typeof navigator !== 'undefined' && navigator.languages && navigator.languages.length > 0) {
+    const userLocale = navigator.languages[0]; // e.g., "en-US", "mk-MK"
+
+    // Prioritize MKD for North Macedonia locale
+    if (userLocale.includes('mk')) {
+      const mkd = CURRENCIES.find(c => c.code === 'MKD');
+      if (mkd) return mkd;
+    }
+
+    // Try to match currency based on locale
+    try {
+      const formatter = new Intl.NumberFormat(userLocale, { style: 'currency', currency: 'USD' }); // Use USD as a base to get the default currency code for the locale
+      const parts = formatter.formatToParts(0);
+      const currencyCodePart = parts.find(p => p.type === 'currency');
+      if (currencyCodePart) {
+        const detectedCode = currencyCodePart.value;
+        const matchedCurrency = CURRENCIES.find(c => c.code === detectedCode);
+        if (matchedCurrency) return matchedCurrency;
+      }
+    } catch (e) {
+      console.warn("Could not detect currency from locale:", e);
+    }
+  }
+  // Fallback to USD if detection fails or no specific locale match
+  return CURRENCIES.find(c => c.code === 'USD')!;
+};
+
+
 // CurrencyProvider component
 export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(MKD_CURRENCY); // Default to MKD
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(CURRENCIES.find(c => c.code === 'USD')!); // Default to USD
 
-  // Use useLayoutEffect to read from localStorage before the first render
+  // Use useLayoutEffect to read from localStorage or detect before the first render
   useLayoutEffect(() => {
     const savedCurrencyCode = localStorage.getItem('selectedCurrency');
-    const mkdCurrency = CURRENCIES.find(c => c.code === 'MKD') || CURRENCIES.find(c => c.code === 'USD')!;
-
-    if (savedCurrencyCode === mkdCurrency.code) {
-      setSelectedCurrency(mkdCurrency);
+    if (savedCurrencyCode) {
+      const savedCurrency = CURRENCIES.find(c => c.code === savedCurrencyCode);
+      if (savedCurrency) {
+        setSelectedCurrency(savedCurrency);
+      } else {
+        // If saved currency is not in our list, default to detected or USD
+        const detected = detectCurrency();
+        setSelectedCurrency(detected);
+        localStorage.setItem('selectedCurrency', detected.code);
+      }
     } else {
-      // Always default to MKD and save it
-      setSelectedCurrency(mkdCurrency);
-      localStorage.setItem('selectedCurrency', mkdCurrency.code);
+      // No saved currency, detect and save
+      const detected = detectCurrency();
+      setSelectedCurrency(detected);
+      localStorage.setItem('selectedCurrency', detected.code);
     }
   }, []);
 

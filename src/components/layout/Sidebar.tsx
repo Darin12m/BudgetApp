@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, DollarSign, List, Wallet, Settings, Bell, X, Target } from 'lucide-react'; // Removed Tag icon
+import { Home, DollarSign, List, Wallet, Settings, Bell, X, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface SidebarProps {
   isOpen: boolean;
@@ -14,14 +15,15 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const location = useLocation();
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
-    { id: 'transactions', label: 'Transactions', icon: List, path: '/budget-app?view=transactions' },
-    { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app?view=budget' },
-    { id: 'goals', label: 'Goals', icon: Target, path: '/budget-app?view=goals' },
-    { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
+    { id: 'dashboard', label: t("navigation.dashboard"), icon: Home, path: '/' },
+    { id: 'transactions', label: t("navigation.transactions"), icon: List, path: '/budget-app?view=transactions' },
+    { id: 'budget', label: t("navigation.budget"), icon: DollarSign, path: '/budget-app?view=budget' },
+    { id: 'goals', label: t("navigation.goals"), icon: Target, path: '/budget-app?view=goals' },
+    { id: 'investments', label: t("navigation.investments"), icon: Wallet, path: '/investments' },
   ];
 
   return (
@@ -93,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
                 </Link>
               </TooltipTrigger>
               <TooltipContent className="bg-tooltip-bg border-tooltip-border-color text-tooltip-text-color">
-                <p>Settings</p>
+                <p>{t("navigation.settings")}</p>
               </TooltipContent>
             </Tooltip>
 
@@ -101,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => { toast.info("Notifications feature coming soon!"); onClose(); }}
+                  onClick={() => { toast.info(t("common.comingSoon")); onClose(); }}
                   className="group relative flex items-center justify-center w-10 h-10 rounded-full text-muted-foreground hover:text-primary transition-all duration-200"
                 >
                   <div className="absolute inset-0 rounded-full bg-transparent group-hover:bg-primary/10 transition-all duration-200"></div>
@@ -109,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
                 </button>
               </TooltipTrigger>
               <TooltipContent className="bg-tooltip-bg border-tooltip-border-color text-tooltip-text-color">
-                <p>Notifications</p>
+                <p>{t("common.notifications")}</p>
               </TooltipContent>
             </Tooltip>
           </div>

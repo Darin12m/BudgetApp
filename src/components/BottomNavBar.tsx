@@ -2,22 +2,24 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, DollarSign, List, Wallet, Settings } from 'lucide-react'; // Removed Tag icon
+import { Home, DollarSign, List, Wallet, Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 const BottomNavBar: React.FC = () => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const location = useLocation();
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: Home, path: '/' },
-    { id: 'budget', label: 'Budget', icon: DollarSign, path: '/budget-app?view=budget' },
-    { id: 'transactions', label: 'Activity', icon: List, path: '/budget-app?view=transactions' },
-    { id: 'investments', label: 'Investments', icon: Wallet, path: '/investments' },
-    { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
+    { id: 'home', label: t("navigation.home"), icon: Home, path: '/' },
+    { id: 'budget', label: t("navigation.budget"), icon: DollarSign, path: '/budget-app?view=budget' },
+    { id: 'transactions', label: t("navigation.activity"), icon: List, path: '/budget-app?view=transactions' },
+    { id: 'investments', label: t("navigation.investments"), icon: Wallet, path: '/investments' },
+    { id: 'settings', label: t("navigation.settings"), icon: Settings, path: '/settings' },
   ];
 
   return (
     <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-card backdrop-blur-lg border-t border-border z-40 safe-bottom transition-colors duration-300">
-      <div className="grid grid-cols-5 gap-1 px-2 py-2"> {/* Adjusted grid-cols to 5 */}
+      <div className="grid grid-cols-5 gap-1 px-2 py-2">
         {navItems.map(item => {
           const Icon = item.icon;
           const isActive = (item.path === location.pathname + location.search) || (item.id === 'home' && location.pathname === '/') || (item.id === 'investments' && location.pathname === '/investments') || (item.id === 'settings' && location.pathname === '/settings');

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Transaction, Category } from '@/hooks/use-finance-data';
 import TransactionCard from '@/components/transactions/TransactionCard';
 import { isWithinInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface TransactionsViewProps {
   transactions: Transaction[];
@@ -16,7 +17,7 @@ interface TransactionsViewProps {
   setTransactionSearchTerm: (term: string) => void;
   transactionFilterPeriod: 'all' | 'thisMonth';
   setTransactionFilterPeriod: (period: 'all' | 'thisMonth') => void;
-  setIsAddEditTransactionModalOpen: (isOpen: boolean) => void; // Changed from setIsQuickAddModalOpen
+  setIsAddEditTransactionModalOpen: (isOpen: boolean) => void;
   handleEditTransaction: (transaction: Transaction) => void;
   formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
 }
@@ -28,10 +29,11 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
   setTransactionSearchTerm,
   transactionFilterPeriod,
   setTransactionFilterPeriod,
-  setIsAddEditTransactionModalOpen, // Changed prop name
+  setIsAddEditTransactionModalOpen,
   handleEditTransaction,
   formatCurrency,
 }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const filteredTransactions = useMemo(() => {
     const lowerCaseSearchTerm = transactionSearchTerm.toLowerCase();
     const now = new Date();
@@ -49,17 +51,17 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
       const matchesPeriod = transactionFilterPeriod === 'all' || isWithinInterval(transactionDate, { start: startOfCurrentMonth, end: endOfCurrentMonth });
 
       return matchesSearch && matchesPeriod;
-    }).sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()); // Sort by date descending
+    }).sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
   }, [transactions, transactionSearchTerm, transactionFilterPeriod, categories]);
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl sm:text-2xl font-bold text-foreground">Transactions</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t("transactions.title")}</h2>
         <Button onClick={() => setIsAddEditTransactionModalOpen(true)} className="flex items-center space-x-2 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98">
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Add Transaction</span>
-          <span className="sm:hidden">Add</span>
+          <span className="hidden sm:inline">{t("transactions.addTransaction")}</span>
+          <span className="sm:hidden">{t("common.add")}</span>
         </Button>
       </div>
 
@@ -68,7 +70,7 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search transactions..."
+              placeholder={t("transactions.searchTransactions")}
               className="w-full pl-9 bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
               value={transactionSearchTerm}
               onChange={(e) => setTransactionSearchTerm(e.target.value)}
@@ -77,11 +79,11 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
           <Select value={transactionFilterPeriod} onValueChange={(value: 'all' | 'thisMonth') => setTransactionFilterPeriod(value)}>
             <SelectTrigger className="w-full sm:w-[150px] bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
               <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="Filter Period" />
+              <SelectValue placeholder={t("transactions.filterPeriod")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Time</SelectItem>
-              <SelectItem value="thisMonth">This Month</SelectItem>
+              <SelectItem value="all">{t("transactions.allTime")}</SelectItem>
+              <SelectItem value="thisMonth">{t("transactions.thisMonth")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -102,10 +104,10 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
           ) : (
             <div className="p-6 text-center text-muted-foreground">
               <List className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-semibold text-foreground">No transactions found.</p>
-              <p className="text-sm mt-2">It looks like you haven't added any transactions yet. Use the "Add Transaction" button to get started!</p>
+              <p className="text-lg font-semibold text-foreground">{t("transactions.noTransactionsFound")}</p>
+              <p className="text-sm mt-2">{t("transactions.noTransactionsFoundDescription")}</p>
               <Button onClick={() => setIsAddEditTransactionModalOpen(true)} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
-                Add First Transaction
+                {t("transactions.addFirstTransaction")}
               </Button>
             </div>
           )}

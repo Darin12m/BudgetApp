@@ -22,8 +22,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Category } from '@/hooks/use-finance-data'; // Import Category type
-import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import { Category } from '@/hooks/use-finance-data';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Predefined colors and emojis for selection
 const CATEGORY_COLORS = [
@@ -37,12 +38,13 @@ const CATEGORY_EMOJIS = [
 interface AddEditCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (category: Omit<Category, 'spent' | 'ownerUid' | 'id'>, id?: string) => void; // Added id for update
+  onSave: (category: Omit<Category, 'spent' | 'ownerUid' | 'id'>, id?: string) => void;
   categoryToEdit?: Category | null;
-  existingCategoryNames: string[]; // New prop to check for duplicates
+  existingCategoryNames: string[];
 }
 
 const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onClose, onSave, categoryToEdit, existingCategoryNames }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { isMobile } = useDeviceDetection();
   const { selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
   const [name, setName] = useState('');
@@ -55,7 +57,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
     if (isOpen) {
       if (categoryToEdit) {
         setName(categoryToEdit.name);
-        setBudgeted(convertUSDToSelected(categoryToEdit.budgeted).toString()); // Convert from USD for display
+        setBudgeted(convertUSDToSelected(categoryToEdit.budgeted).toString());
         setColor(categoryToEdit.color);
         setEmoji(categoryToEdit.emoji);
       } else {
@@ -71,19 +73,18 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
     if (!name.trim()) {
-      newErrors.name = 'Category name is required.';
+      newErrors.name = t("budget.categoryNameRequired");
     } else {
-      // Check for duplicate name, excluding the current category if editing
       const isDuplicate = existingCategoryNames.some(
         (catName) => catName.toLowerCase() === name.trim().toLowerCase() && catName.toLowerCase() !== categoryToEdit?.name.toLowerCase()
       );
       if (isDuplicate) {
-        newErrors.name = 'A category with this name already exists.';
+        newErrors.name = t("budget.categoryNameDuplicate");
       }
     }
 
     const parsedBudgeted = parseFloat(budgeted);
-    if (isNaN(parsedBudgeted) || parsedBudgeted < 0) newErrors.budgeted = 'Budgeted amount must be a non-negative number.';
+    if (isNaN(parsedBudgeted) || parsedBudgeted < 0) newErrors.budgeted = t("budget.budgetedAmountInvalid");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -91,20 +92,19 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
-      toast.error("Please fix the errors in the form.");
+      toast.error(t("common.error"));
       return;
     }
 
-    // Convert budgeted amount to USD before saving
     const budgetedInUSD = convertInputToUSD(parseFloat(budgeted));
 
     onSave({
       name: name.trim(),
-      budgeted: budgetedInUSD, // Stored in USD
+      budgeted: budgetedInUSD,
       color,
       emoji,
-      inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
-    }, categoryToEdit?.id); // Pass ID if editing
+      inputCurrencyCode: selectedCurrency.code,
+    }, categoryToEdit?.id);
     onClose();
   };
 
@@ -112,14 +112,14 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="name" className="text-right">
-          Name
+          {t("budget.categoryName")}
         </Label>
         <div className="col-span-3">
           <Input
             id="name"
             value={name}
             onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }}
-            placeholder="e.g., Groceries"
+            placeholder={t("budget.categoryNamePlaceholder")}
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
@@ -128,7 +128,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="budgeted" className="text-right">
-          Budgeted
+          {t("budget.budgetedAmount")}
         </Label>
         <div className="col-span-3">
           <Input
@@ -146,7 +146,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
 
       <div className="grid grid-cols-4 items-start gap-4">
         <Label className="text-right pt-2">
-          Color
+          {t("budget.color")}
         </Label>
         <div className="col-span-3">
           <ColorPicker colors={CATEGORY_COLORS} selectedColor={color} onSelect={setColor} />
@@ -155,7 +155,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
 
       <div className="grid grid-cols-4 items-start gap-4">
         <Label className="text-right pt-2">
-          Emoji
+          {t("budget.emoji")}
         </Label>
         <div className="col-span-3">
           <EmojiPicker emojis={CATEGORY_EMOJIS} selectedEmoji={emoji} onSelect={setEmoji} />
@@ -164,10 +164,10 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
         <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-          <X className="h-4 w-4 mr-2" /> Cancel
+          <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
         </Button>
         <Button type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-          <Save className="h-4 w-4 mr-2" /> Save Category
+          <Save className="h-4 w-4 mr-2" /> {t("common.save")} {t("budget.category")}
         </Button>
       </DialogFooter>
     </form>
@@ -179,7 +179,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
         <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
-              {categoryToEdit ? 'Edit Category' : 'Add New Category'}
+              {categoryToEdit ? t("budget.editCategory") : t("budget.newCategory")}
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4">
@@ -195,7 +195,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       <DialogContent onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            {categoryToEdit ? 'Edit Category' : 'Add New Category'}
+            {categoryToEdit ? t("budget.editCategory") : t("budget.newCategory")}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

@@ -16,7 +16,8 @@ import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { Category } from '@/hooks/use-finance-data'; // Import Category type
+import { Category } from '@/hooks/use-finance-data';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface QuickAddTransactionModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ interface QuickAddTransactionModalProps {
 }
 
 const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isOpen, onClose, onSave, categories }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { isMobile } = useDeviceDetection();
   const { formatCurrency, selectedCurrency, convertInputToUSD } = useCurrency();
   const [amount, setAmount] = useState<string>('');
@@ -58,19 +60,19 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
         const uncategorized = categories.find(cat => cat.name === 'Uncategorized');
         setSelectedCategoryId(uncategorized ? uncategorized.id : categories[0].id);
       } else {
-        setSelectedCategoryId(''); // No categories available
+        setSelectedCategoryId('');
       }
     }
   }, [isOpen, resetForm, categories]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!amount || parseFloat(amount) === 0) newErrors.amount = 'Amount is required and must be non-zero.';
-    if (isNaN(parseFloat(amount))) newErrors.amount = 'Amount must be a valid number.';
-    if (!merchant.trim()) newErrors.merchant = 'Merchant is required.';
-    if (!date) newErrors.date = 'Date is required.';
-    if (!selectedCategoryId) newErrors.categoryId = 'Category is required.';
-    if (isRecurring && !nextDate) newErrors.nextDate = 'Next due date is required for recurring transactions.';
+    if (!amount || parseFloat(amount) === 0) newErrors.amount = t("transactions.amountRequired");
+    if (isNaN(parseFloat(amount))) newErrors.amount = t("transactions.amountInvalid");
+    if (!merchant.trim()) newErrors.merchant = t("transactions.merchantRequired");
+    if (!date) newErrors.date = t("transactions.dateRequired");
+    if (!selectedCategoryId) newErrors.categoryId = t("transactions.categoryRequired");
+    if (isRecurring && !nextDate) newErrors.nextDate = t("transactions.nextDueDateRequired");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -78,11 +80,10 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
-      toast.error("Please fix the errors in the form.");
+      toast.error(t("common.error"));
       return;
     }
 
-    // Convert input amount to USD before saving
     const amountInUSD = convertInputToUSD(parseFloat(amount));
     const finalAmount = isExpense ? -amountInUSD : amountInUSD;
 
@@ -94,7 +95,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       isRecurring,
       isRecurring ? frequency : undefined,
       isRecurring && nextDate ? format(nextDate, 'yyyy-MM-dd') : undefined,
-      selectedCurrency.code // Pass the input currency code
+      selectedCurrency.code
     );
     onClose();
   };
@@ -103,20 +104,20 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="merchant" className="text-right">
-          Merchant
+          {t("transactions.merchant")}
         </Label>
         <Input
           id="merchant"
           value={merchant}
           onChange={(e) => { setMerchant(e.target.value); setErrors(prev => ({ ...prev, merchant: '' })); }}
           className="col-span-3 bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
-          placeholder="e.g., Coffee with friends"
+          placeholder={t("transactions.merchantPlaceholder")}
         />
         {errors.merchant && <p className="text-destructive text-xs mt-1 col-start-2 col-span-3">{errors.merchant}</p>}
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="amount" className="text-right">
-          Amount
+          {t("transactions.amount")}
         </Label>
         <div className="col-span-3">
           <Input
@@ -133,7 +134,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="type" className="text-right">
-          Type
+          {t("transactions.type")}
         </Label>
         <div className="col-span-3 flex items-center space-x-2">
           <Button
@@ -145,7 +146,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
               isExpense ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "bg-muted/50 border-none hover:bg-muted text-foreground"
             )}
           >
-            <ArrowDownCircle className="h-4 w-4 mr-2" /> Expense
+            <ArrowDownCircle className="h-4 w-4 mr-2" /> {t("transactions.expense")}
           </Button>
           <Button
             type="button"
@@ -156,13 +157,13 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
               !isExpense ? "bg-emerald hover:bg-emerald/90 text-white" : "bg-muted/50 border-none hover:bg-muted text-foreground"
             )}
           >
-            <ArrowUpCircle className="h-4 w-4 mr-2" /> Income
+            <ArrowUpCircle className="h-4 w-4 mr-2" /> {t("transactions.income")}
           </Button>
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="date" className="text-right">
-          Date
+          {t("transactions.date")}
         </Label>
         <div className="col-span-3">
           <Input
@@ -178,12 +179,12 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="category" className="text-right">
-          Category
+          {t("transactions.category")}
         </Label>
         <div className="col-span-3">
           <Select value={selectedCategoryId} onValueChange={(value) => { setSelectedCategoryId(value); setErrors(prev => ({ ...prev, categoryId: '' })); }}>
             <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
-              <SelectValue placeholder={categories.length > 0 ? "Select a category" : "No categories available"} />
+              <SelectValue placeholder={categories.length > 0 ? t("transactions.selectCategory") : t("transactions.noCategoriesAvailable")} />
             </SelectTrigger>
             <SelectContent>
               {categories.length > 0 ? (
@@ -194,7 +195,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
                 ))
               ) : (
                 <SelectItem value="" disabled>
-                  No categories. Add one in Budget tab.
+                  {t("transactions.noCategoriesAddOne")}
                 </SelectItem>
               )}
             </SelectContent>
@@ -205,7 +206,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="isRecurring" className="text-right">
-          Recurring
+          {t("transactions.recurring")}
         </Label>
         <div className="col-span-3 flex items-center">
           <Switch
@@ -214,7 +215,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
             onCheckedChange={setIsRecurring}
           />
           <span className="ml-2 text-sm text-muted-foreground">
-            {isRecurring ? 'Enabled' : 'Disabled'}
+            {isRecurring ? t("transactions.enabled") : t("transactions.disabled")}
           </span>
         </div>
       </div>
@@ -223,24 +224,24 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
         <>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="frequency" className="text-right">
-              Frequency
+              {t("transactions.frequency")}
             </Label>
             <div className="col-span-3">
               <Select value={frequency} onValueChange={(value: 'Monthly' | 'Weekly' | 'Yearly') => setFrequency(value)}>
                 <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
-                  <SelectValue placeholder="Select frequency" />
+                  <SelectValue placeholder={t("transactions.selectFrequency")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Monthly">Monthly</SelectItem>
-                  <SelectItem value="Weekly">Weekly</SelectItem>
-                  <SelectItem value="Yearly">Yearly</SelectItem>
+                  <SelectItem value="Monthly">{t("transactions.monthly")}</SelectItem>
+                  <SelectItem value="Weekly">{t("transactions.weekly")}</SelectItem>
+                  <SelectItem value="Yearly">{t("transactions.yearly")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="nextDate" className="text-right">
-              Next Due Date
+              {t("transactions.nextDueDate")}
             </Label>
             <div className="col-span-3">
               <Popover>
@@ -253,7 +254,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {nextDate ? format(nextDate, "PPP") : <span>Pick a date</span>}
+                    {nextDate ? format(nextDate, "PPP") : <span>{t("transactions.pickADate")}</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-card border border-border/50 card-shadow backdrop-blur-lg">
@@ -273,10 +274,10 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
         <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-          <X className="h-4 w-4 mr-2" /> Cancel
+          <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
         </Button>
         <Button type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-          <Save className="h-4 w-4 mr-2" /> Save Transaction
+          <Save className="h-4 w-4 mr-2" /> {t("common.save")} {t("transactions.transaction")}
         </Button>
       </DialogFooter>
     </form>
@@ -288,7 +289,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
         <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
-              <Plus className="w-5 h-5 mr-2" /> Quick Add Transaction
+              <Plus className="w-5 h-5 mr-2" /> {t("transactions.quickAddTransaction")}
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4">
@@ -304,7 +305,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       <DialogContent className="sm:max-w-[425px]" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            <Plus className="w-5 h-5 mr-2" /> Quick Add Transaction
+            <Plus className="w-5 h-5 mr-2" /> {t("transactions.quickAddTransaction")}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

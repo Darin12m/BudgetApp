@@ -13,7 +13,7 @@ import ColorPicker from '@/components/common/ColorPicker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns'; // Import format
+import { format } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,8 +24,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // Import AlertDialog components
-import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+} from "@/components/ui/alert-dialog";
+import { useCurrency } from '@/context/CurrencyContext';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Predefined colors for selection
 const GOAL_COLORS = [
@@ -36,12 +37,12 @@ const GOAL_COLORS = [
 interface Goal {
   id?: string;
   name: string;
-  target: number; // Stored in USD
-  current: number; // Stored in USD
+  target: number;
+  current: number;
   color: string;
-  targetDate: string; // YYYY-MM-DD
+  targetDate: string;
   ownerUid?: string;
-  inputCurrencyCode: string; // New: Currency code used when amounts were input
+  inputCurrencyCode: string;
 }
 
 interface AddEditGoalModalProps {
@@ -52,6 +53,7 @@ interface AddEditGoalModalProps {
 }
 
 const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, onSave, goalToEdit }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { isMobile } = useDeviceDetection();
   const { selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
   const [name, setName] = useState('');
@@ -65,14 +67,14 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
     if (isOpen) {
       if (goalToEdit) {
         setName(goalToEdit.name);
-        setTarget(convertUSDToSelected(goalToEdit.target).toString()); // Convert from USD for display
-        setCurrent(convertUSDToSelected(goalToEdit.current).toString()); // Convert from USD for display
+        setTarget(convertUSDToSelected(goalToEdit.target).toString());
+        setCurrent(convertUSDToSelected(goalToEdit.current).toString());
         setColor(goalToEdit.color);
         setTargetDate(goalToEdit.targetDate ? new Date(goalToEdit.targetDate) : undefined);
       } else {
         setName('');
         setTarget('');
-        setCurrent('0'); // Default current to 0 for new goals
+        setCurrent('0');
         setColor(GOAL_COLORS[0]);
         setTargetDate(undefined);
       }
@@ -82,13 +84,13 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!name.trim()) newErrors.name = 'Goal name is required.';
+    if (!name.trim()) newErrors.name = t("goals.goalNameRequired");
     const parsedTarget = parseFloat(target);
-    if (isNaN(parsedTarget) || parsedTarget <= 0) newErrors.target = 'Target amount must be a positive number.';
+    if (isNaN(parsedTarget) || parsedTarget <= 0) newErrors.target = t("goals.targetAmountPositive");
     const parsedCurrent = parseFloat(current);
-    if (isNaN(parsedCurrent) || parsedCurrent < 0) newErrors.current = 'Current amount must be a non-negative number.';
-    if (!targetDate) newErrors.targetDate = 'Target date is required.';
-    if (targetDate && targetDate < new Date()) newErrors.targetDate = 'Target date cannot be in the past.';
+    if (isNaN(parsedCurrent) || parsedCurrent < 0) newErrors.current = t("goals.currentAmountNonNegative");
+    if (!targetDate) newErrors.targetDate = t("goals.targetDateRequired");
+    if (targetDate && targetDate < new Date()) newErrors.targetDate = t("goals.targetDatePast");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -96,21 +98,20 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
-      toast.error("Please fix the errors in the form.");
+      toast.error(t("common.error"));
       return;
     }
 
-    // Convert target and current amounts to USD before saving
     const targetInUSD = convertInputToUSD(parseFloat(target));
     const currentInUSD = convertInputToUSD(parseFloat(current));
 
     onSave({
       name: name.trim(),
-      target: targetInUSD, // Stored in USD
-      current: currentInUSD, // Stored in USD
+      target: targetInUSD,
+      current: currentInUSD,
       color,
       targetDate: targetDate ? format(targetDate, 'yyyy-MM-dd') : '',
-      inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
+      inputCurrencyCode: selectedCurrency.code,
     });
     onClose();
   };
@@ -119,14 +120,14 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="name" className="text-right">
-          Name
+          {t("goals.goalName")}
         </Label>
         <div className="col-span-3">
           <Input
             id="name"
             value={name}
             onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }}
-            placeholder="e.g., New Car Fund"
+            placeholder={t("goals.goalNamePlaceholder")}
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
@@ -135,7 +136,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="target" className="text-right">
-          Target Amount
+          {t("goals.targetAmount")}
         </Label>
         <div className="col-span-3">
           <Input
@@ -153,7 +154,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="current" className="text-right">
-          Current Amount
+          {t("goals.currentAmount")}
         </Label>
         <div className="col-span-3">
           <Input
@@ -171,7 +172,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="targetDate" className="text-right">
-          Target Date
+          {t("goals.targetDate")}
         </Label>
         <div className="col-span-3">
           <Popover>
@@ -184,7 +185,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {targetDate ? format(targetDate, "PPP") : <span>Pick a date</span>}
+                {targetDate ? format(targetDate, "PPP") : <span>{t("transactions.pickADate")}</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 bg-card border border-border/50 card-shadow backdrop-blur-lg">
@@ -202,7 +203,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
 
       <div className="grid grid-cols-4 items-start gap-4">
         <Label className="text-right pt-2">
-          Color
+          {t("budget.color")}
         </Label>
         <div className="col-span-3">
           <ColorPicker colors={GOAL_COLORS} selectedColor={color} onSelect={setColor} />
@@ -211,10 +212,10 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
         <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-          <X className="h-4 w-4 mr-2" /> Cancel
+          <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
         </Button>
         <Button type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-          <Save className="h-4 w-4 mr-2" /> Save Goal
+          <Save className="h-4 w-4 mr-2" /> {t("common.save")} {t("goals.goal")}
         </Button>
       </DialogFooter>
     </form>
@@ -226,7 +227,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
         <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
-              {goalToEdit ? 'Edit Goal' : 'Add New Goal'}
+              {goalToEdit ? t("goals.editGoal") : t("goals.newGoalTitle")}
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4">
@@ -242,7 +243,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       <DialogContent onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            {goalToEdit ? 'Edit Goal' : 'Add New Goal'}
+            {goalToEdit ? t("goals.editGoal") : t("goals.newGoalTitle")}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

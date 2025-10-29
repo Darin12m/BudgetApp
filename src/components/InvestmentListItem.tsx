@@ -2,21 +2,23 @@
 
 import React, { useMemo } from 'react';
 import { Investment } from '@/hooks/use-investment-data';
-import { TrendingUp, TrendingDown, DollarSign, Bitcoin, Edit, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
-import { cn } from '@/lib/utils'; // Import cn for conditional class merging
+import { TrendingUp, TrendingDown, DollarSign, Bitcoin, Edit, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
+import { useCurrency } from '@/context/CurrencyContext';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface InvestmentListItemProps {
   investment: Investment;
   onEdit: (investment: Investment) => void;
   priceChangeStatus: 'up' | 'down' | 'none';
-  isAlerted: boolean; // New prop for alert status
+  isAlerted: boolean;
 }
 
 const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onEdit, priceChangeStatus, isAlerted }) => {
-  const { formatCurrency, selectedCurrency } = useCurrency(); // Use formatCurrency, selectedCurrency from context
+  const { t } = useTranslation(); // Initialize useTranslation hook
+  const { formatCurrency, selectedCurrency } = useCurrency();
 
   const invested = investment.quantity * investment.buyPrice;
   const currentValue = investment.quantity * investment.currentPrice;
@@ -27,13 +29,11 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
   const overallGainLossColor = isPositiveOverall ? 'text-arrowUp' : 'text-arrowDown';
   const Icon = investment.type === 'Stock' ? DollarSign : Bitcoin;
 
-  // 24h change styling
   const change24hPercent = investment.change24hPercent;
   const isPositive24h = typeof change24hPercent === 'number' && change24hPercent >= 0;
   const change24hColor = isPositive24h ? 'text-arrowUp' : 'text-arrowDown';
   const Change24hIcon = isPositive24h ? TrendingUp : TrendingDown;
 
-  // Price change animation classes
   const priceChangeClasses = {
     up: 'animate-pulse-green',
     down: 'animate-pulse-red',
@@ -43,7 +43,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
   return (
     <div className={cn(
       "flex items-center justify-between p-4 bg-card rounded-lg shadow-sm border border-border/50 hover:bg-muted/50 transition-colors active:bg-muted backdrop-blur-lg animate-in fade-in slide-in-from-bottom-2 duration-300",
-      isAlerted && "border-destructive ring-2 ring-destructive/50 animate-pulse-red" // Highlight for alerts
+      isAlerted && "border-destructive ring-2 ring-destructive/50 animate-pulse-red"
     )}>
       <div className="flex items-center space-x-3 flex-1 min-w-0">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -56,17 +56,16 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
           <Tooltip>
             <TooltipTrigger asChild>
               <p className="text-xs text-muted-foreground truncate cursor-help">
-                {investment.type} • {formatCurrency(currentValue)} {/* Display in selected currency */}
+                {investment.type} • {formatCurrency(currentValue)}
                 <span className="ml-2 text-arrowUp text-xs font-medium flex items-center">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-arrowUp/40 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-arrowUp"></span>
                   </span>
-                  <span className="ml-1">Live</span>
+                  <span className="ml-1">{t("investments.live")}</span>
                 </span>
               </p>
             </TooltipTrigger>
-            {/* Removed convertedValue tooltip as formatCurrency handles it directly */}
           </Tooltip>
         </div>
       </div>
@@ -81,7 +80,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
         )}
         {isAlerted && (
           <p className="text-destructive text-xs mt-1 flex items-center justify-end">
-            <AlertTriangle className="w-3 h-3 mr-1" /> Alert!
+            <AlertTriangle className="w-3 h-3 mr-1" /> {t("investments.alert")}
           </p>
         )}
         <p className={`text-xs ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(gainLoss)}</p>

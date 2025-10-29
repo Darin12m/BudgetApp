@@ -4,7 +4,8 @@ import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lightbulb, TrendingUp, TrendingDown, Zap } from 'lucide-react';
 import { format, addDays } from 'date-fns';
-import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import { useCurrency } from '@/context/CurrencyContext';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface SmartFinancialCoachCardProps {
   currentWeekSpending: number;
@@ -23,33 +24,33 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
   totalSpentMonthly,
   currentMonthTransactions,
 }) => {
-  const { formatCurrency } = useCurrency(); // Use formatCurrency from context
+  const { t } = useTranslation(); // Initialize useTranslation hook
+  const { formatCurrency } = useCurrency();
 
   const spendingChangePercentage = useMemo(() => {
     if (previousWeekSpending === 0) {
-      return currentWeekSpending > 0 ? 100 : 0; // If previous was 0, any spending is 100% increase
+      return currentWeekSpending > 0 ? 100 : 0;
     }
     return ((currentWeekSpending - previousWeekSpending) / previousWeekSpending) * 100;
   }, [currentWeekSpending, previousWeekSpending]);
 
   const spendingTrendText = useMemo(() => {
     if (spendingChangePercentage > 0) {
-      return `You spent ${Math.abs(spendingChangePercentage).toFixed(0)}% more than last week 📈`;
+      return t("smartCoach.spentMore", { percentage: Math.abs(spendingChangePercentage).toFixed(0) });
     } else if (spendingChangePercentage < 0) {
-      return `You spent ${Math.abs(spendingChangePercentage).toFixed(0)}% less than last week 👏`;
+      return t("smartCoach.spentLess", { percentage: Math.abs(spendingChangePercentage).toFixed(0) });
     }
-    return "Your spending is consistent with last week.";
-  }, [spendingChangePercentage]);
+    return t("smartCoach.spendingConsistent");
+  }, [spendingChangePercentage, t]);
 
   const topCategoriesText = useMemo(() => {
     if (topSpendingCategories.length === 0) {
-      return "No significant spending categories yet.";
+      return t("smartCoach.noSpendingCategories");
     }
     const categories = topSpendingCategories.map(cat => `${cat.name} (${formatCurrency(cat.amount)})`);
-    return `${categories.join(' and ')} ${categories.length > 1 ? 'are' : 'is'} your top ${categories.length > 1 ? 'categories' : 'category'}.`;
-  }, [topSpendingCategories, formatCurrency]);
+    return t("smartCoach.topCategories", { categories: categories.join(t("common.and")), isAre: categories.length > 1 ? t("common.are") : t("common.is"), categoryCount: categories.length > 1 ? t("common.categories") : t("common.category") });
+  }, [topSpendingCategories, formatCurrency, t]);
 
-  // --- Smart Forecast Calculations (re-used from BudgetApp) ---
   const currentMonthDate = useMemo(() => new Date(), []);
   const daysPassedThisMonth = currentMonthDate.getDate();
   const totalDaysInMonth = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0).getDate();
@@ -66,27 +67,26 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
 
   const projectedBudgetStatus = useMemo(() => {
     if (totalBudgetedMonthly === 0 || dailyAvgSpending === 0 || daysPassedThisMonth === 0) {
-      return "No spending forecast available yet. Add some transactions and set a budget!";
+      return t("smartCoach.noForecast");
     } else if (forecastedRemainingBalance >= 0) {
-      return `At your current pace, your budget will last until the end of the month with ${formatCurrency(forecastedRemainingBalance)} left.`;
+      return t("smartCoach.budgetWillLast", { amount: formatCurrency(forecastedRemainingBalance) });
     } else {
       const remainingBudgetBeforeForecast = totalBudgetedMonthly - totalExpensesThisMonth;
       if (remainingBudgetBeforeForecast <= 0) {
-        return `You are already ${formatCurrency(Math.abs(remainingBudgetBeforeForecast))} over budget this month.`;
+        return t("smartCoach.alreadyOverBudget", { amount: formatCurrency(Math.abs(remainingBudgetBeforeForecast)) });
       } else {
         const daysToRunOut = remainingBudgetBeforeForecast / dailyAvgSpending;
         const projectedRunOutDate = addDays(currentMonthDate, daysToRunOut);
-        return `At your current pace, you’ll run out of budget on ${format(projectedRunOutDate, 'MMMM dd')}.`;
+        return t("smartCoach.runOutOfBudget", { date: format(projectedRunOutDate, 'MMMM dd') });
       }
     }
-  }, [totalBudgetedMonthly, dailyAvgSpending, daysPassedThisMonth, forecastedRemainingBalance, totalExpensesThisMonth, currentMonthDate, formatCurrency]);
-  // --- End Smart Forecast Calculations ---
+  }, [totalBudgetedMonthly, dailyAvgSpending, daysPassedThisMonth, forecastedRemainingBalance, totalExpensesThisMonth, currentMonthDate, formatCurrency, t]);
 
   return (
     <Card className="card-shadow border-none bg-card border border-border/50 animate-in fade-in slide-in-from-bottom-2 duration-500 backdrop-blur-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold flex items-center">
-          <Lightbulb className="w-5 h-5 mr-2 text-primary" /> Smart Financial Coach
+          <Lightbulb className="w-5 h-5 mr-2 text-primary" /> {t("smartCoach.title")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm text-foreground">
@@ -95,24 +95,23 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
           {spendingTrendText}
         </p>
         <p className="flex items-center">
-          <Zap className="w-4 h-4 mr-2 text-blue" /> {/* Changed from lilac to blue for consistency */}
+          <Zap className="w-4 h-4 mr-2 text-blue" />
           {topCategoriesText}
         </p>
         <p className="flex items-center">
-          <Lightbulb className="w-4 h-4 mr-2 text-primary" /> {/* Changed from blue to primary for consistency */}
+          <Lightbulb className="w-4 h-4 mr-2 text-primary" />
           {projectedBudgetStatus}
         </p>
-        {/* Add a short recommendation line based on insights */}
         {forecastedRemainingBalance < 0 && totalBudgetedMonthly > 0 && (
           <p className="flex items-center text-destructive">
             <TrendingDown className="w-4 h-4 mr-2" />
-            Recommendation: Review your top spending categories to cut back.
+            {t("smartCoach.recommendReview")}
           </p>
         )}
         {forecastedRemainingBalance >= 0 && totalBudgetedMonthly > 0 && (
           <p className="flex items-center text-emerald">
             <TrendingUp className="w-4 h-4 mr-2" />
-            Recommendation: Keep up the great work! Consider increasing your savings goals.
+            {t("smartCoach.recommendKeepUp")}
           </p>
         )}
       </CardContent>

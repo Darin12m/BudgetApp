@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Zap, X } from 'lucide-react';
 import { Investment } from '@/hooks/use-investment-data';
 import { toast } from 'sonner';
-import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import { useCurrency } from '@/context/CurrencyContext';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface MicroInvestingSuggestionCardProps {
   weeklyRemainingBudget: number;
@@ -27,11 +28,11 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
   onInvest,
   onDismiss,
 }) => {
-  const { formatCurrency, formatUSD } = useCurrency(); // Use formatCurrency and formatUSD from context
+  const { t } = useTranslation(); // Initialize useTranslation hook
+  const { formatCurrency, formatUSD } = useCurrency();
 
   const shouldSuggest = useMemo(() => {
     if (!microInvestingEnabled || weeklyBudgetTarget <= 0) return false;
-    // Suggest if remaining budget is more than 25% of the weekly target
     return weeklyRemainingBudget > (0.25 * weeklyBudgetTarget);
   }, [microInvestingEnabled, weeklyRemainingBudget, weeklyBudgetTarget]);
 
@@ -42,9 +43,8 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
 
   const suggestedAsset = useMemo(() => {
     if (existingInvestments.length === 0) {
-      return { name: "a new asset", type: "Choose asset" };
+      return { name: t("microInvesting.aNewAsset"), type: t("microInvesting.chooseAsset") };
     }
-    // Suggest a random existing stock or crypto
     const randomIndex = Math.floor(Math.random() * existingInvestments.length);
     const asset = existingInvestments[randomIndex];
     return {
@@ -53,21 +53,21 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
       symbol: asset.symbol,
       coingeckoId: asset.coingeckoId,
     };
-  }, [existingInvestments]);
+  }, [existingInvestments, t]);
 
   const handleInvestClick = useCallback(() => {
     if (suggestedInvestmentAmount > 0) {
       onInvest(
         suggestedInvestmentAmount,
         suggestedAsset.name,
-        suggestedAsset.type as 'Stock' | 'Crypto', // Cast to correct type
+        suggestedAsset.type as 'Stock' | 'Crypto',
         suggestedAsset.symbol,
         suggestedAsset.coingeckoId
       );
-      toast.success(`Invested ${formatCurrency(suggestedInvestmentAmount)} into ${suggestedAsset.name}!`); // Use formatCurrency
-      onDismiss(); // Dismiss after investing
+      toast.success(t("microInvesting.investedSuccess", { amount: formatCurrency(suggestedInvestmentAmount), assetName: suggestedAsset.name }));
+      onDismiss();
     }
-  }, [suggestedInvestmentAmount, suggestedAsset, onInvest, onDismiss, formatCurrency]); // Use formatCurrency
+  }, [suggestedInvestmentAmount, suggestedAsset, onInvest, onDismiss, formatCurrency, t]);
 
   if (!shouldSuggest || suggestedInvestmentAmount <= 0) {
     return null;
@@ -80,10 +80,10 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
           <Zap className="w-6 h-6 text-primary flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-foreground">
-              You have <span className="text-emerald font-semibold">{formatCurrency(weeklyRemainingBudget)}</span> left this week.
+              {t("microInvesting.leftThisWeek", { amount: <span className="text-emerald font-semibold">{formatCurrency(weeklyRemainingBudget)}</span> })}
             </p>
             <p className="text-sm text-muted-foreground">
-              Consider investing <span className="text-primary font-semibold">{formatCurrency(suggestedInvestmentAmount)}</span> into {suggestedAsset.name}. {/* Use formatCurrency */}
+              {t("microInvesting.considerInvesting", { amount: <span className="text-primary font-semibold">{formatCurrency(suggestedInvestmentAmount)}</span>, assetName: suggestedAsset.name })}
             </p>
           </div>
         </div>
@@ -92,7 +92,7 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
             onClick={handleInvestClick}
             className="h-8 px-4 py-2 rounded-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground text-xs font-semibold transition-transform hover:scale-[1.02] active:scale-98"
           >
-            Invest
+            {t("microInvesting.invest")}
           </Button>
           <Button
             variant="ghost"

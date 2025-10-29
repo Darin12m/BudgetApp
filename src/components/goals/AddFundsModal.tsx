@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDeviceDetection } from '@/hooks/use-device-detection';
-import { useCurrency } from '@/context/CurrencyContext'; // New import
+import { useCurrency } from '@/context/CurrencyContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,20 +20,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // Import AlertDialog components
+} from "@/components/ui/alert-dialog";
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface AddFundsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddFunds: (amountInUSD: number, inputCurrencyCode: string) => void; // Updated to pass USD amount and currency code
+  onAddFunds: (amountInUSD: number, inputCurrencyCode: string) => void;
   goalName: string;
-  currentAmountInUSD: number; // Now explicitly in USD
-  targetAmountInUSD: number; // Now explicitly in USD
+  currentAmountInUSD: number;
+  targetAmountInUSD: number;
 }
 
 const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFunds, goalName, currentAmountInUSD, targetAmountInUSD }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { isMobile } = useDeviceDetection();
-  const { formatCurrency, selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency(); // Use currency context
+  const { formatCurrency, selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
   const [amountToAdd, setAmountToAdd] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -47,11 +49,10 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
     const parsedAmount = parseFloat(amountToAdd);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) newErrors.amountToAdd = 'Amount must be a positive number.';
+    if (isNaN(parsedAmount) || parsedAmount <= 0) newErrors.amountToAdd = t("goals.amountPositive");
     
-    // Convert input amount to USD for validation against USD-based current/target
     const amountToAddInUSD = convertInputToUSD(parsedAmount);
-    if (amountToAddInUSD + currentAmountInUSD > targetAmountInUSD) newErrors.amountToAdd = 'Adding this amount would exceed the target.';
+    if (amountToAddInUSD + currentAmountInUSD > targetAmountInUSD) newErrors.amountToAdd = t("goals.amountExceedsTarget");
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -60,17 +61,15 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
-      toast.error("Please fix the errors in the form.");
+      toast.error(t("common.error"));
       return;
     }
 
-    // Convert input amount to USD before passing to onAddFunds
     const amountToAddInUSD = convertInputToUSD(parseFloat(amountToAdd));
-    onAddFunds(amountToAddInUSD, selectedCurrency.code); // Pass USD amount and input currency code
+    onAddFunds(amountToAddInUSD, selectedCurrency.code);
     onClose();
   };
 
-  // Convert current and target amounts from USD to selected currency for display
   const currentAmountDisplay = convertUSDToSelected(currentAmountInUSD);
   const targetAmountDisplay = convertUSDToSelected(targetAmountInUSD);
 
@@ -78,7 +77,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="amountToAdd" className="text-right">
-          Amount
+          {t("transactions.amount")}
         </Label>
         <div className="col-span-3">
           <Input
@@ -95,15 +94,15 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
       </div>
 
       <div className="text-sm text-muted-foreground col-span-full text-center mt-2">
-        Current: <span className="font-semibold text-foreground">{formatCurrency(currentAmountInUSD)}</span> / Target: <span className="font-semibold text-foreground">{formatCurrency(targetAmountInUSD)}</span>
+        {t("goals.current")}: <span className="font-semibold text-foreground">{formatCurrency(currentAmountInUSD)}</span> / {t("goals.target")}: <span className="font-semibold text-foreground">{formatCurrency(targetAmountInUSD)}</span>
       </div>
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
         <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-          <X className="h-4 w-4 mr-2" /> Cancel
+          <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
         </Button>
         <Button type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-          <Save className="h-4 w-4 mr-2" /> Add Funds
+          <Save className="h-4 w-4 mr-2" /> {t("goals.addFunds")}
         </Button>
       </DialogFooter>
     </form>
@@ -115,7 +114,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
         <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
-              <Plus className="w-5 h-5 mr-2" /> Add Funds to {goalName}
+              <Plus className="w-5 h-5 mr-2" /> {t("goals.addFundsTo", { goalName: goalName })}
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4">
@@ -131,7 +130,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
       <DialogContent onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            <Plus className="w-5 h-5 mr-2" /> Add Funds to {goalName}
+            <Plus className="w-5 h-5 mr-2" /> {t("goals.addFundsTo", { goalName: goalName })}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

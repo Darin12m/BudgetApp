@@ -8,7 +8,8 @@ import CategoryCard from '@/components/budget/CategoryCard';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { CustomProgress } from '@/components/common/CustomProgress';
-import DonutWithCenterText from '@/components/DonutWithCenterText'; // Import the new DonutWithCenterText component
+import DonutWithCenterText from '@/components/DonutWithCenterText';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface BudgetViewProps {
   totalBudgeted: number;
@@ -37,6 +38,7 @@ const BudgetView: React.FC<BudgetViewProps> = ({
   handleEditCategory,
   handleDeleteCategory,
 }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
   const isOverBudget = remainingBudget < 0;
   const isCloseToLimit = !isOverBudget && spentPercentage >= 80;
@@ -47,54 +49,50 @@ const BudgetView: React.FC<BudgetViewProps> = ({
       ? 'text-amber-500'
       : 'text-emerald';
 
-  // Data for DonutWithCenterText
   const donutData = useMemo(() => {
     const clampedSpentPercentage = Math.min(spentPercentage, 100);
     const remainingPercentage = 100 - clampedSpentPercentage;
 
     return [
-      { name: 'Spent', value: clampedSpentPercentage, color: 'hsl(var(--primary))' },
-      { name: 'Remaining', value: remainingPercentage, color: 'hsl(var(--muted)/50%)' },
+      { name: t("dashboard.spent"), value: clampedSpentPercentage, color: 'hsl(var(--primary))' },
+      { name: t("dashboard.remaining"), value: remainingPercentage, color: 'hsl(var(--muted)/50%)' },
     ];
-  }, [spentPercentage]);
+  }, [spentPercentage, t]);
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
-      {/* Overall Budget Summary Card */}
       <div className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 text-foreground card-shadow border border-border/50 backdrop-blur-lg">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xl sm:text-2xl font-bold">Monthly Budget</h2>
+          <h2 className="text-xl sm:text-2xl font-bold">{t("budget.monthlyBudget")}</h2>
           {budgetSettings.rolloverEnabled && (
             <div className="flex items-center space-x-1 bg-muted/50 px-3 py-1 rounded-full text-xs font-medium text-muted-foreground">
               <ArrowRight className="w-3 h-3" />
-              <span>Rollover ON</span>
+              <span>{t("budget.rolloverOn")}</span>
             </div>
           )}
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          {/* Budget Overview Text */}
           <div className="flex-1 text-center sm:text-left mb-6 sm:mb-0">
-            <p className="text-sm text-muted-foreground mb-1">Remaining Budget</p>
+            <p className="text-sm text-muted-foreground mb-1">{t("dashboard.remainingBudget")}</p>
             {isOverBudget && (
               <Badge variant="destructive" className="mb-2 flex items-center justify-center mx-auto sm:mx-0 w-fit px-3 py-1 text-xs animate-pulse-red-glow">
-                <AlertTriangle className="w-3 h-3 mr-1" /> Over Budget
+                <AlertTriangle className="w-3 h-3 mr-1" /> {t("dashboard.overBudget")}
               </Badge>
             )}
             <p className={cn("font-bold", remainingBudgetTextColor)} style={{ fontSize: 'clamp(2.25rem, 8vw, 3.75rem)' }}>
               {formatCurrency(remainingBudget)}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              {formatCurrency(remainingPerDay)} left per day • {daysLeft} days left
+              {formatCurrency(remainingPerDay)} {t("dashboard.leftPerDay")} • {daysLeft} {t("dashboard.daysLeft")}
             </p>
           </div>
 
-          {/* Donut Chart */}
           <div className="w-40 h-40 relative flex-shrink-0">
             <DonutWithCenterText
               chartId="budget-view-summary"
               mainValue={`${Math.round(spentPercentage)}%`}
-              mainLabel="Used"
+              mainLabel={t("dashboard.used")}
               data={donutData}
               innerRadius={65}
               outerRadius={75}
@@ -111,13 +109,13 @@ const BudgetView: React.FC<BudgetViewProps> = ({
 
         <div className="flex flex-wrap justify-between items-end gap-x-4 gap-y-3 mb-4 border-t border-border pt-4">
           <div className="flex flex-col items-center text-center w-full sm:w-auto flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 sm:items-start sm:text-left">
-            <p className="text-muted-foreground text-xs sm:text-sm mb-1">Total Budgeted</p>
+            <p className="text-muted-foreground text-xs sm:text-sm mb-1">{t("dashboard.totalBudgeted")}</p>
             <p className="text-xl sm:text-2xl lg:text-3xl font-bold overflow-hidden text-ellipsis whitespace-nowrap">
               {formatCurrency(totalBudgeted)}
             </p>
           </div>
           <div className="flex flex-col items-center text-center w-full sm:w-auto flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 sm:items-start sm:text-left">
-            <p className="text-muted-foreground text-xs sm:text-sm mb-1">Total Spent</p>
+            <p className="text-muted-foreground text-xs sm:text-sm mb-1">{t("dashboard.totalSpent")}</p>
             <p className="text-xl sm:text-2xl font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
               {formatCurrency(totalSpent)}
             </p>
@@ -126,27 +124,26 @@ const BudgetView: React.FC<BudgetViewProps> = ({
         {budgetSettings.rolloverEnabled && budgetSettings.previousMonthLeftover > 0 && (
           <div className="bg-muted/50 rounded-lg p-3 mb-3 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Previous month rollover</span>
+              <span className="text-muted-foreground">{t("dashboard.previousMonthRollover")}</span>
               <span className="font-semibold text-foreground">+{formatCurrency(budgetSettings.previousMonthLeftover)}</span>
             </div>
           </div>
         )}
         <CustomProgress value={Math.min(spentPercentage, 100)} className="h-2" indicatorColor="hsl(var(--primary))" />
         <div className="mt-3 flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{formatCurrency(remainingPerDay)}/day • {daysLeft} days left</span>
-          <span className="font-medium text-foreground">{Math.round(spentPercentage)}% used</span>
+          <span className="text-muted-foreground">{formatCurrency(remainingPerDay)}/{t("common.day")} • {daysLeft} {t("dashboard.daysLeft")}</span>
+          <span className="font-medium text-foreground">{Math.round(spentPercentage)}% {t("dashboard.used")}</span>
         </div>
       </div>
 
-      {/* Budget Categories List */}
       <div className="bg-card rounded-xl sm:rounded-2xl card-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
         <div className="p-4 sm:p-6 border-b border-border">
           <div className="flex items-center justify-between">
-            <h3 className="text-base sm:text-lg font-semibold text-foreground">Budget Categories</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">{t("budget.budgetCategories")}</h3>
             <Button onClick={handleAddCategory} className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80">
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add Category</span>
-              <span className="sm:hidden">Add</span>
+              <span className="hidden sm:inline">{t("budget.addCategory")}</span>
+              <span className="sm:hidden">{t("common.add")}</span>
             </Button>
           </div>
         </div>
@@ -159,10 +156,10 @@ const BudgetView: React.FC<BudgetViewProps> = ({
           ) : (
             <div className="p-6 text-center text-muted-foreground">
               <PiggyBank className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-semibold">No categories set up yet!</p>
-              <p className="text-sm mt-2">Start by adding your first budget category to track your spending.</p>
+              <p className="text-lg font-semibold">{t("budget.noCategoriesSetup")}</p>
+              <p className="text-sm mt-2">{t("budget.addFirstCategoryDescription")}</p>
               <Button onClick={handleAddCategory} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
-                Add First Category
+                {t("budget.addFirstCategory")}
               </Button>
             </div>
           )}

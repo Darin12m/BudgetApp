@@ -28,6 +28,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Transaction, Category, Account, RecurringTransaction } from '@/hooks/use-finance-data';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface AddEditTransactionModalProps {
   isOpen: boolean;
@@ -36,7 +37,6 @@ interface AddEditTransactionModalProps {
   onDelete: (id: string) => void;
   transactionToEdit?: Transaction | null;
   categories: Category[];
-  // Removed accounts prop
   recurringTemplates: RecurringTransaction[];
 }
 
@@ -47,9 +47,9 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   onDelete,
   transactionToEdit,
   categories,
-  // Removed accounts prop
   recurringTemplates,
 }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { isMobile } = useDeviceDetection();
   const { formatCurrency, selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
 
@@ -58,7 +58,6 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   const [amount, setAmount] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [status, setStatus] = useState<'pending' | 'cleared'>('pending');
-  // Removed selectedAccount state
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState<'Monthly' | 'Weekly' | 'Yearly'>('Monthly');
   const [nextDate, setNextDate] = useState<Date | undefined>(undefined);
@@ -74,11 +73,10 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       if (transactionToEdit) {
         setDate(new Date(transactionToEdit.date));
         setMerchant(transactionToEdit.merchant);
-        setAmount(convertUSDToSelected(Math.abs(transactionToEdit.amount)).toString()); // Convert from USD for display
+        setAmount(convertUSDToSelected(Math.abs(transactionToEdit.amount)).toString());
         setIsExpense(transactionToEdit.amount < 0);
         setSelectedCategoryId(transactionToEdit.categoryId);
         setStatus(transactionToEdit.status);
-        // Removed setSelectedAccount
         
         if (isInstanceFromRecurringTemplate) {
           const matchingTemplate = recurringTemplates.find(rt => rt.id === transactionToEdit.recurringTransactionId);
@@ -100,13 +98,9 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
           const uncategorized = categories.find(cat => cat.name === 'Uncategorized');
           setSelectedCategoryId(uncategorized ? uncategorized.id : categories[0].id);
         } else {
-          setSelectedCategoryId(''); // No categories available
+          setSelectedCategoryId('');
         }
         setStatus('pending');
-        // Removed setSelectedAccount
-        setIsRecurring(false);
-        setFrequency('Monthly');
-        setNextDate(undefined);
         setIsExpense(true);
       }
       setErrors({});
@@ -115,13 +109,12 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!date) newErrors.date = 'Date is required.';
-    if (!merchant.trim()) newErrors.merchant = 'Merchant is required.';
-    if (!amount || parseFloat(amount) === 0) newErrors.amount = 'Amount is required and must be non-zero.';
-    if (isNaN(parseFloat(amount))) newErrors.amount = 'Amount must be a valid number.';
-    if (!selectedCategoryId.trim()) newErrors.categoryId = 'Category is required.';
-    // Removed account validation
-    if (isRecurring && !nextDate) newErrors.nextDate = 'Next due date is required for recurring transactions.';
+    if (!date) newErrors.date = t("transactions.dateRequired");
+    if (!merchant.trim()) newErrors.merchant = t("transactions.merchantRequired");
+    if (!amount || parseFloat(amount) === 0) newErrors.amount = t("transactions.amountRequired");
+    if (isNaN(parseFloat(amount))) newErrors.amount = t("transactions.amountInvalid");
+    if (!selectedCategoryId.trim()) newErrors.categoryId = t("transactions.categoryRequired");
+    if (isRecurring && !nextDate) newErrors.nextDate = t("transactions.nextDueDateRequired");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -129,24 +122,22 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
-      toast.error("Please fix the errors in the form.");
+      toast.error(t("common.error"));
       return;
     }
 
-    // Convert input amount to USD before saving
     const amountInUSD = convertInputToUSD(parseFloat(amount));
     const finalAmount = isExpense ? -amountInUSD : amountInUSD;
 
     const transactionPayload: Omit<Transaction, 'id' | 'ownerUid'> = {
       date: date ? format(date, 'yyyy-MM-dd') : '',
       merchant: merchant.trim(),
-      amount: finalAmount, // Stored in USD
+      amount: finalAmount,
       categoryId: selectedCategoryId,
       status,
-      // Removed account from payload
       isRecurring: isRecurring,
       recurringTransactionId: isInstanceFromRecurringTemplate ? transactionToEdit?.recurringTransactionId : undefined,
-      inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
+      inputCurrencyCode: selectedCurrency.code,
     };
 
     let recurringPayload: Omit<RecurringTransaction, 'id' | 'ownerUid'> | undefined = undefined;
@@ -154,12 +145,12 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       const categoryEmoji = categories.find(cat => cat.id === selectedCategoryId)?.emoji || '💳';
       recurringPayload = {
         name: merchant.trim(),
-        amount: finalAmount, // Stored in USD
+        amount: finalAmount,
         categoryId: selectedCategoryId,
         frequency,
         nextDate: format(nextDate, 'yyyy-MM-dd'),
         emoji: categoryEmoji,
-        inputCurrencyCode: selectedCurrency.code, // Save the currency code used for input
+        inputCurrencyCode: selectedCurrency.code,
       };
     }
 
@@ -178,14 +169,14 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="merchant" className="text-right">
-          Merchant
+          {t("transactions.merchant")}
         </Label>
         <div className="col-span-3">
           <Input
             id="merchant"
             value={merchant}
             onChange={(e) => { setMerchant(e.target.value); setErrors(prev => ({ ...prev, merchant: '' })); }}
-            placeholder="e.g., Starbucks"
+            placeholder={t("transactions.merchantPlaceholder")}
             className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           />
           {errors.merchant && <p className="text-destructive text-xs mt-1">{errors.merchant}</p>}
@@ -194,7 +185,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="amount" className="text-right">
-          Amount
+          {t("transactions.amount")}
         </Label>
         <div className="col-span-3">
           <Input
@@ -212,7 +203,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="type" className="text-right">
-          Type
+          {t("transactions.type")}
         </Label>
         <div className="col-span-3 flex items-center space-x-2">
           <Button
@@ -224,7 +215,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
               isExpense ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "bg-muted/50 border-none hover:bg-muted text-foreground"
             )}
           >
-            <ArrowDownCircle className="h-4 w-4 mr-2" /> Expense
+            <ArrowDownCircle className="h-4 w-4 mr-2" /> {t("transactions.expense")}
           </Button>
           <Button
             type="button"
@@ -235,14 +226,14 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
               !isExpense ? "bg-emerald hover:bg-emerald/90 text-white" : "bg-muted/50 border-none hover:bg-muted text-foreground"
             )}
           >
-            <ArrowUpCircle className="h-4 w-4 mr-2" /> Income
+            <ArrowUpCircle className="h-4 w-4 mr-2" /> {t("transactions.income")}
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="date" className="text-right">
-          Date
+          {t("transactions.date")}
         </Label>
         <div className="col-span-3">
           <Popover>
@@ -255,7 +246,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : <span>Pick a date</span>}
+                {date ? format(date, "PPP") : <span>{t("transactions.pickADate")}</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 bg-card border border-border/50 card-shadow backdrop-blur-lg">
@@ -273,12 +264,12 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="category" className="text-right">
-          Category
+          {t("transactions.category")}
         </Label>
         <div className="col-span-3">
           <Select value={selectedCategoryId} onValueChange={(value) => { setSelectedCategoryId(value); setErrors(prev => ({ ...prev, categoryId: '' })); }}>
             <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
-              <SelectValue placeholder={categories.length > 0 ? "Select a category" : "No categories available"} />
+              <SelectValue placeholder={categories.length > 0 ? t("transactions.selectCategory") : t("transactions.noCategoriesAvailable")} />
             </SelectTrigger>
             <SelectContent>
               {categories.length > 0 ? (
@@ -289,7 +280,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
                 ))
               ) : (
                 <SelectItem value="" disabled>
-                  No categories. Add one in Budget tab.
+                  {t("transactions.noCategoriesAddOne")}
                 </SelectItem>
               )}
             </SelectContent>
@@ -300,26 +291,24 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
 
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="status" className="text-right">
-          Status
+          {t("transactions.status")}
         </Label>
         <div className="col-span-3">
           <Select value={status} onValueChange={(value: 'pending' | 'cleared') => setStatus(value)}>
             <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
-              <SelectValue placeholder="Select status" />
+              <SelectValue placeholder={t("transactions.selectStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="cleared">Cleared</SelectItem>
+              <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
+              <SelectItem value="cleared">{t("transactions.cleared")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Removed Account selection */}
-
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="isRecurring" className="text-right">
-          Recurring
+          {t("transactions.recurring")}
         </Label>
         <div className="col-span-3 flex items-center">
           <Switch
@@ -329,10 +318,10 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             disabled={!!isInstanceFromRecurringTemplate}
           />
           <span className="ml-2 text-sm text-muted-foreground">
-            {isRecurring ? 'Enabled' : 'Disabled'}
+            {isRecurring ? t("transactions.enabled") : t("transactions.disabled")}
           </span>
           {isInstanceFromRecurringTemplate && (
-            <span className="ml-2 text-xs text-muted-foreground">(Managed as recurring template)</span>
+            <span className="ml-2 text-xs text-muted-foreground">({t("transactions.managedAsRecurringTemplate")})</span>
           )}
         </div>
       </div>
@@ -341,24 +330,24 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
         <>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="frequency" className="text-right">
-              Frequency
+              {t("transactions.frequency")}
             </Label>
             <div className="col-span-3">
               <Select value={frequency} onValueChange={(value: 'Monthly' | 'Weekly' | 'Yearly') => setFrequency(value)}>
                 <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
-                  <SelectValue placeholder="Select frequency" />
+                  <SelectValue placeholder={t("transactions.selectFrequency")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Monthly">Monthly</SelectItem>
-                  <SelectItem value="Weekly">Weekly</SelectItem>
-                  <SelectItem value="Yearly">Yearly</SelectItem>
+                  <SelectItem value="Monthly">{t("transactions.monthly")}</SelectItem>
+                  <SelectItem value="Weekly">{t("transactions.weekly")}</SelectItem>
+                  <SelectItem value="Yearly">{t("transactions.yearly")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="nextDate" className="text-right">
-              Next Due Date
+              {t("transactions.nextDueDate")}
             </Label>
             <div className="col-span-3">
               <Popover>
@@ -371,7 +360,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {nextDate ? format(nextDate, "PPP") : <span>Pick a date</span>}
+                    {nextDate ? format(nextDate, "PPP") : <span>{t("transactions.pickADate")}</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-card border border-border/50 card-shadow backdrop-blur-lg">
@@ -394,30 +383,30 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
           <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
             <AlertDialogTrigger asChild>
               <Button type="button" variant="destructive" className="w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogTitle>{t("common.areYouSure")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the transaction "{transactionToEdit?.merchant}".
-                  {isInstanceFromRecurringTemplate && " Note: This will only delete this specific instance, not the recurring template."}
+                  {t("transactions.transactionDeleteConfirmation", { merchantName: transactionToEdit?.merchant })}
+                  {isInstanceFromRecurringTemplate && t("transactions.transactionInstanceDeleteConfirmation")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteClick} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
+                <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">{t("common.cancel")}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteClick} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("common.delete")}</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         )}
         <div className="flex gap-2 w-full sm:w-auto">
           <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-            <X className="h-4 w-4 mr-2" /> Cancel
+            <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
           </Button>
           <Button type="submit" className="flex-1 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
-            <Save className="h-4 w-4 mr-2" /> Save Transaction
+            <Save className="h-4 w-4 mr-2" /> {t("common.save")} {t("transactions.transaction")}
           </Button>
         </div>
       </DialogFooter>
@@ -430,7 +419,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
         <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
-              {isEditing ? 'Edit Transaction' : 'Add New Transaction'}
+              {isEditing ? t("transactions.editTransaction") : t("transactions.newTransaction")}
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4">
@@ -446,7 +435,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       <DialogContent className="sm:max-w-[425px]" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            {isEditing ? 'Edit Transaction' : 'Add New Transaction'}
+            {isEditing ? t("transactions.editTransaction") : t("transactions.newTransaction")}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Category } from '@/hooks/use-finance-data';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface HealthStatus {
   status: 'over' | 'warning' | 'good';
@@ -38,6 +39,7 @@ interface CategoryCardProps {
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = memo(({ category, onEdit, onDelete, formatCurrency }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const percentage = category.budgeted > 0 ? (category.spent / category.budgeted) * 100 : 0;
   const health = getHealthStatus(category.spent, category.budgeted);
 
@@ -49,7 +51,7 @@ const CategoryCard: React.FC<CategoryCardProps> = memo(({ category, onEdit, onDe
           <div className="flex-1 min-w-0">
             <h4 className="font-semibold text-foreground text-sm sm:text-base truncate">{category.name}</h4>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              {formatCurrency(category.spent)} of {formatCurrency(category.budgeted)}
+              {formatCurrency(category.spent)} {t("common.of")} {formatCurrency(category.budgeted)}
             </p>
           </div>
         </div>
@@ -69,14 +71,14 @@ const CategoryCard: React.FC<CategoryCardProps> = memo(({ category, onEdit, onDe
             </AlertDialogTrigger>
             <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50">
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogTitle>{t("common.areYouSure")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the category "{category.name}" and re-assign all associated transactions to 'Uncategorized'.
+                  {t("budget.categoryDeleteConfirmation", { categoryName: category.name })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(category.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
+                <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">{t("common.cancel")}</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(category.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("common.delete")}</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
