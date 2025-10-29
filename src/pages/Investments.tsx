@@ -22,12 +22,12 @@ import InvestmentAllocationChart from '@/components/investments/InvestmentAlloca
 import InvestmentHoldingsList from '@/components/investments/InvestmentHoldingsList';
 import BottomNavBar from '@/components/BottomNavBar';
 import Sidebar from '@/components/layout/Sidebar';
-import Header from '@/components/layout/Header'; // Import Header
+import Header from '@/components/layout/Header';
 import AddInvestmentModal from '@/components/AddInvestmentModal';
 import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils'; // Import cn for conditional classNames
+import { cn } from '@/lib/utils';
 
 // --- Interfaces ---
 interface PortfolioSummary {
@@ -52,12 +52,12 @@ const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(-
 
 interface InvestmentsPageProps {
   userUid: string | null;
-  setShowProfilePopup: (show: boolean) => void; // New prop
+  setShowProfilePopup: (show: boolean) => void;
 }
 
 const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfilePopup }) => {
   const { t } = useTranslation();
-  const { formatCurrency, selectedCurrency } = useCurrency();
+  const { formatCurrency } = useCurrency(); // Removed selectedCurrency as it's implicitly used by formatCurrency
   const { selectedRange } = useDateRange();
 
   const {
@@ -415,7 +415,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
         />
 
         {/* Fixed Add Button for Mobile (now above BottomNavBar) */}
-        <motion.button
+        <Button
           className={cn(
             "fixed bottom-20 right-4 sm:hidden rounded-xl p-3 shadow-lg z-30 animate-in fade-in zoom-in duration-300 transition-transform",
             "glassmorphic-card bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground"
@@ -423,7 +423,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
           onClick={handleAddInvestment}
         >
           <Plus className="w-6 h-6" />
-        </motion.button>
+        </Button>
 
         <BottomNavBar />
       </div>
