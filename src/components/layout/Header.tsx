@@ -36,7 +36,6 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, onSidebarToggle, setSh
           </motion.button>
           <div className="flex-1 min-w-0">
             <h2 className="h3 capitalize truncate">{title}</h2>
-            {subtitle && <p className="caption mt-1 truncate">{subtitle}</p>}
           </div>
         </div>
 
