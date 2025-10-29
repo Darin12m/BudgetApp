@@ -107,7 +107,8 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
     return Math.max(minPx, Math.min(maxPx, calculatedSize));
   }, []);
 
-  const textContainerDiameter = innerRadius * 2 * 0.9; // 90% of inner diameter for text
+  // Adjusted to 80% of inner diameter for more padding
+  const textContainerDiameter = innerRadius * 2 * 0.8; 
   const mainTextFontSize = calculateFontSize(String(mainValue), textContainerDiameter, 28, 10, 1.5);
   const subTextFontSize = calculateFontSize(String(mainLabel), textContainerDiameter, 16, 8, 1.8);
 
