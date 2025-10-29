@@ -163,7 +163,7 @@ const ProDonut: React.FC<ProDonutProps> = memo(({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.7, ease: "easeOut" }}
-            className={cn(subTextColorClass, subFontWeightClass)}
+            className={cn(subTextColorClass, subFontWeightClass, "caption")}
             style={{ fontSize: `${subLabelFontSize}px`, lineHeight: 1.2, marginTop: '4px' }} // Small offset for sublabel
           >
             {displayedTotalLabel}

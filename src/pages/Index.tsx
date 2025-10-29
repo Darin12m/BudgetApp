@@ -330,25 +330,10 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
               />
 
               {/* Total Investment Portfolio Card */}
-              <motion.div
-                className="glassmorphic-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300"
-                whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-muted-foreground">{t("investments.totalPortfolioValue")}</p>
-                    <Wallet className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <p className="text-4xl font-bold font-mono tracking-tight mb-1">{formatCurrency(overallPortfolioSummary.currentValue)}</p>
-                  <div className="flex items-center space-x-2">
-                    {PortfolioGainLossIcon && <PortfolioGainLossIcon className={`w-4 h-4 ${portfolioGainLossColor}`} />}
-                    <span className={`text-sm ${portfolioGainLossColor} font-mono`}>
-                      {overallPortfolioSummary.totalGainLossPercentage.toFixed(2)}% {t("dashboard.thisMonth")}
-                    </span>
-                  </div>
-                </CardContent>
-              </motion.div>
+              <OverallPortfolioSummaryCard
+                currentValue={overallPortfolioSummary.currentValue}
+                gainLossPercentage={overallPortfolioSummary.totalGainLossPercentage}
+              />
 
               {/* Quick Action Buttons */}
               <div className="grid grid-cols-2 gap-4">
@@ -377,12 +362,12 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
               {/* Top 3 Performing Assets */}
               {topPerformers.length > 0 && (
                 <motion.div
-                  className="glassmorphic-card animate-in fade-in slide-in-from-bottom-2 duration-300"
+                  className="glassmorphic-card"
                   whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
                 >
                   <CardHeader>
-                    <CardTitle className="text-lg font-semibold tracking-tight">{t("dashboard.topPerformers")}</CardTitle>
+                    <CardTitle className="h3 tracking-tight">{t("dashboard.topPerformers")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {topPerformers.map(inv => {

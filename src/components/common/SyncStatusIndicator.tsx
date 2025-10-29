@@ -66,7 +66,7 @@ const SyncStatusIndicator: React.FC = () => {
         </motion.div>
       </TooltipTrigger>
       <TooltipContent className="bg-tooltip-bg border-tooltip-border-color text-tooltip-text-color">
-        <p>{tooltipText}</p>
+        <p className="p">{tooltipText}</p>
       </TooltipContent>
     </Tooltip>
   );

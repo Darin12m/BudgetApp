@@ -51,7 +51,7 @@ const InvestmentHoldingsList: React.FC<InvestmentHoldingsListProps> = ({
       transition={{ duration: 0.2, ease: "easeOut" }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold tracking-tight">{title}</CardTitle>
+        <CardTitle className="h3 tracking-tight">{title}</CardTitle>
         <div className="flex items-center space-x-2">
           <Select value={sortBy} onValueChange={onSortByChange}>
             <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
@@ -84,8 +84,8 @@ const InvestmentHoldingsList: React.FC<InvestmentHoldingsListProps> = ({
           ) : (
             <div className="p-6 text-center text-muted-foreground">
               <EmptyIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-semibold text-foreground">{emptyMessage}</p>
-              <p className="text-sm mt-2">Add your first holding to track its live performance.</p>
+              <p className="h3 font-semibold text-foreground">{emptyMessage}</p>
+              <p className="p mt-2">Add your first holding to track its live performance.</p>
               <Button onClick={onAddInvestment} className="mt-4">
                 {emptyButtonText}
               </Button>

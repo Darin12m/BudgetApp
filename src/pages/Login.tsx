@@ -116,10 +116,10 @@ const LoginPage: React.FC = () => {
         className="w-full max-w-md glassmorphic-card"
       >
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-blue bg-clip-text text-transparent tracking-tight">
+          <CardTitle className="h1 font-bold bg-gradient-to-r from-primary to-blue bg-clip-text text-transparent tracking-tight">
             {t("login.title")}
           </CardTitle>
-          <CardDescription className="mt-2 text-muted-foreground">
+          <CardDescription className="p mt-2 text-muted-foreground">
             {isRegisterMode ? t("login.createAccount") : t("login.loginToManage")}
           </CardDescription>
         </CardHeader>
@@ -177,7 +177,7 @@ const LoginPage: React.FC = () => {
             {t("login.signInWithGoogle")}
           </Button>
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
+          <p className="p mt-6 text-center text-muted-foreground">
             {isRegisterMode ? t("login.alreadyHaveAccount") : t("login.dontHaveAccount")}{' '}
             <a
               href="#"

@@ -114,10 +114,18 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans; /* Use a sans-serif font */
+    @apply bg-background text-foreground font-sans; /* Use Poppins as the default sans-serif font */
     overscroll-behavior-y: contain; /* Prevent scroll bounce on mobile */
     transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out; /* Smooth theme transition */
   }
+
+  /* Typography Scale */
+  h1, .h1 { @apply text-2xl sm:text-3xl font-bold tracking-tight; } /* 1.5rem-1.75rem */
+  h2, .h2 { @apply text-xl sm:text-2xl font-semibold tracking-tight; } /* 1.25rem-1.5rem */
+  h3, .h3 { @apply text-lg sm:text-xl font-semibold tracking-tight; } /* 1.1rem-1.25rem */
+  h4, .h4 { @apply text-base sm:text-lg font-medium; }
+  p, .p { @apply text-sm sm:text-base; } /* 0.95rem */
+  .caption { @apply text-xs sm:text-sm text-muted-foreground opacity-70; } /* 0.8rem */
 
   /* Light theme gradient background */
   body:not(.dark) {
@@ -163,7 +171,7 @@
 
 /* Glassmorphism effect for elements */
 .glassmorphic-card {
-  @apply backdrop-blur-xl bg-card border border-border/50 rounded-xl shadow-glass;
+  @apply backdrop-blur-xl bg-card border border-border/50 rounded-2xl shadow-glass; /* Using rounded-2xl */
 }
 
 /* Gradient border for SmartDonut */

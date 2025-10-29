@@ -113,7 +113,7 @@ const CircularProgressChart: React.FC<CircularProgressChartProps> = ({
           {displayedValue}
         </span>
         {label && (
-          <span className={cn(labelColorClass, labelFontWeightClass, "text-center")} style={{ fontSize: size * 0.1, lineHeight: 1 }}>
+          <span className={cn(labelColorClass, labelFontWeightClass, "text-center caption")} style={{ fontSize: size * 0.1, lineHeight: 1 }}>
             {label}
           </span>
         )}

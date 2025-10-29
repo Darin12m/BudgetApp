@@ -30,12 +30,12 @@ const TransactionCard: React.FC<TransactionCardProps> = memo(({ transaction, cat
           <span className="text-lg">{transaction.amount > 0 ? '💰' : category?.emoji || '💳'}</span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground text-sm truncate">{transaction.merchant}</p>
-          <p className="text-xs text-muted-foreground truncate">{category?.name || t("common.uncategorized")}</p>
+          <p className="font-medium text-foreground p truncate">{transaction.merchant}</p>
+          <p className="caption truncate">{category?.name || t("common.uncategorized")}</p>
         </div>
       </div>
       <div className="text-right ml-2 flex-shrink-0 flex items-center space-x-2">
-        <p className={`font-semibold text-sm font-mono ${transaction.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>
+        <p className={`font-semibold p font-mono ${transaction.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>
           {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
         </p>
         <Button variant="ghost" size="icon" onClick={() => onEdit(transaction)} className="h-8 w-8 text-muted-foreground">

@@ -25,13 +25,13 @@ const RechartsTooltip: React.FC<RechartsTooltipProps> = ({
         "rounded-lg border bg-tooltip-bg p-3 text-sm shadow-lg",
         "border-tooltip-border-color text-tooltip-text-color"
       )}>
-        <p className="font-semibold mb-1">{label}</p>
+        <p className="font-semibold p mb-1">{label}</p>
         {payload.map((entry, index) => (
           <div key={`item-${index}`} className="flex items-center justify-between">
-            <span className="mr-2" style={{ color: entry.color as string }}>
+            <span className="p mr-2" style={{ color: entry.color as string }}>
               {nameFormatter ? nameFormatter(entry.name) : entry.name}:
             </span>
-            <span className="font-medium">
+            <span className="font-medium p">
               {formatValue(Number(entry.value))}
             </span>
           </div>

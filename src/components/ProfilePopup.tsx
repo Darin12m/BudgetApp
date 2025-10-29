@@ -183,7 +183,7 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
 
       {/* Quick Preferences */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold uppercase text-muted-foreground">{t("profilePopup.quickPreferences")}</h3>
+        <h3 className="caption font-semibold uppercase text-muted-foreground">{t("profilePopup.quickPreferences")}</h3>
         {/* Theme Toggle */}
         <div className="flex items-center justify-between">
           <Label htmlFor="profile-dark-mode-toggle" className="flex items-center text-sm cursor-pointer">
@@ -263,7 +263,7 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
 
       {/* Account Actions */}
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase text-muted-foreground">{t("profilePopup.account")}</h3>
+        <h3 className="caption font-semibold uppercase text-muted-foreground">{t("profilePopup.account")}</h3>
         <Link to="/settings" onClick={onClose} className="flex items-center justify-between w-full text-sm px-2 py-2 h-auto hover:bg-muted/50 rounded-md transition-colors">
           <div className="flex items-center space-x-2">
             <SettingsIcon className="w-4 h-4" />

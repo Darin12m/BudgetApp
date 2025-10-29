@@ -87,10 +87,10 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
         <div className="flex items-center space-x-3 flex-1">
           <Zap className="w-6 h-6 text-primary flex-shrink-0" />
           <div>
-            <p className="text-sm font-medium text-foreground">
+            <p className="p font-medium text-foreground">
               {t("microInvesting.leftThisWeek", { amount: <span className="text-emerald font-semibold font-mono">{formatCurrency(weeklyRemainingBudget)}</span> })}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="caption text-muted-foreground">
               {t("microInvesting.considerInvesting", { amount: <span className="text-primary font-semibold font-mono">{formatCurrency(suggestedInvestmentAmount)}</span>, assetName: suggestedAsset.name })}
             </p>
           </div>

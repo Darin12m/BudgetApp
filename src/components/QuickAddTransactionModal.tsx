@@ -215,7 +215,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
             checked={isRecurring}
             onCheckedChange={setIsRecurring}
           />
-          <span className="ml-2 text-sm text-muted-foreground">
+          <span className="ml-2 p text-muted-foreground">
             {isRecurring ? t("transactions.enabled") : t("transactions.disabled")}
           </span>
         </div>
@@ -290,7 +290,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
         <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
-              <Plus className="w-5 h-5 mr-2" /> {t("transactions.quickAddTransaction")}
+              <Plus className="w-5 h-5 mr-2" /> <h3 className="h3">{t("transactions.quickAddTransaction")}</h3>
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4">
@@ -306,7 +306,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       <DialogContent className="sm:max-w-[425px] glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            <Plus className="w-5 h-5 mr-2" /> {t("transactions.quickAddTransaction")}
+            <Plus className="w-5 h-5 mr-2" /> <h3 className="h3">{t("transactions.quickAddTransaction")}</h3>
           </DialogTitle>
         </DialogHeader>
         {FormContent}

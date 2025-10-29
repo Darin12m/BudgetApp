@@ -1,3 +1,5 @@
+"use client";
+
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useTranslation } from 'react-i18next'; // Import useTranslation
@@ -25,10 +27,10 @@ const NotFound = () => {
         className="w-full max-w-md glassmorphic-card text-center"
       >
         <CardHeader>
-          <CardTitle className="text-4xl font-bold mb-4 tracking-tight">{t("notFound.title")}</CardTitle>
+          <CardTitle className="h1 mb-4 tracking-tight">{t("notFound.title")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xl text-muted-foreground mb-4">{t("notFound.pageNotFound")}</p>
+          <p className="h3 text-muted-foreground mb-4">{t("notFound.pageNotFound")}</p>
           <Button asChild className="mt-4">
             <a href="/">{t("common.returnToHome")}</a>
           </Button>

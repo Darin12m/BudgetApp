@@ -27,8 +27,8 @@ const StatsCard: React.FC<StatsCardProps> = memo(({ title, value, subtitle, icon
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex-1">
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">{title}</p>
-          <p className="text-lg sm:text-2xl font-bold text-foreground font-mono tracking-tight">{value}</p>
+          <p className="caption mb-1">{title}</p>
+          <p className="h3 font-bold text-foreground font-mono tracking-tight">{value}</p>
           {subtitle && <p className="text-xs text-muted-foreground mt-1 truncate">{subtitle}</p>}
           {trend && (
             <p className={`text-xs ${trend.color} mt-1 flex items-center font-mono`}>

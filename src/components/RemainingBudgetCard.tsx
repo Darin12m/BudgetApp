@@ -100,7 +100,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
     >
       <div className="flex flex-col sm:flex-row items-center sm:justify-between mb-4">
         <div className="flex-1 text-center sm:text-left mb-6 sm:mb-0">
-          <p className="text-sm text-muted-foreground mb-1">{t("dashboard.remainingBudget")}</p>
+          <p className="caption mb-1">{t("dashboard.remainingBudget")}</p>
           {isOverBudget && (
             <Badge variant="destructive" className="mb-2 flex items-center justify-center mx-auto sm:mx-0 w-fit px-3 py-1 text-xs animate-pulse-red-glow">
               <AlertTriangle className="w-3 h-3 mr-1" /> {t("dashboard.overBudget")}
@@ -109,7 +109,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
           <p className={cn("font-bold font-mono tracking-tight", remainingBudgetTextColor)} style={{ fontSize: 'clamp(2.25rem, 8vw, 3.75rem)' }}>
             {formatCurrency(animatedRemainingBudget)}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="p mt-1">
             {formatCurrency(remainingPerDay)} {t("dashboard.leftPerDay")} • {daysLeft} {t("dashboard.daysLeft")}
           </p>
         </div>
@@ -130,7 +130,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
       </div>
 
       <div className="mt-6">
-        <p className="text-sm font-semibold text-foreground mb-2 tracking-tight">{t("dashboard.spendingTrend")}</p>
+        <p className="h4 font-semibold text-foreground mb-2 tracking-tight">{t("dashboard.spendingTrend")}</p>
         <div className="h-[80px] w-full"> 
           <ResponsiveContainer width="100%" height="100%"> 
             <AreaChart data={sparklineData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
@@ -159,7 +159,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
       </div>
 
       {rolloverEnabled && previousMonthLeftover > 0 && (
-        <div className="bg-muted/50 rounded-lg p-3 mt-4 text-sm">
+        <div className="bg-muted/50 rounded-lg p-3 mt-4 p">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t("dashboard.previousMonthRollover")}</span>
               <span className="font-semibold text-foreground">+{formatCurrency(previousMonthLeftover)}</span>
@@ -167,7 +167,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
         </div>
       )}
 
-      <div className="flex items-center justify-between text-sm bg-muted/50 rounded-lg p-3 mt-4">
+      <div className="flex items-center justify-between p bg-muted/50 rounded-lg p-3 mt-4">
         <div className="flex items-center space-x-2">
           <PiggyBank className={`w-4 h-4 ${remainingBudgetTextColor}`} />
           <span className={`font-medium ${remainingBudgetTextColor}`}>{smartSummary}</span>

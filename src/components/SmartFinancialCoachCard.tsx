@@ -90,11 +90,11 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
       transition={{ duration: 0.2, ease: "easeOut" }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
+        <CardTitle className="h3 flex items-center tracking-tight">
           <Lightbulb className="w-5 h-5 mr-2 text-primary" /> {t("smartCoach.title")}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 text-sm text-foreground">
+      <CardContent className="space-y-3 p text-foreground">
         <p className="flex items-center">
           {spendingChangePercentage > 0 ? <TrendingUp className="w-4 h-4 mr-2 text-arrowDown" /> : <TrendingDown className="w-4 h-4 mr-2 text-arrowUp" />}
           {spendingTrendText}

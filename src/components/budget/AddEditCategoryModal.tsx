@@ -180,7 +180,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
         <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
-              {categoryToEdit ? t("budget.editCategory") : t("budget.newCategory")}
+              {categoryToEdit ? <h3 className="h3">{t("budget.editCategory")}</h3> : <h3 className="h3">{t("budget.newCategory")}</h3>}
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4">
@@ -196,7 +196,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       <DialogContent className="glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            {categoryToEdit ? t("budget.editCategory") : t("budget.newCategory")}
+            {categoryToEdit ? <h3 className="h3">{t("budget.editCategory")}</h3> : <h3 className="h3">{t("budget.newCategory")}</h3>}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

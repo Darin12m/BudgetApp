@@ -99,13 +99,13 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
         >
           <div className="flex items-center space-x-3 mb-3">
             {RunOutIcon && <RunOutIcon className={`w-5 h-5 ${runOutColor}`} />}
-            <h3 className={`text-base sm:text-lg font-semibold ${runOutColor} tracking-tight`}>{t("dashboard.smartForecast")}</h3>
+            <h3 className={`h4 font-semibold ${runOutColor} tracking-tight`}>{t("dashboard.smartForecast")}</h3>
           </div>
-          <p className={`text-sm sm:text-base ${runOutColor} mb-4`}>{runOutMessage}</p>
+          <p className={`p ${runOutColor} mb-4`}>{runOutMessage}</p>
 
           {totalBudgeted > 0 && dailyAvgSpending > 0 && spendingForecastChartData.length > 1 ? (
             <>
-              <h4 className="text-sm font-semibold text-foreground mb-2 tracking-tight">{t("dashboard.spendingTrajectory")}</h4>
+              <h4 className="h4 font-semibold text-foreground mb-2 tracking-tight">{t("dashboard.spendingTrajectory")}</h4>
               <ResponsiveContainer width="100%" height={150}>
                 <LineChart data={spendingForecastChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
@@ -120,8 +120,8 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
           ) : (
             <div className="p-6 text-center text-muted-foreground">
               <Lightbulb className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-semibold text-foreground">{t("dashboard.noForecastYet")}</p>
-              <p className="text-sm mt-2">{t("dashboard.addTransactionsAndBudget")}</p>
+              <p className="h3 font-semibold text-foreground">{t("dashboard.noForecastYet")}</p>
+              <p className="p mt-2">{t("dashboard.addTransactionsAndBudget")}</p>
             </div>
           )}
         </motion.div>
@@ -172,7 +172,7 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
           whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
           transition={{ duration: 0.2, ease: "easeOut" }}
         >
-          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 tracking-tight">{t("dashboard.spendingTrend")}</h3>
+          <h3 className="h4 font-semibold text-foreground mb-4 tracking-tight">{t("dashboard.spendingTrend")}</h3>
           {spendingTrend.length > 1 ? (
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={spendingTrend}>
@@ -187,8 +187,8 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
           ) : (
             <div className="p-6 text-center text-muted-foreground">
               <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-semibold text-foreground">{t("dashboard.noSpendingTrend")}</p>
-              <p className="text-sm mt-2">{t("dashboard.addMoreTransactions")}</p>
+              <p className="h3 font-semibold text-foreground">{t("dashboard.noSpendingTrend")}</p>
+              <p className="p mt-2">{t("dashboard.addMoreTransactions")}</p>
             </div>
           )}
         </motion.div>
@@ -205,7 +205,7 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
         whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
         transition={{ duration: 0.2, ease: "easeOut" }}
       >
-        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 tracking-tight">{t("dashboard.netWorthGrowth")}</h3>
+        <h3 className="h4 font-semibold text-foreground mb-4 tracking-tight">{t("dashboard.netWorthGrowth")}</h3>
         {netWorthTrend.length > 1 ? (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={netWorthTrend}>
@@ -219,8 +219,8 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
         ) : (
           <div className="p-6 text-center text-muted-foreground">
             <PiggyBank className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-lg font-semibold text-foreground">{t("dashboard.noNetWorthGrowth")}</p>
-            <p className="text-sm mt-2">{t("dashboard.addAccountsAndTransactions")}</p>
+            <p className="h3 font-semibold text-foreground">{t("dashboard.noNetWorthGrowth")}</p>
+            <p className="p mt-2">{t("dashboard.addAccountsAndTransactions")}</p>
           </div>
         )}
       </motion.div>
@@ -233,8 +233,8 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-base sm:text-lg font-semibold text-foreground tracking-tight">{t("dashboard.upcomingRecurringBills")}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{t("dashboard.total")}: {formatCurrency(recurringTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0))}/{t("transactions.month")}</p>
+              <h3 className="h4 font-semibold text-foreground tracking-tight">{t("dashboard.upcomingRecurringBills")}</h3>
+              <p className="caption mt-1">{t("dashboard.total")}: {formatCurrency(recurringTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0))}/{t("transactions.month")}</p>
             </div>
             <Link to="/budget-app?view=recurring" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:bg-primary/90 font-medium flex items-center">
               {t("dashboard.manage")}
@@ -268,8 +268,8 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
             ) : (
               <div className="p-6 text-center text-muted-foreground">
                 <Lightbulb className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-lg font-semibold text-foreground">{t("dashboard.noRecurringBills")}</p>
-                <p className="text-sm mt-2">{t("dashboard.addRegularExpenses")}</p>
+                <p className="h3 font-semibold text-foreground">{t("dashboard.noRecurringBills")}</p>
+                <p className="p mt-2">{t("dashboard.addRegularExpenses")}</p>
                 <Link to="/budget-app?view=recurring">
                   <Button className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
                     {t("dashboard.addRecurringBill")}
@@ -286,7 +286,7 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
           transition={{ duration: 0.2, ease: "easeOut" }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base sm:text-lg font-semibold text-foreground tracking-tight">{t("dashboard.recentTransactions")}</h3>
+            <h3 className="h4 font-semibold text-foreground tracking-tight">{t("dashboard.recentTransactions")}</h3>
             <Link to="/budget-app?view=transactions" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:bg-primary/90 font-medium flex items-center">
               {t("common.viewAll")}
               <ArrowRight className="w-4 h-4 ml-1" />
@@ -328,8 +328,8 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
             ) : (
               <div className="p-6 text-center text-muted-foreground">
                 <Lightbulb className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-lg font-semibold text-foreground">{t("dashboard.noRecentTransactions")}</p>
-                <p className="text-sm mt-2">{t("dashboard.addFirstTransaction")}</p>
+                <p className="h3 font-semibold text-foreground">{t("dashboard.noRecentTransactions")}</p>
+                <p className="p mt-2">{t("dashboard.addFirstTransaction")}</p>
                 <Link to="/budget-app?view=transactions">
                   <Button className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
                     {t("dashboard.addTransaction")}

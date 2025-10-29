@@ -18,6 +18,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Poppins', 'sans-serif'], // Set Poppins as the default sans-serif font
+      },
       colors: {
         // Light Theme (default)
         border: "hsl(var(--border))",

@@ -45,10 +45,10 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
       transition={{ duration: 0.2, ease: "easeOut" }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
+        <CardTitle className="h3 flex items-center tracking-tight">
           <PiggyBank className="w-5 h-5 mr-2 text-primary" /> {t("dashboard.budgetCategories")}
         </CardTitle>
-        <Link to="/budget-app?view=budget" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:bg-primary/90 font-medium flex items-center">
+        <Link to="/budget-app?view=budget" className="p text-primary dark:text-primary hover:text-primary/90 dark:hover:bg-primary/90 font-medium flex items-center">
           {t("common.viewAll")}
           <ChevronRight className="w-4 h-4 ml-1" />
         </Link>
@@ -69,19 +69,19 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
                 unit="%"
               />
             ) : (
-              <p className="text-center text-muted-foreground text-sm">{t("dashboard.noBudgetYet")}</p>
+              <p className="p text-center text-muted-foreground">{t("dashboard.noBudgetYet")}</p>
             )}
           </div>
           <div className="w-full sm:w-1/2 space-y-2">
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex justify-between items-center p">
               <span className="text-muted-foreground">{t("dashboard.totalBudgeted")}</span>
               <span className="font-semibold text-foreground font-mono">{formatCurrency(totalBudgetedMonthly)}</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex justify-between items-center p">
               <span className="text-muted-foreground">{t("dashboard.totalSpent")}</span>
               <span className="font-semibold text-foreground font-mono">{formatCurrency(totalSpentMonthly)}</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex justify-between items-center p">
               <span className="text-muted-foreground">{t("dashboard.remaining")}</span>
               <span className={cn("font-semibold font-mono", remainingBudget >= 0 ? 'text-emerald' : 'text-destructive')}>
                 {formatCurrency(remainingBudget)}
@@ -97,7 +97,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
         </div>
 
         <div className="mt-4 border-t border-border pt-4">
-          <h3 className="text-base font-semibold text-foreground mb-3 tracking-tight">{t("dashboard.yourCategories")}</h3>
+          <h3 className="h4 font-semibold text-foreground mb-3 tracking-tight">{t("dashboard.yourCategories")}</h3>
           <div className="space-y-3">
             {categories.length > 0 ? (
               categories.map((cat) => {
@@ -109,9 +109,9 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <span className="text-lg">{cat.emoji}</span>
-                        <span className="font-medium text-foreground text-sm">{cat.name}</span>
+                        <span className="font-medium text-foreground p">{cat.name}</span>
                       </div>
-                      <div className="text-sm text-right flex items-center space-x-1 font-mono">
+                      <div className="p text-right flex items-center space-x-1 font-mono">
                         <span className={cn("font-semibold", isCategoryOverBudget ? "text-destructive" : "text-foreground")}>
                           {formatCurrency(cat.spent)}
                         </span>
@@ -123,7 +123,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
                 );
               })
             ) : (
-              <p className="text-muted-foreground text-sm text-center">{t("dashboard.noCategoriesDefined")}</p>
+              <p className="p text-muted-foreground text-center">{t("dashboard.noCategoriesDefined")}</p>
             )}
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button'; // Import Button for onRetry
 
 interface ErrorMessageProps {
   message: string;
@@ -13,15 +14,16 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, onRetry }) => (
     <div className="flex items-center">
       <AlertCircle className="w-5 h-5 text-destructive mr-2" />
       <div>
-        <h3 className="text-sm font-medium text-destructive">Error</h3>
-        <p className="text-sm text-destructive mt-1">{message}</p>
+        <h3 className="p font-medium text-destructive">Error</h3>
+        <p className="p text-destructive mt-1">{message}</p>
         {onRetry && (
-          <button
+          <Button
             onClick={onRetry}
-            className="mt-2 text-sm text-destructive hover:text-destructive/80 underline"
+            variant="link"
+            className="mt-2 p text-destructive hover:text-destructive/80 underline h-auto px-0"
           >
             Try again
-          </button>
+          </Button>
         )}
       </div>
     </div>

@@ -7,6 +7,7 @@ import { Investment } from '@/hooks/use-investment-data';
 import InvestmentForm from './investments/InvestmentForm';
 import { useDeviceDetection } from '@/hooks/use-device-detection'; // Import the new hook
 import { useTranslation } from 'react-i18next';
+import { Plus } from 'lucide-react'; // Import Plus icon
 
 interface AddInvestmentModalProps {
   isOpen: boolean;
@@ -35,7 +36,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
     <> {/* Removed Card wrapper */}
       <DialogHeader> {/* Using DialogHeader for consistent styling, works with Drawer too */}
         <DialogTitle className="flex items-center tracking-tight"> {/* Added flex and items-center */}
-          {investmentToEdit ? t("investments.editInvestment") : t("investments.addInvestmentTitle")}
+          <Plus className="w-5 h-5 mr-2" /> {investmentToEdit ? <h3 className="h3">{t("investments.editInvestment")}</h3> : <h3 className="h3">{t("investments.addInvestmentTitle")}</h3>}
         </DialogTitle>
       </DialogHeader>
       <InvestmentForm
@@ -54,7 +55,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
         <DrawerContent className="safe-top safe-bottom glassmorphic-card"> {/* Apply glassmorphism to drawer content */}
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center tracking-tight"> {/* Added flex and items-center */}
-              {investmentToEdit ? t("investments.editInvestment") : t("investments.addInvestmentTitle")}
+              <Plus className="w-5 h-5 mr-2" /> {investmentToEdit ? <h3 className="h3">{t("investments.editInvestment")}</h3> : <h3 className="h3">{t("investments.addInvestmentTitle")}</h3>}
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4"> {/* Wrap form in a div for padding within drawer */}

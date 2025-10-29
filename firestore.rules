@@ -1,61 +1,24 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Function to check if the user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
+    // Allow read, create, update, delete for authenticated users on their own user document
+    match /users/{userId} {
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Function to check if the requested document belongs to the authenticated user
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    // Allow read, create, update, delete for authenticated users on their own data in subcollections
+    match /{collectionName}/{documentId} {
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
     }
 
-    // Match all collections and apply common rules
-    match /{collection}/{document} {
-      allow read, write: if false; // Default to false, explicitly allow below
+    // Special rule for budgetSettings as it's a single document per user
+    match /budgetSettings/{documentId} {
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
     }
 
-    // User-specific data collections
-    match /accounts/{accountId} {
-      allow read, write: if isOwner(resource.data.ownerUid);
-    }
-
-    match /budgetSettings/{settingsId} {
-      allow read, write: if isOwner(resource.data.ownerUid);
-    }
-
-    match /categories/{categoryId} {
-      allow read, write: if isOwner(resource.data.ownerUid);
-    }
-
-    match /goals/{goalId} {
-      allow read, write: if isOwner(resource.data.ownerUid);
-    }
-
-    match /investments/{investmentId} {
-      allow read, write: if isOwner(resource.data.ownerUid);
-    }
-
-    match /portfolioSnapshots/{snapshotId} {
-      allow read, write: if isOwner(resource.data.ownerUid);
-    }
-
-    match /recurringTransactions/{recurringTransactionId} {
-      allow read, write: if isOwner(resource.data.ownerUid);
-    }
-
-    match /transactions/{transactionId} {
-      allow read, write: if isOwner(resource.data.ownerUid);
-    }
-
-    // Allow unauthenticated users to create a new user document (if you have one)
-    // and to access the login page (which doesn't hit Firestore directly for auth)
-    // If you have a 'users' collection where user profiles are stored, you might add:
-    // match /users/{userId} {
-    //   allow read, write: if isOwner(userId);
-    //   allow create: if isAuthenticated(); // Allow creation of own user profile
+    // Allow read for public data (if any, currently none explicitly defined)
+    // match /publicData/{documentId} {
+    //   allow read: if true;
     // }
   }
 }

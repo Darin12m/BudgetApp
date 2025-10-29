@@ -63,12 +63,12 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
       className="space-y-4 sm:space-y-6 pb-24 sm:pb-6"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{t("transactions.title")}</h2>
+        <h2 className="h2 font-bold tracking-tight">{t("transactions.title")}</h2>
         <motion.button
           whileHover={{ scale: 1.02, boxShadow: "var(--tw-shadow-glass-sm)" }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setIsAddEditTransactionModalOpen(true)}
-          className="flex items-center space-x-2 glassmorphic-card text-primary dark:text-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-transform px-4 py-2 rounded-lg min-h-[44px]"
+          className="flex items-center space-x-2 glassmorphic-card text-primary dark:text-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-transform px-4 py-2 rounded-xl min-h-[44px]"
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">{t("transactions.addTransaction")}</span>
@@ -119,8 +119,8 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
           ) : (
             <div className="p-6 text-center text-muted-foreground">
               <List className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-semibold text-foreground">{t("transactions.noTransactionsFound")}</p>
-              <p className="text-sm mt-2">{t("transactions.noTransactionsFoundDescription")}</p>
+              <p className="h3 font-semibold text-foreground">{t("transactions.noTransactionsFound")}</p>
+              <p className="p mt-2">{t("transactions.noTransactionsFoundDescription")}</p>
               <Button onClick={() => setIsAddEditTransactionModalOpen(true)} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
                 {t("transactions.addFirstTransaction")}
               </Button>

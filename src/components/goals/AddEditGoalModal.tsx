@@ -228,7 +228,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
         <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
-              {goalToEdit ? t("goals.editGoal") : t("goals.newGoalTitle")}
+              {goalToEdit ? <h3 className="h3">{t("goals.editGoal")}</h3> : <h3 className="h3">{t("goals.newGoalTitle")}</h3>}
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4">
@@ -244,7 +244,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       <DialogContent className="glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            {goalToEdit ? t("goals.editGoal") : t("goals.newGoalTitle")}
+            {goalToEdit ? <h3 className="h3">{t("goals.editGoal")}</h3> : <h3 className="h3">{t("goals.newGoalTitle")}</h3>}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

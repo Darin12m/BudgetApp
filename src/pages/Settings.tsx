@@ -27,7 +27,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth'; // Added Firebase Auth functions
-import { doc, updateDoc } from 'firebase/firestore'; // Added Firestore functions
+import { doc, updateDoc, setDoc } from 'firebase/firestore'; // Added Firestore functions
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header'; // Import Header
@@ -72,7 +72,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
 
   // Account Management States
   const [displayNameInput, setDisplayNameInput] = useState(user?.displayName || '');
-  const [newEmailInput, setNewEmailInput] = useState('');
+  const [newEmailInput, setNewEmailInput] = useState(user?.email || '');
   const [currentPasswordInput, setCurrentPasswordInput] = useState('');
   const [newPasswordInput, setNewPasswordInput] = useState('');
   const [confirmNewPasswordInput, setConfirmNewPasswordInput] = useState('');
@@ -128,7 +128,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
     setIsUpdatingName(true);
     try {
       await updateProfile(user, { displayName: displayNameInput.trim() });
-      await updateDoc(doc(db, "users", user.uid), { name: displayNameInput.trim() });
+      // Also update the 'users' collection document
+      await setDoc(doc(db, "users", user.uid), { name: displayNameInput.trim() }, { merge: true });
       toast.success(t("settings.nameUpdateSuccess"));
     } catch (error: any) {
       console.error("Error updating display name:", error);
@@ -157,7 +158,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
       const credential = EmailAuthProvider.credential(user.email, currentPasswordInput);
       await reauthenticateWithCredential(user, credential);
       await updateEmail(user, newEmailInput.trim());
-      await updateDoc(doc(db, "users", user.uid), { email: newEmailInput.trim() });
+      // Also update the 'users' collection document
+      await setDoc(doc(db, "users", user.uid), { email: newEmailInput.trim() }, { merge: true });
       toast.success(t("settings.emailUpdateSuccess"));
       setShowChangeEmailModal(false);
       setCurrentPasswordInput(''); // Clear password
@@ -304,7 +306,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
         // For simplicity, we're assuming the user is not trying to link an already-linked Google account to a different email user.
         // A more robust solution would involve handling 'auth/credential-already-in-use'
         await user.linkWithCredential(result.credential!);
-        await updateDoc(doc(db, "users", user.uid), {
+        await setDoc(doc(db, "users", user.uid), {
           name: result.user.displayName,
           email: result.user.email,
           avatar: result.user.photoURL,
@@ -459,7 +461,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             {/* Account Info */}
             <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
+                <CardTitle className="h3 flex items-center">
                   <UserCircle className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.accountInfo")}
                 </CardTitle>
               </CardHeader>
@@ -541,7 +543,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             {/* Connect Google Account */}
             <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
+                <CardTitle className="h3 flex items-center">
                   <LinkIcon className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.socialConnections")}
                 </CardTitle>
               </CardHeader>
@@ -563,7 +565,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             {/* Budget Settings */}
             <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
+                <CardTitle className="h3 flex items-center">
                   <DollarSign className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.budget")}
                 </CardTitle>
               </CardHeader>
@@ -653,7 +655,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             {/* Data Management */}
             <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
+                <CardTitle className="h3 flex items-center">
                   <Database className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.dataManagement")}
                 </CardTitle>
               </CardHeader>
@@ -699,7 +701,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             {/* Localization */}
             <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
+                <CardTitle className="h3 flex items-center">
                   <Globe className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.localization")}
                 </CardTitle>
               </CardHeader>
@@ -747,7 +749,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             {/* Integrations (Placeholder) */}
             <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
+                <CardTitle className="h3 flex items-center">
                   <Key className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.apiIntegrations")}
                 </CardTitle>
               </CardHeader>
@@ -769,7 +771,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             {/* Privacy */}
             <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
+                <CardTitle className="h3 flex items-center">
                   <Info className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.privacy")}
                 </CardTitle>
               </CardHeader>

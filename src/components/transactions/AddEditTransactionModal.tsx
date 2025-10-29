@@ -318,7 +318,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             onCheckedChange={setIsRecurring}
             disabled={!!isInstanceFromRecurringTemplate}
           />
-          <span className="ml-2 text-sm text-muted-foreground">
+          <span className="ml-2 p text-muted-foreground">
             {isRecurring ? t("transactions.enabled") : t("transactions.disabled")}
           </span>
           {isInstanceFromRecurringTemplate && (
@@ -420,7 +420,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
         <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
-              {isEditing ? t("transactions.editTransaction") : t("transactions.newTransaction")}
+              {isEditing ? <h3 className="h3">{t("transactions.editTransaction")}</h3> : <h3 className="h3">{t("transactions.newTransaction")}</h3>}
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4">
@@ -436,7 +436,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       <DialogContent className="sm:max-w-[425px] glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            {isEditing ? t("transactions.editTransaction") : t("transactions.newTransaction")}
+            {isEditing ? <h3 className="h3">{t("transactions.editTransaction")}</h3> : <h3 className="h3">{t("transactions.newTransaction")}</h3>}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

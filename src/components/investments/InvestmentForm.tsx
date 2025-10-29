@@ -270,7 +270,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           />
           {errors.symbolOrId && <p className="text-destructive text-xs mt-1">{errors.symbolOrId}</p>}
           {companyName && type === 'Stock' && !errors.symbolOrId && (
-            <p className="text-muted-foreground text-xs mt-1">{companyName}</p>
+            <p className="caption mt-1">{companyName}</p>
           )}
         </div>
       </div>

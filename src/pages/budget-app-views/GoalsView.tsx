@@ -46,14 +46,14 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
       className="space-y-4 sm:space-y-6 pb-24 sm:pb-6"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{t("goals.title")}</h2>
+        <h2 className="h2 font-bold tracking-tight">{t("goals.title")}</h2>
         <Button
           onClick={handleAddGoal}
           className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-xl transition-colors text-sm active:bg-primary/80"
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">{t("goals.newGoal")}</span>
-          <span className="sm:hidden">{t("common.new")}</span>
+          <span className="sm:hidden">{t("common.add")}</span>
         </Button>
       </div>
 
@@ -73,7 +73,7 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
                   <Target className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: goal.color }} />
                   <span className="text-sm font-medium text-muted-foreground font-mono">{Math.round(percentage)}%</span>
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 tracking-tight">{goal.name}</h3>
+                <h3 className="h4 font-semibold text-foreground mb-3 tracking-tight">{goal.name}</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">{t("goals.current")}</span>
@@ -92,7 +92,7 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
                       }}
                     />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="p text-muted-foreground mt-2">
                     {formatCurrency(goal.target - goal.current)} {t("goals.toGo")} • {t("goals.due")} {formatDate(goal.targetDate, 'MMM dd, yyyy')}
                   </p>
                 </div>
@@ -132,8 +132,8 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
         ) : (
           <div className="col-span-full glassmorphic-card p-6 text-center">
             <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-lg font-semibold text-foreground">{t("goals.noGoalsSetup")}</p>
-            <p className="text-sm mt-2 text-muted-foreground">{t("goals.createFirstGoalDescription")}</p>
+            <p className="h3 font-semibold text-foreground">{t("goals.noGoalsSetup")}</p>
+            <p className="p mt-2 text-muted-foreground">{t("goals.createFirstGoalDescription")}</p>
             <Button onClick={handleAddGoal} className="mt-4">
               {t("goals.createFirstGoal")}
             </Button>
@@ -146,7 +146,7 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
         whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
         transition={{ duration: 0.2, ease: "easeOut" }}
       >
-        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 tracking-tight">{t("goals.goalProgressOverTime")}</h3>
+        <h3 className="h4 font-semibold text-foreground mb-4 tracking-tight">{t("goals.goalProgressOverTime")}</h3>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={[
             { month: 'Apr', emergency: 5200, vacation: 800, laptop: 1100 },

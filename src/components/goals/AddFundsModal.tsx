@@ -94,7 +94,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
         </div>
       </div>
 
-      <div className="text-sm text-muted-foreground col-span-full text-center mt-2">
+      <div className="p text-muted-foreground col-span-full text-center mt-2">
         {t("goals.current")}: <span className="font-semibold text-foreground font-mono">{formatCurrency(currentAmountInUSD)}</span> / {t("goals.target")}: <span className="font-semibold text-foreground font-mono">{formatCurrency(targetAmountInUSD)}</span>
       </div>
 
@@ -115,7 +115,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
         <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
-              <Plus className="w-5 h-5 mr-2" /> {t("goals.addFundsTo", { goalName: goalName })}
+              <Plus className="w-5 h-5 mr-2" /> <h3 className="h3">{t("goals.addFundsTo", { goalName: goalName })}</h3>
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4">
@@ -131,7 +131,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
       <DialogContent className="glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            <Plus className="w-5 h-5 mr-2" /> {t("goals.addFundsTo", { goalName: goalName })}
+            <Plus className="w-5 h-5 mr-2" /> <h3 className="h3">{t("goals.addFundsTo", { goalName: goalName })}</h3>
           </DialogTitle>
         </DialogHeader>
         {FormContent}

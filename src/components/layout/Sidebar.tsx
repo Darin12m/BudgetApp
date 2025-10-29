@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
+import { motion } from 'framer-motion'; // Import motion
 
 interface SidebarProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
         <div className="flex flex-col h-full">
           <div className="p-5 sm:p-6 border-b border-border">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-lilac bg-clip-text text-transparent tracking-tight">
+              <h1 className="h2 font-bold bg-gradient-to-r from-primary to-lilac bg-clip-text text-transparent tracking-tight">
                 FinanceFlow
               </h1>
               <button onClick={onClose} className="p-2 hover:bg-muted/50 rounded-lg active:bg-muted sm:hidden">
@@ -51,7 +52,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
             </div>
 
             {/* User Profile Card - now triggers ProfilePopup */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-sm)" }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => { setShowProfilePopup(true); onClose(); }}
               className="flex items-center space-x-3 p-3 bg-muted/50 rounded-xl hover:bg-muted active:bg-muted/70 transition-colors duration-200 w-full text-left"
             >
@@ -62,7 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
                 <p className="font-semibold text-foreground text-sm">{userDisplayName}</p>
                 <p className="text-xs text-muted-foreground">{userEmail}</p>
               </div>
-            </button>
+            </motion.button>
           </div>
 
           <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
@@ -100,7 +103,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
 
       {/* Overlay for mobile when sidebar is open */}
       {isOpen && (
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
           className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-40 transition-opacity duration-300 sm:hidden"
           onClick={onClose}
           style={{ WebkitBackdropFilter: 'blur(4px)' }}

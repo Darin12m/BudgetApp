@@ -30,13 +30,13 @@ const OverallPortfolioSummaryCard: React.FC<OverallPortfolioSummaryCardProps> = 
     >
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-muted-foreground">{t("investments.totalPortfolioValue")}</p>
+          <p className="caption">{t("investments.totalPortfolioValue")}</p>
           <Wallet className="h-5 w-5 text-muted-foreground" />
         </div>
         <p className="text-4xl font-bold font-mono tracking-tight mb-1">{formatCurrency(currentValue)}</p>
         <div className="flex items-center space-x-2">
           {Icon && <Icon className={`w-4 h-4 ${gainLossColor}`} />}
-          <span className={`text-sm ${gainLossColor} font-mono`}>
+          <span className={`p ${gainLossColor} font-mono`}>
             {gainLossPercentage.toFixed(2)}% {t("dashboard.thisMonth")}
           </span>
         </div>
