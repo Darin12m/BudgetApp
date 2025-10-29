@@ -1,12 +1,11 @@
 "use client";
 
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
-import SmartDonutChart from '@/components/SmartDonutChart'; // Import SmartDonutChart
 import { motion } from 'framer-motion';
+import RadialAllocationChart from '@/components/charts/RadialAllocationChart'; // Import new chart
 
 interface AllocationData {
   name: string;
@@ -37,26 +36,16 @@ const InvestmentAllocationChart: React.FC<InvestmentAllocationChartProps> = ({ t
       </CardHeader>
       <CardContent className="h-[250px] flex items-center justify-center">
         {data.length > 0 ? (
-          <SmartDonutChart
+          <RadialAllocationChart
             chartId={`investment-allocation-${title.replace(/\s/g, '-')}`}
-            mainValue={totalValue}
+            data={data.map(item => ({ name: item.name, value: item.value, fill: item.color }))}
+            totalValue={totalValue}
             mainLabel={t("dashboard.totalAllocated")}
-            data={data}
             innerRadius={60}
             outerRadius={90}
+            barSize={10}
             formatValue={formatCurrency}
-            startAngle={90}
-            endAngle={-270}
-            paddingAngle={2}
-            strokeWidth={1}
-            strokeColor="transparent"
-            backgroundFill="hsl(var(--muted)/50%)"
-            mainTextColorClass="text-foreground"
-            mainFontWeightClass="font-bold"
-            tooltipFormatter={(value, name) => [formatCurrency(value), name]}
             gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
-            animateGradientBorder={true}
-            showLegend={true}
           />
         ) : (
           <p className="text-muted-foreground">{emptyMessage}</p>

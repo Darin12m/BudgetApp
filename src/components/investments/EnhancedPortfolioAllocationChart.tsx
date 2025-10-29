@@ -4,9 +4,9 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
-import SmartDonutChart from '@/components/SmartDonutChart'; // Import SmartDonutChart
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
+import RadialAllocationChart from '@/components/charts/RadialAllocationChart'; // Import new chart
 
 interface AllocationData {
   name: string;
@@ -95,25 +95,16 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
       <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
         {chartData.length > 0 ? (
           <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-            <SmartDonutChart
+            <RadialAllocationChart
               chartId="portfolio-allocation"
-              mainValue={totalPortfolioValue}
+              data={chartData.map(item => ({ name: item.name, value: item.value, fill: item.color }))}
+              totalValue={totalPortfolioValue}
               mainLabel={t("dashboard.totalAllocated")}
-              data={chartData.map(item => ({ ...item, color: item.color || 'hsl(var(--primary))' }))}
               innerRadius={60}
               outerRadius={90}
+              barSize={10}
               formatValue={formatCurrency}
-              startAngle={90}
-              endAngle={-270}
-              paddingAngle={2}
-              strokeWidth={1}
-              strokeColor="transparent"
-              backgroundFill="hsl(var(--muted)/50%)"
-              mainTextColorClass="text-foreground"
-              mainFontWeightClass="font-bold"
-              tooltipFormatter={(value, name) => [formatCurrency(value), name]}
               gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
-              animateGradientBorder={true}
             />
           </div>
         ) : (

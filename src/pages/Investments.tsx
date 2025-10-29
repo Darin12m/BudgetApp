@@ -14,17 +14,17 @@ import { calculateGainLoss } from '@/lib/utils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
 
-// New modular components
+// Reusable components
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import OverallPortfolioSummaryCard from '@/components/investments/OverallPortfolioSummaryCard';
-import InvestmentAllocationChart from '@/components/investments/InvestmentAllocationChart';
 import InvestmentHoldingsList from '@/components/investments/InvestmentHoldingsList';
 import BottomNavBar from '@/components/BottomNavBar';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import AddInvestmentModal from '@/components/AddInvestmentModal';
-import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
+import RadialAllocationChart from '@/components/charts/RadialAllocationChart'; // New radial chart
+import RechartsTooltip from '@/components/common/RechartsTooltip'; // Reusing existing tooltip
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -57,7 +57,7 @@ interface InvestmentsPageProps {
 
 const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfilePopup }) => {
   const { t } = useTranslation();
-  const { formatCurrency } = useCurrency(); // Removed selectedCurrency as it's implicitly used by formatCurrency
+  const { formatCurrency } = useCurrency();
   const { selectedRange } = useDateRange();
 
   const {
@@ -282,12 +282,55 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
               </TabsList>
 
               <TabsContent value="all" className="mt-6 space-y-6">
-                <EnhancedPortfolioAllocationChart
-                  title={t("investments.overallAllocation")}
-                  data={overallAllocationData}
-                  emptyMessage={t("investments.noInvestmentsFound")}
-                  totalPortfolioValue={overallPortfolioSummary.currentValue}
-                />
+                <Card className="glassmorphic-card">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.overallAllocation")}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
+                    {overallAllocationData.length > 0 ? (
+                      <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
+                        <RadialAllocationChart
+                          chartId="overall-portfolio-allocation"
+                          data={overallAllocationData.map(item => ({ name: item.name, value: item.value, fill: item.color }))}
+                          totalValue={overallPortfolioSummary.currentValue}
+                          mainLabel={t("dashboard.totalAllocated")}
+                          innerRadius={60}
+                          outerRadius={90}
+                          barSize={10}
+                          formatValue={formatCurrency}
+                          gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground w-full text-center">{t("investments.noInvestmentsFound")}</p>
+                    )}
+                    {overallAllocationData.length > 0 && (
+                      <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
+                        {overallAllocationData.map((entry, index) => (
+                          <motion.div
+                            key={`legend-item-${index}`}
+                            className={cn(
+                              "flex items-center justify-between p-2 rounded-md transition-colors"
+                            )}
+                            whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+                              <span className="text-sm text-foreground truncate">{entry.name}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm text-muted-foreground font-mono">
+                                {overallPortfolioSummary.currentValue > 0 ? ((entry.value / overallPortfolioSummary.currentValue) * 100).toFixed(0) : 0}%
+                              </span>
+                              <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
                 <InvestmentHoldingsList
                   title={t("investments.allHoldings")}
                   investments={getSortedInvestments(investments)}
@@ -310,11 +353,28 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                   currentValue={stockSummary.currentValue}
                   gainLossPercentage={stockSummary.totalGainLossPercentage}
                 />
-                <InvestmentAllocationChart
-                  title={t("investments.stockAllocation")}
-                  data={stockAllocationData}
-                  emptyMessage={t("investments.noStockData")}
-                />
+                <Card className="glassmorphic-card">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.stockAllocation")}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[250px] flex items-center justify-center">
+                    {stockAllocationData.length > 0 ? (
+                      <RadialAllocationChart
+                        chartId="stock-allocation"
+                        data={stockAllocationData.map(item => ({ name: item.name, value: item.value, fill: item.color }))}
+                        totalValue={stockSummary.currentValue}
+                        mainLabel={t("dashboard.totalAllocated")}
+                        innerRadius={60}
+                        outerRadius={90}
+                        barSize={10}
+                        formatValue={formatCurrency}
+                        gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
+                      />
+                    ) : (
+                      <p className="text-muted-foreground">{t("investments.noStockData")}</p>
+                    )}
+                  </CardContent>
+                </Card>
                 <InvestmentHoldingsList
                   title={t("investments.stockHoldings")}
                   investments={sortedStockInvestments}
@@ -337,11 +397,28 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                   currentValue={cryptoSummary.currentValue}
                   gainLossPercentage={cryptoSummary.totalGainLossPercentage}
                 />
-                <InvestmentAllocationChart
-                  title={t("investments.cryptoAllocation")}
-                  data={cryptoAllocationData}
-                  emptyMessage={t("investments.noCryptoData")}
-                />
+                <Card className="glassmorphic-card">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.cryptoAllocation")}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[250px] flex items-center justify-center">
+                    {cryptoAllocationData.length > 0 ? (
+                      <RadialAllocationChart
+                        chartId="crypto-allocation"
+                        data={cryptoAllocationData.map(item => ({ name: item.name, value: item.value, fill: item.color }))}
+                        totalValue={cryptoSummary.currentValue}
+                        mainLabel={t("dashboard.totalAllocated")}
+                        innerRadius={60}
+                        outerRadius={90}
+                        barSize={10}
+                        formatValue={formatCurrency}
+                        gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
+                      />
+                    ) : (
+                      <p className="text-muted-foreground">{t("investments.noCryptoData")}</p>
+                    )}
+                  </CardContent>
+                </Card>
                 <InvestmentHoldingsList
                   title={t("investments.cryptoHoldings")}
                   investments={sortedCryptoInvestments}
@@ -373,6 +450,12 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                 {portfolioGrowthChartData.length > 1 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={portfolioGrowthChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="portfolioGrowthGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--emerald))" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="hsl(var(--emerald))" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                       <XAxis
                         dataKey="date"
@@ -385,12 +468,22 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                         style={{ fontSize: '10px' }}
                         tickFormatter={(value) => formatCurrency(Number(value))}
                       />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
-                        formatter={(value) => formatCurrency(Number(value))}
+                      <RechartsTooltip
+                        formatValue={formatCurrency}
                         labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                       />
-                      <Line type="monotone" dataKey="value" stroke="hsl(var(--emerald))" strokeWidth={2} name={t("investments.portfolioValue")} dot={false} />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="url(#portfolioGrowthGradient)"
+                        fill="url(#portfolioGrowthGradient)"
+                        strokeWidth={2}
+                        name={t("investments.portfolioValue")}
+                        dot={false}
+                        isAnimationActive={true}
+                        animationDuration={1500}
+                        animationEasing="ease-out"
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (

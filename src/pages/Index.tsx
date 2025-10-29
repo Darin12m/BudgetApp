@@ -25,7 +25,6 @@ import CategoryOverviewCard from '@/components/dashboard/CategoryOverviewCard';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import SmartDonutChart from '@/components/SmartDonutChart'; // Ensure SmartDonutChart is imported
 import { cn } from '@/lib/utils'; // Import cn for conditional classNames
 
 interface IndexPageProps {
@@ -353,7 +352,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
 
               {/* Quick Action Buttons */}
               <div className="grid grid-cols-2 gap-4">
-                <motion.button
+                <Button
                   onClick={() => setIsQuickAddModalOpen(true)}
                   className={cn(
                     "flex flex-col h-auto py-4 items-center justify-center text-center rounded-xl shadow-sm transition-transform",
@@ -362,8 +361,8 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
                 >
                   <Plus className="w-5 h-5 mb-1" />
                   <span className="text-xs font-medium">{t("dashboard.addExpense")}</span>
-                </motion.button>
-                <motion.button
+                </Button>
+                <Button
                   onClick={() => setIsAddInvestmentModalOpen(true)}
                   className={cn(
                     "flex flex-col h-auto py-4 items-center justify-center text-center rounded-xl shadow-sm transition-transform",
@@ -372,7 +371,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
                 >
                   <DollarSign className="w-5 h-5 mb-1" />
                   <span className="text-xs font-medium">{t("dashboard.addInvestment")}</span>
-                </motion.button>
+                </Button>
               </div>
 
               {/* Top 3 Performing Assets */}

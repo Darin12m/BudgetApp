@@ -7,9 +7,9 @@ import { Link } from 'react-router-dom';
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { CustomProgress } from '@/components/common/CustomProgress';
-import SmartDonutChart from '@/components/SmartDonutChart'; // Import SmartDonutChart
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
+import CircularProgressChart from '@/components/charts/CircularProgressChart'; // Import new chart
 
 interface Category {
   id: string;
@@ -38,16 +38,6 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
   const spentPercentage = totalBudgetedMonthly > 0 ? (totalSpentMonthly / totalBudgetedMonthly) * 100 : 0;
   const isOverBudget = remainingBudget < 0;
 
-  const donutData = useMemo(() => {
-    const clampedSpentPercentage = Math.min(spentPercentage, 100);
-    const remainingPercentage = 100 - clampedSpentPercentage;
-
-    return [
-      { name: t("dashboard.spent"), value: clampedSpentPercentage, color: 'hsl(var(--primary))' },
-      { name: t("dashboard.remaining"), value: remainingPercentage, color: 'hsl(var(--muted)/50%)' },
-    ];
-  }, [spentPercentage, t]);
-
   return (
     <motion.div
       className="glassmorphic-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300"
@@ -67,24 +57,16 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
           <div className="w-full sm:w-1/2 h-[150px] flex items-center justify-center mb-4 sm:mb-0 relative">
             {totalBudgetedMonthly > 0 ? (
-              <SmartDonutChart
-                chartId="category-overview"
-                mainValue={spentPercentage}
-                mainLabel={t("dashboard.spent")}
-                data={donutData}
-                innerRadius={40}
-                outerRadius={60}
-                formatValue={formatCurrency}
+              <CircularProgressChart
+                value={Math.min(spentPercentage, 100)}
+                label={t("dashboard.spent")}
+                size={120}
+                strokeWidth={10}
+                progressColor={isOverBudget ? 'hsl(var(--destructive))' : 'hsl(var(--primary))'}
                 isOverBudget={isOverBudget}
-                startAngle={90}
-                endAngle={-270}
-                strokeWidth={2}
-                strokeColor="hsl(var(--primary))"
-                backgroundFill="hsl(var(--muted)/50%)"
-                mainTextColorClass={cn("text-foreground", isOverBudget ? "text-destructive" : "text-emerald")}
-                mainFontWeightClass="font-bold"
-                tooltipFormatter={(value, name) => [`${Math.round(value)}%`, name]}
-                gradientColors={['hsl(var(--primary))', 'hsl(var(--lilac))', 'hsl(var(--emerald))']}
+                textColorClass={cn("text-foreground", isOverBudget ? "text-destructive" : "text-emerald")}
+                fontWeightClass="font-bold"
+                unit="%"
               />
             ) : (
               <p className="text-center text-muted-foreground text-sm">{t("dashboard.noBudgetYet")}</p>

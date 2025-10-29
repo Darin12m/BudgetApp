@@ -7,9 +7,9 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { CustomProgress } from '@/components/common/CustomProgress';
-import SmartDonutChart from '@/components/SmartDonutChart'; // Import the new SmartDonutChart
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
+import CircularProgressChart from '@/components/charts/CircularProgressChart'; // Import new chart
 
 interface RemainingBudgetCardProps {
   totalBudgeted: number;
@@ -92,16 +92,6 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
     { day: 7, value: 400 },
   ];
 
-  const donutData = useMemo(() => {
-    const clampedSpentPercentage = Math.min(spentPercentage, 100);
-    const remainingPercentage = 100 - clampedSpentPercentage;
-
-    return [
-      { name: t("dashboard.spent"), value: clampedSpentPercentage, color: 'hsl(var(--primary))' },
-      { name: t("dashboard.remaining"), value: remainingPercentage, color: 'hsl(var(--muted)/50%)' },
-    ];
-  }, [spentPercentage, t]);
-
   return (
     <motion.div
       className="glassmorphic-card p-6 animate-in fade-in slide-in-from-top-2 duration-300"
@@ -124,26 +114,17 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
           </p>
         </div>
 
-        <div className="w-40 h-40 relative flex-shrink-0">
-          <SmartDonutChart
-            chartId="budget-summary"
-            mainValue={spentPercentage}
-            mainLabel={t("dashboard.used")}
-            data={donutData}
-            innerRadius={65}
-            outerRadius={75}
-            formatValue={formatCurrency}
+        <div className="w-40 h-40 relative flex-shrink-0 flex items-center justify-center">
+          <CircularProgressChart
+            value={Math.min(spentPercentage, 100)}
+            label={t("dashboard.used")}
+            size={120}
+            strokeWidth={10}
+            progressColor={isOverBudget ? 'hsl(var(--destructive))' : 'hsl(var(--primary))'}
             isOverBudget={isOverBudget}
-            startAngle={90}
-            endAngle={-270}
-            strokeWidth={2}
-            strokeColor="hsl(var(--primary))"
-            backgroundFill="hsl(var(--muted)/50%)"
-            mainTextColorClass={cn("text-foreground", isOverBudget ? "text-destructive" : isCloseToLimit ? "text-amber-500" : "text-emerald")}
-            mainFontWeightClass="font-bold"
-            tooltipFormatter={(value, name) => [`${Math.round(value)}%`, name]}
-            gradientColors={['hsl(var(--primary))', 'hsl(var(--lilac))', 'hsl(var(--emerald))']}
-            animateGradientBorder={true}
+            textColorClass={cn("text-foreground", isOverBudget ? "text-destructive" : isCloseToLimit ? "text-amber-500" : "text-emerald")}
+            fontWeightClass="font-bold"
+            unit="%"
           />
         </div>
       </div>
