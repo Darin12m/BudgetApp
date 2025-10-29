@@ -67,7 +67,7 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
 
 
 const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChartProps> = ({ title, data, emptyMessage, totalPortfolioValue }) => {
-  const { formatCurrency, formatCurrencySymbolOnly } = useCurrency(); // Import formatCurrencySymbolOnly
+  const { formatCurrency } = useCurrency(); // Only need formatCurrency for tooltips/legend
 
   const chartData = useMemo(() => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
@@ -88,12 +88,12 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
           <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
             <DonutWithCenterText
               chartId="portfolio-allocation"
-              mainValue={formatCurrencySymbolOnly(totalPortfolioValue)} // Use the new function here
+              mainValue={totalPortfolioValue.toFixed(2)} // Display only the number, formatted to 2 decimal places
               mainLabel="Total Allocated"
               data={chartData.map(item => ({ ...item, color: item.color || 'hsl(var(--primary))' }))} // Ensure color is always set
               innerRadius={60}
               outerRadius={90}
-              formatValue={formatCurrency}
+              formatValue={formatCurrency} // Keep currency formatting for tooltips
               startAngle={90}
               endAngle={-270}
               paddingAngle={2}
