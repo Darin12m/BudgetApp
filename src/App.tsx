@@ -9,14 +9,15 @@ import BudgetApp from "./pages/BudgetApp";
 import InvestmentsPage from "./pages/Investments";
 import SettingsPage from "./pages/Settings";
 import LoginPage from "./pages/Login";
-import { useEffect } from "react";
+import { useEffect, useState } from "react"; // Import useState
 import { useTheme } from "./hooks/use-theme";
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import SyncStatusIndicator from "./components/common/SyncStatusIndicator";
-import { AuthProvider, useAuth } from "./context/AuthContext"; // Import AuthProvider and useAuth
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CurrencyProvider } from "./context/CurrencyContext";
 import { DateRangeProvider } from "./context/DateRangeContext";
+import ProfilePopup from "./components/ProfilePopup"; // Import ProfilePopup
 
 const queryClient = new QueryClient();
 
@@ -26,7 +27,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, authLoading } = useAuth(); // Use useAuth hook
+  const { isAuthenticated, authLoading } = useAuth();
 
   if (authLoading) {
     return (
@@ -44,14 +45,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 };
 
 const AppContent = () => {
-  const { userUid, isAuthenticated, authLoading } = useAuth(); // Use useAuth hook
+  const { userUid, authLoading } = useAuth();
   const { toggleTheme } = useTheme();
+  const [showProfilePopup, setShowProfilePopup] = useState(false); // State for ProfilePopup
 
   // Add global keyboard shortcut for theme toggle (Ctrl + T)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === 't') {
-        event.preventDefault(); // Prevent default browser behavior (e.g., opening new tab)
+        event.preventDefault();
         toggleTheme();
       }
     };
@@ -86,7 +88,7 @@ const AppContent = () => {
                     path="/"
                     element={
                       <ProtectedRoute>
-                        <Index userUid={userUid} />
+                        <Index userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
                       </ProtectedRoute>
                     }
                   />
@@ -94,7 +96,7 @@ const AppContent = () => {
                     path="/budget-app"
                     element={
                       <ProtectedRoute>
-                        <BudgetApp userUid={userUid} />
+                        <BudgetApp userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
                       </ProtectedRoute>
                     }
                   />
@@ -102,7 +104,7 @@ const AppContent = () => {
                     path="/budget-app/:view"
                     element={
                       <ProtectedRoute>
-                        <BudgetApp userUid={userUid} />
+                        <BudgetApp userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
                       </ProtectedRoute>
                     }
                   />
@@ -110,7 +112,7 @@ const AppContent = () => {
                     path="/investments"
                     element={
                       <ProtectedRoute>
-                        <InvestmentsPage userUid={userUid} />
+                        <InvestmentsPage userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
                       </ProtectedRoute>
                     }
                   />
@@ -118,13 +120,14 @@ const AppContent = () => {
                     path="/settings"
                     element={
                       <ProtectedRoute>
-                        <SettingsPage userUid={userUid} />
+                        <SettingsPage userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
                       </ProtectedRoute>
                     }
                   />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 <SyncStatusIndicator />
+                <ProfilePopup isOpen={showProfilePopup} onClose={() => setShowProfilePopup(false)} />
               </DateRangeProvider>
             </CurrencyProvider>
           </BrowserRouter>

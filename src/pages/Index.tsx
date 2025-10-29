@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Plus, TrendingUp, TrendingDown, DollarSign, Wallet, List, LucideIcon, Menu } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, DollarSign, Wallet, List, LucideIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -17,6 +17,7 @@ import BottomNavBar from '@/components/BottomNavBar';
 import MicroInvestingSuggestionCard from '@/components/MicroInvestingSuggestionCard';
 import SmartFinancialCoachCard from '@/components/SmartFinancialCoachCard';
 import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/layout/Header'; // Import Header
 import { format } from 'date-fns';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
@@ -24,16 +25,17 @@ import { DateRangePicker } from '@/components/common/DateRangePicker';
 import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
 import CategoryOverviewCard from '@/components/dashboard/CategoryOverviewCard';
 import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useTranslation } from 'react-i18next';
 
 interface IndexPageProps {
   userUid: string | null;
+  setShowProfilePopup: (show: boolean) => void; // New prop
 }
 
 const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))', '#f59e0b', '#ef4444', '#06b6d4'];
 
-const Index: React.FC<IndexPageProps> = ({ userUid }) => {
-  const { t } = useTranslation(); // Initialize useTranslation hook
+const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
+  const { t } = useTranslation();
   const { formatCurrency, formatUSD, selectedCurrency, convertInputToUSD } = useCurrency();
   const { selectedRange } = useDateRange();
 
@@ -98,7 +100,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
       totalGainLoss += (current - invested);
     });
 
-    const totalGainLossPercentage = totalInvested === 0 ? 0 : (totalGainLoss / totalInvested) * 100;
+    const totalGainLossPercentage = totalInvested === 0 ? 0 : (totalGainLoss / invested) * 100;
 
     return {
       totalInvested,
@@ -229,32 +231,15 @@ const Index: React.FC<IndexPageProps> = ({ userUid }) => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} onViewChange={handleViewChange} userUid={userUid} />
+      <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} onViewChange={handleViewChange} userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
 
       <div className={`flex flex-col flex-1 min-w-0 ${sidebarOpen ? 'sm:ml-72' : 'sm:ml-0'} transition-all duration-300 ease-in-out`}>
-        <header className="bg-card backdrop-blur-lg border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
-          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
-            <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-              <button
-                onClick={handleSidebarToggle}
-                className="p-2 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted flex-shrink-0"
-              >
-                <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
-              </button>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-lg sm:text-xl font-semibold text-foreground capitalize truncate">{t("navigation.dashboard")}</h2>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t("dashboard.welcomeMessage")}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              <DateRangePicker />
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                JD
-              </div>
-            </div>
-          </div>
-        </header>
+        <Header
+          title={t("navigation.dashboard")}
+          subtitle={t("dashboard.welcomeMessage")}
+          onSidebarToggle={handleSidebarToggle}
+          setShowProfilePopup={setShowProfilePopup}
+        />
 
         <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full">
           {isLoading && (

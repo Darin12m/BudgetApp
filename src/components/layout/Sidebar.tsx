@@ -2,23 +2,24 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, DollarSign, List, Wallet, Settings, Bell, X, Target } from 'lucide-react';
+import { Home, DollarSign, List, Wallet, Settings, Bell, X, Target, UserCircle } from 'lucide-react'; // Added UserCircle
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/context/AuthContext'; // Import useAuth
+import { useAuth } from '@/context/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onViewChange: (view: string) => void;
   userUid: string | null;
+  setShowProfilePopup: (show: boolean) => void; // New prop
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setShowProfilePopup }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { user } = useAuth(); // Get user from AuthContext
+  const { user } = useAuth();
 
   const navItems = [
     { id: 'dashboard', label: t("navigation.dashboard"), icon: Home, path: '/' },
@@ -49,11 +50,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
               </button>
             </div>
 
-            {/* User Profile Link */}
-            <Link
-              to="/settings"
-              onClick={() => { onViewChange('settings'); onClose(); }}
-              className="flex items-center space-x-3 p-3 bg-muted/50 rounded-xl hover:bg-muted active:bg-muted/70 transition-colors duration-200"
+            {/* User Profile Card - now triggers ProfilePopup */}
+            <button
+              onClick={() => { setShowProfilePopup(true); onClose(); }}
+              className="flex items-center space-x-3 p-3 bg-muted/50 rounded-xl hover:bg-muted active:bg-muted/70 transition-colors duration-200 w-full text-left"
             >
               <div className="w-10 h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
                 {userInitials}
@@ -62,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
                 <p className="font-semibold text-foreground text-sm">{userDisplayName}</p>
                 <p className="text-xs text-muted-foreground">{userEmail}</p>
               </div>
-            </Link>
+            </button>
           </div>
 
           <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
@@ -91,40 +91,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange }) => {
             })}
           </nav>
 
-          {/* Bottom Navigation Icons */}
+          {/* Removed Bottom Navigation Icons (Settings, Notifications) - now in ProfilePopup */}
           <div className="mt-auto p-4 border-t border-border flex justify-center space-x-4">
-            {/* Settings Icon */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  to="/settings"
-                  onClick={() => { onViewChange('settings'); onClose(); }}
-                  className="group relative flex items-center justify-center w-10 h-10 rounded-full text-muted-foreground hover:text-primary transition-all duration-200"
-                >
-                  <div className="absolute inset-0 rounded-full bg-transparent group-hover:bg-primary/10 transition-all duration-200"></div>
-                  <Settings className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-200" />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent className="bg-tooltip-bg border-tooltip-border-color text-tooltip-text-color">
-                <p>{t("navigation.settings")}</p>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Notifications Icon */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => { toast.info(t("common.comingSoon")); onClose(); }}
-                  className="group relative flex items-center justify-center w-10 h-10 rounded-full text-muted-foreground hover:text-primary transition-all duration-200"
-                >
-                  <div className="absolute inset-0 rounded-full bg-transparent group-hover:bg-primary/10 transition-all duration-200"></div>
-                  <Bell className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-200" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-tooltip-bg border-tooltip-border-color text-tooltip-text-color">
-                <p>{t("common.notifications")}</p>
-              </TooltipContent>
-            </Tooltip>
+            {/* Placeholder for future bottom items if needed, currently empty as per refactor */}
           </div>
         </div>
       </aside>

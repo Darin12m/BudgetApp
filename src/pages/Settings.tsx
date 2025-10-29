@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Sun, Moon, DollarSign, Key, User, LogOut, ChevronLeft, ChevronRight, Palette, Zap, BellRing, Menu, Calendar, Landmark, FileText, Trash2 } from 'lucide-react';
+import {
+  Sun, Moon, DollarSign, Key, User, LogOut, ChevronRight, Palette, Zap, BellRing, Menu, Calendar, Landmark, FileText, Trash2,
+  Lock, Mail, UserCircle, ShieldCheck, Clock, Database, Upload, Download, Globe, Info, Gavel, Link as LinkIcon
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -11,17 +14,18 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from 'sonner';
 import BottomNavBar from '@/components/BottomNavBar';
 import { useFinanceData } from '@/hooks/use-finance-data';
-import { auth, db } from '@/lib/firebase'; // Import db for data deletion
+import { auth, db } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/layout/Header'; // Import Header
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCurrency, CURRENCIES } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
 import { useTheme } from '@/hooks/use-theme';
-import { useTranslation } from 'react-i18next'; // Import useTranslation
-import i18n from '@/i18n'; // Import i18n instance
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,25 +37,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore'; // Firestore imports for deletion
+import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { exportAllUserData } from '@/lib/data-export'; // Import the new export utility
 
 interface SettingsPageProps {
   userUid: string | null;
+  setShowProfilePopup: (show: boolean) => void; // New prop
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
-  const { t } = useTranslation(); // Initialize useTranslation hook
-  const { isDarkMode, toggleTheme } = useTheme();
+const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopup }) => {
+  const { t } = useTranslation();
   const [monthlyBudgetInput, setMonthlyBudgetInput] = useState<string>('');
   const [microInvestingEnabled, setMicroInvestingEnabled] = useState<boolean>(true);
   const [microInvestingPercentage, setMicroInvestingPercentage] = useState<string>('30');
   const [priceAlertThresholdInput, setPriceAlertThresholdInput] = useState<string>('5');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  const [isDeleteDataConfirmOpen, setIsDeleteDataConfirmOpen] = useState(false); // State for delete data confirmation
+  const [isDeleteDataConfirmOpen, setIsDeleteDataConfirmOpen] = useState(false);
 
   const { selectedRange } = useDateRange();
   const { budgetSettings, updateDocument, loading: financeLoading, transactions, categories, goals } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
-  const { selectedCurrency, setCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
+  const { selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
 
   const navigate = useNavigate();
 
@@ -128,83 +133,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      toast.success(t("common.success"));
-      window.location.href = '/';
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast.error(t("common.error"));
-    }
-  };
-
-  const handleSidebarToggle = useCallback(() => {
-    setSidebarOpen(prev => !prev);
-  }, []);
-
-  const handleCloseSidebar = useCallback(() => {
-    setSidebarOpen(false);
-  }, []);
-
-  const handleViewChange = useCallback((view: string) => {
-    if (view === 'dashboard') navigate('/');
-    else if (view === 'investments') navigate('/investments');
-    else if (view === 'settings') navigate('/settings');
-    else navigate(`/budget-app?view=${view}`);
-  }, [navigate]);
-
-  const handleLanguageChange = (lng: string) => {
-    i18n.changeLanguage(lng);
-    localStorage.setItem('i18nextLng', lng); // Persist language choice
-    toast.success(t("common.success"));
-  };
-
-  const exportDataAsCsv = useCallback(() => {
-    if (!userUid) {
-      toast.error(t("common.error"));
-      return;
-    }
-
-    const date = format(new Date(), 'yyyy-MM-dd');
-    const filename = `FinanceFlow_Export_${date}.csv`;
-
-    let csvContent = '';
-
-    // Helper to convert array of objects to CSV string
-    const arrayToCsv = (arr: any[], title: string) => {
-      if (arr.length === 0) return '';
-      const headers = Object.keys(arr[0]);
-      const headerRow = headers.join(',');
-      const dataRows = arr.map(row => headers.map(header => {
-        const value = row[header];
-        // Handle potential commas in string values by wrapping in quotes
-        return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
-      }).join(','));
-      return `${title}\n${headerRow}\n${dataRows.join('\n')}\n\n`;
-    };
-
-    csvContent += arrayToCsv(transactions, 'Transactions');
-    csvContent += arrayToCsv(categories, 'Categories');
-    csvContent += arrayToCsv(goals, 'Goals');
-    // Add other collections as needed (e.g., investments, recurringTransactions)
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success(t("common.success"));
-    } else {
-      toast.error(t("common.error"));
-    }
-  }, [userUid, transactions, categories, goals, t]);
-
   const handleDeleteAllUserData = useCallback(async () => {
     if (!userUid) {
       toast.error(t("common.error"));
@@ -223,104 +151,93 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
         const deletePromises = querySnapshot.docs.map(d => deleteDoc(doc(db, collectionName, d.id)));
         await Promise.all(deletePromises);
       }
-      await signOut(auth); // Sign out after deleting data
-      toast.success(t("common.success"));
+      await signOut(auth);
+      toast.success(t("settings.deleteDataSuccess"));
       navigate('/login');
     } catch (error) {
       console.error("Error deleting all user data:", error);
-      toast.error(t("common.error"));
+      toast.error(t("settings.deleteDataError"));
     } finally {
       setIsDeleteDataConfirmOpen(false);
     }
   }, [userUid, navigate, t]);
 
+  const handleSidebarToggle = useCallback(() => {
+    setSidebarOpen(prev => !prev);
+  }, []);
+
+  const handleCloseSidebar = useCallback(() => {
+    setSidebarOpen(false);
+  }, []);
+
+  const handleViewChange = useCallback((view: string) => {
+    if (view === 'dashboard') navigate('/');
+    else if (view === 'investments') navigate('/investments');
+    else if (view === 'settings') navigate('/settings');
+    else navigate(`/budget-app?view=${view}`);
+  }, [navigate]);
+
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} onViewChange={handleViewChange} userUid={userUid} />
+      <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} onViewChange={handleViewChange} userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
 
       <div className={`flex flex-col flex-1 min-w-0 ${sidebarOpen ? 'sm:ml-72' : 'sm:ml-0'} transition-all duration-300 ease-in-out`}>
-        <header className="bg-card backdrop-blur-lg border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
-          <div className="flex items-center px-4 sm:px-6 py-3 sm:py-4">
-            <button
-              onClick={handleSidebarToggle}
-              className="p-2 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted flex-shrink-0 mr-2 sm:mr-4"
-            >
-              <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
-            </button>
-            <h1 className="text-lg sm:text-xl font-bold">{t("settings.title")}</h1>
-          </div>
-        </header>
+        <Header
+          title={t("settings.title")}
+          onSidebarToggle={handleSidebarToggle}
+          setShowProfilePopup={setShowProfilePopup}
+        />
 
         <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full">
           <div className="space-y-6 sm:space-y-8">
-            {/* Theme Settings */}
+
+            {/* Account Info */}
             <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <Palette className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.theme")}
+                  <UserCircle className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.accountInfo")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="dark-mode-toggle" className="flex items-center text-base">
-                    {isDarkMode ? <Moon className="w-4 h-4 mr-2" /> : <Sun className="w-4 h-4 mr-2" />}
-                    {t("settings.darkMode")}
+              <CardContent className="space-y-2">
+                <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  {t("settings.changeName")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  {t("settings.changeEmail")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  {t("settings.changePassword")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <div className="flex items-center justify-between px-4 py-6">
+                  <Label htmlFor="2fa-toggle" className="flex items-center text-base cursor-pointer">
+                    <ShieldCheck className="w-5 h-5 mr-2 text-muted-foreground" />
+                    {t("settings.enableTwoFactorAuth")}
                   </Label>
-                  <Switch
-                    id="dark-mode-toggle"
-                    checked={isDarkMode}
-                    onCheckedChange={toggleTheme}
-                  />
+                  <Switch id="2fa-toggle" checked={false} onCheckedChange={() => toast.info(t("common.comingSoon"))} />
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Language Settings */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
-                  <Calendar className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.language")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="app-language" className="text-base">{t("settings.appLanguage")}</Label>
-                  <Select value={i18n.language} onValueChange={handleLanguageChange}>
-                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
-                      <SelectValue placeholder={t("settings.selectLanguage")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English 🇬🇧</SelectItem>
-                      <SelectItem value="mk">Македонски 🇲🇰</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Currency Settings */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
-                  <Landmark className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.currency")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="main-currency" className="text-base">{t("settings.mainCurrency")}</Label>
-                  <Select value={selectedCurrency.code} onValueChange={setCurrency}>
-                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
-                      <SelectValue placeholder={t("settings.selectCurrency")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CURRENCIES.map((currency) => (
-                        <SelectItem key={currency.code} value={currency.code}>
-                          {currency.code} ({currency.symbol})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Separator />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 text-destructive hover:bg-destructive/10">
+                      <Trash2 className="w-5 h-5 mr-2" /> {t("settings.deleteAccount")}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("settings.deleteAccountConfirmationTitle")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("settings.deleteAccountConfirmationDescription")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">{t("common.cancel")}</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => toast.info(t("common.comingSoon"))} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("common.delete")}</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardContent>
             </Card>
 
@@ -347,27 +264,32 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                     {t("settings.saveMonthlyBudget")}
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Micro-Investing Settings */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
-                  <Zap className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.microInvesting")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                <Separator />
+                <div className="grid gap-2">
+                  <Label htmlFor="default-budget-period" className="text-base">{t("settings.defaultBudgetPeriod")}</Label>
+                  <Select value="monthly" onValueChange={() => toast.info(t("common.comingSoon"))}>
+                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
+                      <SelectValue placeholder={t("settings.selectPeriod")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monthly">{t("settings.monthly")}</SelectItem>
+                      <SelectItem value="weekly">{t("settings.weekly")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator />
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="micro-investing-toggle" className="flex items-center text-base">
-                    {t("settings.enableSuggestions")}
+                  <Label htmlFor="rollover-toggle" className="flex items-center text-base cursor-pointer">
+                    <ArrowRight className="w-5 h-5 mr-2 text-muted-foreground" />
+                    {t("settings.autoRolloverBudgets")}
                   </Label>
                   <Switch
-                    id="micro-investing-toggle"
-                    checked={microInvestingEnabled}
-                    onCheckedChange={setMicroInvestingEnabled}
+                    id="rollover-toggle"
+                    checked={budgetSettings.rolloverEnabled}
+                    onCheckedChange={(checked) => updateDocument('budgetSettings', budgetSettings.id, { rolloverEnabled: checked })}
                   />
                 </div>
+                <Separator />
                 <div className="grid gap-2">
                   <Label htmlFor="micro-investing-percentage" className="text-base">
                     {t("settings.suggestionPercentage")}
@@ -387,17 +309,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                     {t("settings.saveMicroInvestingSettings")}
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Price Alerts Settings */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
-                  <BellRing className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.priceAlerts")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                <Separator />
                 <div className="grid gap-2">
                   <Label htmlFor="price-alert-threshold" className="text-base">
                     {t("settings.alertThreshold")}
@@ -423,22 +335,121 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
             <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <FileText className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.dataManagement")}
+                  <Database className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.dataManagement")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button onClick={exportDataAsCsv} variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
-                  {t("settings.exportData")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  <Upload className="w-5 h-5 mr-2" /> {t("settings.importCSV")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </Button>
                 <Separator />
-                <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
-                  {t("settings.readPrivacyNotice")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  <Download className="w-5 h-5 mr-2" /> {t("settings.exportCSVAdvanced")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  <Database className="w-5 h-5 mr-2" /> {t("settings.backupData")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  <Download className="w-5 h-5 mr-2" /> {t("settings.restoreFromBackup")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Localization */}
+            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center">
+                  <Globe className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.localization")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="default-currency-settings" className="text-base">{t("settings.defaultCurrency")}</Label>
+                  <Select value={selectedCurrency.code} onValueChange={(value) => { setCurrency(value); toast.info(t("common.comingSoon")); }}>
+                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
+                      <SelectValue placeholder={t("settings.selectCurrency")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map((currency) => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.code} ({currency.symbol})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator />
+                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  <Clock className="w-5 h-5 mr-2" /> {t("settings.regionTimezone")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <div className="grid gap-2">
+                  <Label htmlFor="app-language-settings" className="text-base">{t("settings.appLanguage")}</Label>
+                  <Select value={i18n.language} onValueChange={(value) => { i18n.changeLanguage(value); localStorage.setItem('i18nextLng', value); toast.info(t("common.comingSoon")); }}>
+                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
+                      <SelectValue placeholder={t("settings.selectLanguage")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English 🇬🇧</SelectItem>
+                      <SelectItem value="mk">Македонски 🇲🇰</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Integrations (Placeholder) */}
+            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center">
+                  <Key className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.apiIntegrations")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-muted-foreground text-sm mb-4">
+                  {t("settings.apiIntegrationsDescription")}
+                </p>
+                {/* Connected Accounts - Hidden for now */}
+                {/* <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  {t("settings.connectedAccounts")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator /> */}
+                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  <LinkIcon className="w-5 h-5 mr-2" /> {t("settings.bankConnections")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  <img src="/icons/google.svg" alt="Google" className="w-5 h-5 mr-2" /> {t("settings.googleSignIn")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Privacy */}
+            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center">
+                  <Info className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.privacy")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  {t("settings.gdprNotice")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  {t("settings.privacyPolicy")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Button>
+                <Separator />
+                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                  {t("settings.termsOfService")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </Button>
                 <Separator />
                 <AlertDialog open={isDeleteDataConfirmOpen} onOpenChange={setIsDeleteDataConfirmOpen}>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 text-destructive hover:bg-destructive/10">
-                      <Trash2 className="w-5 h-5 mr-2" /> {t("settings.deleteMyData")}
+                      <Trash2 className="w-5 h-5 mr-2" /> {t("settings.deleteAllPersonalData")}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50">
@@ -454,45 +465,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid }) => {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-              </CardContent>
-            </Card>
-
-            {/* Account Settings */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
-                  <User className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.account")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
-                  {t("settings.manageProfile")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
-                <Separator />
-                <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
-                  {t("settings.connectedAccounts")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
-                <Separator />
-                <Button onClick={handleSignOut} variant="ghost" className="w-full justify-between text-base px-4 py-6 text-destructive hover:bg-destructive/10">
-                  <LogOut className="w-5 h-5 mr-2" /> {t("settings.signOut")}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* API Integrations (Placeholder) */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
-                  <Key className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.apiIntegrations")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  {t("settings.apiIntegrationsDescription")}
-                </p>
-                <Button variant="outline" className="mt-4 w-full bg-muted/50 hover:bg-muted">
-                  {t("settings.viewIntegrations")}
-                </Button>
               </CardContent>
             </Card>
           </div>

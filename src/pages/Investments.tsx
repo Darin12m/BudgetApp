@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown, Menu } from 'lucide-react';
+import { Plus, Wallet, DollarSign, Bitcoin, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -14,7 +13,6 @@ import { useInvestmentData, Investment } from '@/hooks/use-investment-data';
 import { calculateGainLoss } from '@/lib/utils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
-import { DateRangePicker } from '@/components/common/DateRangePicker';
 
 // New modular components
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -22,12 +20,12 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import OverallPortfolioSummaryCard from '@/components/investments/OverallPortfolioSummaryCard';
 import InvestmentAllocationChart from '@/components/investments/InvestmentAllocationChart';
 import InvestmentHoldingsList from '@/components/investments/InvestmentHoldingsList';
-import InvestmentForm from '@/components/investments/InvestmentForm';
 import BottomNavBar from '@/components/BottomNavBar';
 import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/layout/Header'; // Import Header
 import AddInvestmentModal from '@/components/AddInvestmentModal';
 import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useTranslation } from 'react-i18next';
 
 // --- Interfaces ---
 interface PortfolioSummary {
@@ -52,10 +50,11 @@ const ALLOCATION_COLORS = ['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(-
 
 interface InvestmentsPageProps {
   userUid: string | null;
+  setShowProfilePopup: (show: boolean) => void; // New prop
 }
 
-const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
-  const { t } = useTranslation(); // Initialize useTranslation hook
+const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfilePopup }) => {
+  const { t } = useTranslation();
   const { formatCurrency, selectedCurrency } = useCurrency();
   const { selectedRange } = useDateRange();
 
@@ -247,32 +246,15 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid }) => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} onViewChange={handleViewChange} userUid={userUid} />
+      <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} onViewChange={handleViewChange} userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
 
       <div className={`flex flex-col flex-1 min-w-0 ${sidebarOpen ? 'sm:ml-72' : 'sm:ml-0'} transition-all duration-300 ease-in-out`}>
-        <header className="bg-card backdrop-blur-lg border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
-          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
-            <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-              <button
-                onClick={handleSidebarToggle}
-                className="p-2 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted flex-shrink-0"
-              >
-                <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
-              </button>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-lg sm:text-xl font-semibold text-foreground capitalize truncate">{t("navigation.investments")}</h2>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t("investments.trackPortfolio")}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              <DateRangePicker />
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                JD
-              </div>
-            </div>
-          </div>
-        </header>
+        <Header
+          title={t("navigation.investments")}
+          subtitle={t("investments.trackPortfolio")}
+          onSidebarToggle={handleSidebarToggle}
+          setShowProfilePopup={setShowProfilePopup}
+        />
 
         <main className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 pb-24 sm:pb-6 w-full">
           {error && <ErrorMessage message={error} />}

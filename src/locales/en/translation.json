@@ -12,7 +12,17 @@
     "confirm": "Confirm",
     "areYouSure": "Are you absolutely sure?",
     "thisActionCannotBeUndone": "This action cannot be undone.",
-    "returnToHome": "Return to Home"
+    "returnToHome": "Return to Home",
+    "comingSoon": "Coming Soon!",
+    "guest": "Guest",
+    "notLoggedIn": "Not logged in",
+    "and": "and",
+    "is": "is",
+    "are": "are",
+    "category": "category",
+    "categories": "categories",
+    "day": "Day",
+    "of": "of"
   },
   "navigation": {
     "home": "Home",
@@ -57,7 +67,40 @@
     "signOut": "Sign Out",
     "apiIntegrations": "API Integrations",
     "apiIntegrationsDescription": "Manage connections to external services like banks, crypto exchanges, or other financial tools.",
-    "viewIntegrations": "View Integrations"
+    "viewIntegrations": "View Integrations",
+    "signOutSuccess": "Signed out successfully!",
+    "signOutError": "Failed to sign out.",
+    "exportDataSuccess": "Data exported successfully!",
+    "exportDataError": "Failed to export data.",
+    "accountInfo": "Account Info",
+    "changeName": "Change Name",
+    "changeEmail": "Change Email",
+    "changePassword": "Change Password",
+    "enableTwoFactorAuth": "Enable Two-Factor Authentication",
+    "deleteAccount": "Delete Account",
+    "deleteAccountConfirmationTitle": "Delete Account",
+    "deleteAccountConfirmationDescription": "This will permanently delete your account and all associated data. This action cannot be undone.",
+    "defaultBudgetPeriod": "Default Budget Period",
+    "selectPeriod": "Select period",
+    "monthly": "Monthly",
+    "weekly": "Weekly",
+    "autoRolloverBudgets": "Auto-rollover budgets",
+    "importCSV": "Import CSV",
+    "exportCSVAdvanced": "Export CSV (Advanced Options)",
+    "backupData": "Backup Data",
+    "restoreFromBackup": "Restore from Backup",
+    "localization": "Localization",
+    "defaultCurrency": "Default Currency",
+    "regionTimezone": "Region / Timezone",
+    "bankConnections": "Bank Connections",
+    "googleSignIn": "Google Sign-In",
+    "privacy": "Privacy",
+    "gdprNotice": "GDPR Notice",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "deleteAllPersonalData": "Delete All Personal Data",
+    "deleteDataSuccess": "All user data deleted successfully!",
+    "deleteDataError": "Failed to delete all user data."
   },
   "dashboard": {
     "welcomeMessage": "Welcome back! Here's your financial overview.",
@@ -100,7 +143,17 @@
     "previousMonthRollover": "Previous month rollover",
     "totalSpentColon": "Total Spent:",
     "onTrack": "On track to stay under budget this month.",
-    "budgetAtAGlance": "Your budget at a glance."
+    "budgetAtAGlance": "Your budget at a glance.",
+    "noBudgetYet": "No budget set up yet.",
+    "yourCategories": "Your Categories",
+    "thisMonth": "this month",
+    "addTransactionsAndBudget": "Add transactions and set a budget to see your spending trajectory.",
+    "addMoreTransactions": "Add more transactions to see your spending trend.",
+    "netWorthGrowth": "Net Worth Growth",
+    "noNetWorthGrowth": "No net worth growth data yet.",
+    "addAccountsAndTransactions": "Add accounts and transactions to see your net worth grow.",
+    "autoPay": "Auto-Pay",
+    "addRegularExpenses": "Add regular expenses to track them here."
   },
   "budget": {
     "monthlyBudget": "Monthly Budget",
@@ -115,7 +168,10 @@
     "budgetedAmount": "Budgeted",
     "color": "Color",
     "emoji": "Emoji",
-    "categoryDeleteConfirmation": "This will permanently delete the category \"{{categoryName}}\" and re-assign all associated transactions to 'Uncategorized'."
+    "categoryDeleteConfirmation": "This will permanently delete the category \"{{categoryName}}\" and re-assign all associated transactions to 'Uncategorized'.",
+    "categoryNameRequired": "Category name is required.",
+    "categoryNameDuplicate": "A category with this name already exists.",
+    "budgetedAmountInvalid": "Budgeted amount must be a positive number."
   },
   "transactions": {
     "title": "Transactions",
@@ -148,7 +204,24 @@
     "nextDueDate": "Next Due Date",
     "pickADate": "Pick a date",
     "transactionDeleteConfirmation": "This will permanently delete the transaction \"{{merchantName}}\".",
-    "transactionInstanceDeleteConfirmation": "This will only delete this specific instance, not the recurring template."
+    "transactionInstanceDeleteConfirmation": "This will only delete this specific instance, not the recurring template.",
+    "quickAdd": "Quick Add",
+    "amountRequired": "Amount is required.",
+    "amountInvalid": "Amount must be a valid number.",
+    "merchantRequired": "Merchant name is required.",
+    "dateRequired": "Date is required.",
+    "categoryRequired": "Category is required.",
+    "nextDueDateRequired": "Next due date is required for recurring transactions.",
+    "selectCategory": "Select a category",
+    "noCategoriesAvailable": "No categories available",
+    "noCategoriesAddOne": "No categories. Add one in Budget tab.",
+    "selectFrequency": "Select frequency",
+    "selectStatus": "Select status",
+    "managedAsRecurringTemplate": "Managed as recurring template",
+    "quickAddTransaction": "Quick Add Transaction",
+    "merchantPlaceholder": "e.g., Coffee Shop",
+    "noTransactionsFoundDescription": "It looks like you haven't added any transactions yet. Start tracking your spending!",
+    "transaction": "Transaction"
   },
   "goals": {
     "title": "Savings Goals",
@@ -167,7 +240,19 @@
     "currentAmount": "Current Amount",
     "targetDate": "Target Date",
     "goalProgressOverTime": "Goal Progress Over Time",
-    "goalDeleteConfirmation": "This will permanently delete the goal \"{{goalName}}\"."
+    "goalDeleteConfirmation": "This will permanently delete the goal \"{{goalName}}\".",
+    "createFirstGoalDescription": "Set up your first savings goal to start tracking your progress towards financial milestones.",
+    "emergency": "Emergency Fund",
+    "vacation": "Vacation",
+    "laptop": "New Laptop",
+    "goalNameRequired": "Goal name is required.",
+    "targetAmountPositive": "Target amount must be a positive number.",
+    "currentAmountNonNegative": "Current amount cannot be negative.",
+    "targetDateRequired": "Target date is required.",
+    "targetDatePast": "Target date cannot be in the past.",
+    "addFundsTo": "Add Funds to {{goalName}}",
+    "amountPositive": "Amount to add must be positive.",
+    "amountExceedsTarget": "Amount exceeds target goal."
   },
   "investments": {
     "title": "Investments",
@@ -188,7 +273,6 @@
     "noCryptoData": "No crypto data to display.",
     "cryptoHoldings": "Crypto Holdings",
     "noCryptoInvestments": "No crypto investments found.",
-    "addFirstCrypto": "Add First Crypto",
     "portfolioGrowth": "Portfolio Growth",
     "noGrowthData": "No sufficient growth data yet.",
     "addMoreInvestmentsGrowth": "Add more investments and check back tomorrow to see your portfolio grow!",
@@ -202,12 +286,36 @@
     "livePrice": "Live Price",
     "quantity": "Quantity",
     "datePurchased": "Date Purchased",
-    "investmentDeleteConfirmation": "This will permanently delete your investment in \"{{investmentName}}\"."
+    "investmentDeleteConfirmation": "This will permanently delete your investment in \"{{investmentName}}\".",
+    "assetNameRequired": "Asset name is required.",
+    "quantityPositive": "Quantity must be a positive number.",
+    "quantityInvalid": "Quantity must be a valid number.",
+    "buyPricePositive": "Buy price must be a positive number.",
+    "buyPriceInvalid": "Buy price must be a valid number.",
+    "datePurchasedRequired": "Date purchased is required.",
+    "datePurchasedFuture": "Date purchased cannot be in the future.",
+    "tickerSymbolRequired": "Ticker symbol is required for stocks.",
+    "coinSymbolOrIdRequired": "Coin symbol or ID is required for crypto.",
+    "invalidTickerFormat": "Invalid ticker symbol format.",
+    "livePriceNotAvailable": "Live price not available. Please check the symbol.",
+    "invalidTickerOrPriceUnavailable": "Invalid stock ticker or price unavailable.",
+    "invalidCryptoOrPriceUnavailable": "Invalid crypto symbol/ID or price unavailable.",
+    "cannotSaveLivePrice": "Cannot save investment: Live price could not be fetched.",
+    "fetchingLivePrice": "Fetching live price...",
+    "priceNotAvailable": "Price not available",
+    "alert": "Alert",
+    "live": "Live",
+    "tickerSymbolPlaceholder": "e.g., AAPL",
+    "coinSymbolOrIdPlaceholder": "e.g., bitcoin or BTC",
+    "noDataToDisplay": "No data to display."
   },
   "microInvesting": {
     "leftThisWeek": "You have {{amount}} left this week.",
     "considerInvesting": "Consider investing {{amount}} into {{assetName}}.",
-    "invest": "Invest"
+    "invest": "Invest",
+    "aNewAsset": "a new asset",
+    "chooseAsset": "Choose Asset",
+    "investedSuccess": "Successfully invested {{amount}} into {{assetName}}!"
   },
   "smartCoach": {
     "title": "Smart Financial Coach",
@@ -234,10 +342,29 @@
     "or": "OR",
     "signInWithGoogle": "Sign in with Google",
     "alreadyHaveAccount": "Already have an account?",
-    "dontHaveAccount": "Don't have an account?"
+    "dontHaveAccount": "Don't have an account?",
+    "registration": "Registration",
+    "googleLogin": "Google Login"
   },
   "notFound": {
     "title": "404",
     "pageNotFound": "Oops! Page not found"
+  },
+  "syncStatus": {
+    "synced": "Synced",
+    "syncedLast": "Synced {{time}}",
+    "offline": "Offline",
+    "syncing": "Syncing...",
+    "error": "Sync Error: {{message}}",
+    "unknownError": "Unknown error",
+    "notifications": "Notifications"
+  },
+  "profilePopup": {
+    "quickPreferences": "Quick Preferences",
+    "syncStatus": "Sync Status",
+    "account": "Account",
+    "manageAccount": "Manage Account",
+    "openProfile": "Open Profile",
+    "yourProfile": "Your Profile"
   }
 }

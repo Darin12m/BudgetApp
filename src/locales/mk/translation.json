@@ -12,7 +12,17 @@
     "confirm": "Потврди",
     "areYouSure": "Дали сте апсолутно сигурни?",
     "thisActionCannotBeUndone": "Оваа акција не може да се врати.",
-    "returnToHome": "Врати се на почетна"
+    "returnToHome": "Врати се на почетна",
+    "comingSoon": "Наскоро!",
+    "guest": "Гостин",
+    "notLoggedIn": "Не е најавен",
+    "and": "и",
+    "is": "е",
+    "are": "се",
+    "category": "категорија",
+    "categories": "категории",
+    "day": "Ден",
+    "of": "од"
   },
   "navigation": {
     "home": "Почетна",
@@ -57,7 +67,40 @@
     "signOut": "Одјави се",
     "apiIntegrations": "API Интеграции",
     "apiIntegrationsDescription": "Управувајте со врски до надворешни услуги како банки, крипто берзи или други финансиски алатки.",
-    "viewIntegrations": "Види интеграции"
+    "viewIntegrations": "Види интеграции",
+    "signOutSuccess": "Успешно одјавување!",
+    "signOutError": "Неуспешно одјавување.",
+    "exportDataSuccess": "Податоците се успешно извезени!",
+    "exportDataError": "Неуспешно извезување податоци.",
+    "accountInfo": "Информации за сметка",
+    "changeName": "Промени име",
+    "changeEmail": "Промени е-пошта",
+    "changePassword": "Промени лозинка",
+    "enableTwoFactorAuth": "Овозможи двофакторна автентикација",
+    "deleteAccount": "Избриши сметка",
+    "deleteAccountConfirmationTitle": "Избриши сметка",
+    "deleteAccountConfirmationDescription": "Ова трајно ќе ја избрише вашата сметка и сите поврзани податоци. Оваа акција не може да се врати.",
+    "defaultBudgetPeriod": "Стандарден буџетски период",
+    "selectPeriod": "Изберете период",
+    "monthly": "Месечно",
+    "weekly": "Неделно",
+    "autoRolloverBudgets": "Автоматско пренесување буџети",
+    "importCSV": "Увези CSV",
+    "exportCSVAdvanced": "Извези CSV (напредни опции)",
+    "backupData": "Резервна копија на податоци",
+    "restoreFromBackup": "Врати од резервна копија",
+    "localization": "Локализација",
+    "defaultCurrency": "Стандардна валута",
+    "regionTimezone": "Регион / Временска зона",
+    "bankConnections": "Банкарски врски",
+    "googleSignIn": "Најава со Google",
+    "privacy": "Приватност",
+    "gdprNotice": "Известување за GDPR",
+    "privacyPolicy": "Политика за приватност",
+    "termsOfService": "Услови за користење",
+    "deleteAllPersonalData": "Избриши ги сите лични податоци",
+    "deleteDataSuccess": "Сите кориснички податоци се успешно избришани!",
+    "deleteDataError": "Неуспешно бришење на сите кориснички податоци."
   },
   "dashboard": {
     "welcomeMessage": "Добредојдовте назад! Еве го вашиот финансиски преглед.",
@@ -100,7 +143,17 @@
     "previousMonthRollover": "Пренос од претходниот месец",
     "totalSpentColon": "Вкупно потрошено:",
     "onTrack": "На добар пат да останете под буџетот овој месец.",
-    "budgetAtAGlance": "Вашиот буџет на прв поглед."
+    "budgetAtAGlance": "Вашиот буџет на прв поглед.",
+    "noBudgetYet": "Сè уште нема поставен буџет.",
+    "yourCategories": "Вашите категории",
+    "thisMonth": "овој месец",
+    "addTransactionsAndBudget": "Додадете трансакции и буџет за да ја видите вашата траекторија на трошење.",
+    "addMoreTransactions": "Додадете повеќе трансакции за да го видите вашиот тренд на трошење.",
+    "netWorthGrowth": "Раст на нето вредност",
+    "noNetWorthGrowth": "Сè уште нема податоци за раст на нето вредност.",
+    "addAccountsAndTransactions": "Додадете сметки и трансакции за да ја видите вашата нето вредност како расте.",
+    "autoPay": "Автоматско плаќање",
+    "addRegularExpenses": "Додадете редовни трошоци за да ги следите овде."
   },
   "budget": {
     "monthlyBudget": "Месечен буџет",
@@ -115,7 +168,10 @@
     "budgetedAmount": "Буџетирано",
     "color": "Боја",
     "emoji": "Емоџи",
-    "categoryDeleteConfirmation": "Ова трајно ќе ја избрише категоријата „{{categoryName}}“ и ќе ги пренамени сите поврзани трансакции во „Некатегоризирани“."
+    "categoryDeleteConfirmation": "Ова трајно ќе ја избрише категоријата „{{categoryName}}“ и ќе ги пренамени сите поврзани трансакции во „Некатегоризирани“.",
+    "categoryNameRequired": "Името на категоријата е задолжително.",
+    "categoryNameDuplicate": "Категорија со ова име веќе постои.",
+    "budgetedAmountInvalid": "Буџетираната сума мора да биде позитивен број."
   },
   "transactions": {
     "title": "Трансакции",
@@ -148,7 +204,24 @@
     "nextDueDate": "Следен датум на доспевање",
     "pickADate": "Изберете датум",
     "transactionDeleteConfirmation": "Ова трајно ќе ја избрише трансакцијата „{{merchantName}}“.",
-    "transactionInstanceDeleteConfirmation": "Ова ќе ја избрише само оваа конкретна инстанца, а не повторливиот шаблон."
+    "transactionInstanceDeleteConfirmation": "Ова ќе ја избрише само оваа конкретна инстанца, а не повторливиот шаблон.",
+    "quickAdd": "Брзо додавање",
+    "amountRequired": "Износот е задолжителен.",
+    "amountInvalid": "Износот мора да биде валиден број.",
+    "merchantRequired": "Името на трговецот е задолжително.",
+    "dateRequired": "Датумот е задолжителен.",
+    "categoryRequired": "Категоријата е задолжителна.",
+    "nextDueDateRequired": "Следниот датум на доспевање е задолжителен за повторливи трансакции.",
+    "selectCategory": "Изберете категорија",
+    "noCategoriesAvailable": "Нема достапни категории",
+    "noCategoriesAddOne": "Нема категории. Додадете една во табулаторот Буџет.",
+    "selectFrequency": "Изберете фреквенција",
+    "selectStatus": "Изберете статус",
+    "managedAsRecurringTemplate": "Управувано како повторлив шаблон",
+    "quickAddTransaction": "Брзо додавање трансакција",
+    "merchantPlaceholder": "на пр. Кафуле",
+    "noTransactionsFoundDescription": "Изгледа дека сè уште немате додадено трансакции. Започнете со следење на вашето трошење!",
+    "transaction": "Трансакција"
   },
   "goals": {
     "title": "Цели за штедење",
@@ -167,7 +240,19 @@
     "currentAmount": "Тековна сума",
     "targetDate": "Целен датум",
     "goalProgressOverTime": "Напредок на целта со текот на времето",
-    "goalDeleteConfirmation": "Ова трајно ќе ја избрише целта „{{goalName}}“."
+    "goalDeleteConfirmation": "Ова трајно ќе ја избрише целта „{{goalName}}“.",
+    "createFirstGoalDescription": "Поставете ја вашата прва цел за штедење за да започнете со следење на вашиот напредок кон финансиските пресвртници.",
+    "emergency": "Фонд за итни случаи",
+    "vacation": "Одмор",
+    "laptop": "Нов лаптоп",
+    "goalNameRequired": "Името на целта е задолжително.",
+    "targetAmountPositive": "Целната сума мора да биде позитивен број.",
+    "currentAmountNonNegative": "Тековната сума не може да биде негативна.",
+    "targetDateRequired": "Целниот датум е задолжителен.",
+    "targetDatePast": "Целниот датум не може да биде во минатото.",
+    "addFundsTo": "Додај средства на {{goalName}}",
+    "amountPositive": "Износот за додавање мора да биде позитивен.",
+    "amountExceedsTarget": "Износот ја надминува целната сума."
   },
   "investments": {
     "title": "Инвестиции",
@@ -188,7 +273,6 @@
     "noCryptoData": "Нема податоци за крипто за прикажување.",
     "cryptoHoldings": "Крипто средства",
     "noCryptoInvestments": "Не се пронајдени крипто инвестиции.",
-    "addFirstCrypto": "Додај прво крипто",
     "portfolioGrowth": "Раст на портфолио",
     "noGrowthData": "Сè уште нема доволно податоци за раст.",
     "addMoreInvestmentsGrowth": "Додадете повеќе инвестиции и проверете утре за да видите како расте вашето портфолио!",
@@ -202,12 +286,36 @@
     "livePrice": "Цена во живо",
     "quantity": "Количина",
     "datePurchased": "Датум на купување",
-    "investmentDeleteConfirmation": "Ова трајно ќе ја избрише вашата инвестиција во „{{investmentName}}“."
+    "investmentDeleteConfirmation": "Ова трајно ќе ја избрише вашата инвестиција во „{{investmentName}}“.",
+    "assetNameRequired": "Името на средството е задолжително.",
+    "quantityPositive": "Количината мора да биде позитивен број.",
+    "quantityInvalid": "Количината мора да биде валиден број.",
+    "buyPricePositive": "Куповната цена мора да биде позитивен број.",
+    "buyPriceInvalid": "Куповната цена мора да биде валиден број.",
+    "datePurchasedRequired": "Датумот на купување е задолжителен.",
+    "datePurchasedFuture": "Датумот на купување не може да биде во иднина.",
+    "tickerSymbolRequired": "Симболот на акција е задолжителен за акции.",
+    "coinSymbolOrIdRequired": "Симболот или ID на монетата е задолжителен за крипто.",
+    "invalidTickerFormat": "Невалиден формат на симбол на акција.",
+    "livePriceNotAvailable": "Цената во живо не е достапна. Проверете го симболот.",
+    "invalidTickerOrPriceUnavailable": "Невалиден симбол на акција или цена недостапна.",
+    "invalidCryptoOrPriceUnavailable": "Невалиден симбол/ID на крипто или цена недостапна.",
+    "cannotSaveLivePrice": "Не може да се зачува инвестиција: Цената во живо не може да се преземе.",
+    "fetchingLivePrice": "Преземање цена во живо...",
+    "priceNotAvailable": "Цена недостапна",
+    "alert": "Аларм",
+    "live": "Во живо",
+    "tickerSymbolPlaceholder": "на пр. AAPL",
+    "coinSymbolOrIdPlaceholder": "на пр. bitcoin или BTC",
+    "noDataToDisplay": "Нема податоци за прикажување."
   },
   "microInvesting": {
     "leftThisWeek": "Имате {{amount}} преостанато оваа недела.",
     "considerInvesting": "Размислете да инвестирате {{amount}} во {{assetName}}.",
-    "invest": "Инвестирај"
+    "invest": "Инвестирај",
+    "aNewAsset": "ново средство",
+    "chooseAsset": "Изберете средство",
+    "investedSuccess": "Успешно инвестиравте {{amount}} во {{assetName}}!"
   },
   "smartCoach": {
     "title": "Паметен финансиски тренер",
@@ -234,10 +342,29 @@
     "or": "ИЛИ",
     "signInWithGoogle": "Најави се со Google",
     "alreadyHaveAccount": "Веќе имате сметка?",
-    "dontHaveAccount": "Немате сметка?"
+    "dontHaveAccount": "Немате сметка?",
+    "registration": "Регистрација",
+    "googleLogin": "Најава со Google"
   },
   "notFound": {
     "title": "404",
     "pageNotFound": "Упс! Страницата не е пронајдена"
+  },
+  "syncStatus": {
+    "synced": "Синхронизирано",
+    "syncedLast": "Синхронизирано {{time}}",
+    "offline": "Офлајн",
+    "syncing": "Синхронизирање...",
+    "error": "Грешка при синхронизација: {{message}}",
+    "unknownError": "Непозната грешка",
+    "notifications": "Известувања"
+  },
+  "profilePopup": {
+    "quickPreferences": "Брзи поставки",
+    "syncStatus": "Статус на синхронизација",
+    "account": "Сметка",
+    "manageAccount": "Управувај со сметка",
+    "openProfile": "Отвори профил",
+    "yourProfile": "Вашиот профил"
   }
 }
