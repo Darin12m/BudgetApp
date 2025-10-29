@@ -35,6 +35,7 @@ interface CurrencyContextType {
   convertInputToUSD: (value: number) => number; // New: Converts value from selectedCurrency to USD
   convertUSDToSelected: (valueInUSD: number) => number; // New: Converts USD value to selectedCurrency
   formatCurrencySymbolOnly: (valueInUSD: number, options?: Intl.NumberFormatOptions) => string; // New: Formats with symbol only
+  formatCurrencyValueSymbol: (valueInUSD: number, options?: Intl.NumberFormatOptions) => string; // New: Formats as 'Value Symbol'
 }
 
 // Create the context
@@ -90,7 +91,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     }).format(valueInUSD);
   }, []);
 
-  // New function to format currency with only the symbol
+  // New function to format currency with only the symbol (prepended)
   const formatCurrencySymbolOnly = useCallback((valueInUSD: number, options?: Intl.NumberFormatOptions): string => {
     const valueInSelectedCurrency = valueInUSD / selectedCurrency.conversionRateToUSD;
 
@@ -108,6 +109,24 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     return `${selectedCurrency.symbol} ${formattedNumber}`;
   }, [selectedCurrency]);
 
+  // New function to format currency as 'Value Symbol' (e.g., '1237.00 ден.')
+  const formatCurrencyValueSymbol = useCallback((valueInUSD: number, options?: Intl.NumberFormatOptions): string => {
+    const valueInSelectedCurrency = valueInUSD / selectedCurrency.conversionRateToUSD;
+
+    // Format the number as a decimal with 2 decimal places
+    const numberFormatter = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      ...options,
+      style: 'decimal', // Ensure no currency symbols are added by Intl.NumberFormat
+    });
+
+    const formattedNumber = numberFormatter.format(valueInSelectedCurrency);
+
+    // Concatenate in the desired format: "1237.00 ден."
+    return `${formattedNumber} ${selectedCurrency.symbol}`;
+  }, [selectedCurrency]);
+
   // New: Converts a value (assumed to be in selectedCurrency) to USD
   const convertInputToUSD = useCallback((value: number): number => {
     return value * selectedCurrency.conversionRateToUSD;
@@ -119,7 +138,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, [selectedCurrency]);
 
   return (
-    <CurrencyContext.Provider value={{ selectedCurrency, setCurrency, formatCurrency, formatUSD, convertInputToUSD, convertUSDToSelected, formatCurrencySymbolOnly }}>
+    <CurrencyContext.Provider value={{ selectedCurrency, setCurrency, formatCurrency, formatUSD, convertInputToUSD, convertUSDToSelected, formatCurrencySymbolOnly, formatCurrencyValueSymbol }}>
       {children}
     </CurrencyContext.Provider>
   );
