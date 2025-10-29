@@ -8,6 +8,8 @@ import { SortAsc, TrendingUp, TrendingDown, Wallet, DollarSign, Bitcoin } from '
 import InvestmentListItem from '@/components/InvestmentListItem';
 import { Investment } from '@/hooks/use-investment-data';
 import { useCurrency } from '@/context/CurrencyContext'; // Import useCurrency
+import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface InvestmentHoldingsListProps {
   title: string;
@@ -40,25 +42,33 @@ const InvestmentHoldingsList: React.FC<InvestmentHoldingsListProps> = ({
   emptyButtonText,
   alertedInvestments,
 }) => {
+  const { t } = useTranslation();
   return (
-    <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+    <motion.div
+      className="glassmorphic-card"
+      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+        <CardTitle className="text-lg font-semibold tracking-tight">{title}</CardTitle>
         <div className="flex items-center space-x-2">
           <Select value={sortBy} onValueChange={onSortByChange}>
-            <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
+            <SelectTrigger className="w-[150px] h-9 text-xs bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
               <SortAsc className="h-3 w-3 mr-2 text-muted-foreground" />
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="gainLossPercentage">Gain/Loss %</SelectItem>
-              <SelectItem value="totalValue">Total Value</SelectItem>
+              <SelectItem value="name">{t("investments.assetName")}</SelectItem>
+              <SelectItem value="gainLossPercentage">{t("investments.gainLossPercentage")}</SelectItem>
+              <SelectItem value="totalValue">{t("investments.totalValue")}</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" onClick={onToggleSortOrder} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            variant="outline" size="icon" onClick={onToggleSortOrder} className="h-9 w-9 bg-muted/50 border-none hover:bg-muted transition-transform">
             {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4 text-muted-foreground" /> : <TrendingDown className="h-4 w-4 text-muted-foreground" />}
-          </Button>
+          </motion.button>
         </div>
       </CardHeader>
       <CardContent>
@@ -85,7 +95,7 @@ const InvestmentHoldingsList: React.FC<InvestmentHoldingsListProps> = ({
           )}
         </div>
       </CardContent>
-    </Card>
+    </motion.div>
   );
 };
 

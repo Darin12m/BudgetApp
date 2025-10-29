@@ -7,8 +7,9 @@ import { Link } from 'react-router-dom';
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { CustomProgress } from '@/components/common/CustomProgress';
-import DonutWithCenterText from '@/components/DonutWithCenterText';
+import SmartDonutChart from '@/components/SmartDonutChart'; // Import SmartDonutChart
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface Category {
   id: string;
@@ -48,9 +49,13 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
   }, [spentPercentage, t]);
 
   return (
-    <Card className="card-shadow border-none bg-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
+    <motion.div
+      className="glassmorphic-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300"
+      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold flex items-center">
+        <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
           <PiggyBank className="w-5 h-5 mr-2 text-primary" /> {t("dashboard.budgetCategories")}
         </CardTitle>
         <Link to="/budget-app?view=budget" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:bg-primary/90 font-medium flex items-center">
@@ -62,9 +67,9 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
           <div className="w-full sm:w-1/2 h-[150px] flex items-center justify-center mb-4 sm:mb-0 relative">
             {totalBudgetedMonthly > 0 ? (
-              <DonutWithCenterText
+              <SmartDonutChart
                 chartId="category-overview"
-                mainValue={`${Math.round(spentPercentage)}%`}
+                mainValue={spentPercentage}
                 mainLabel={t("dashboard.spent")}
                 data={donutData}
                 innerRadius={40}
@@ -76,25 +81,27 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
                 strokeWidth={2}
                 strokeColor="hsl(var(--primary))"
                 backgroundFill="hsl(var(--muted)/50%)"
+                mainTextColorClass={cn("text-foreground", isOverBudget ? "text-destructive" : "text-emerald")}
+                mainFontWeightClass="font-bold"
+                tooltipFormatter={(value, name) => [`${Math.round(value)}%`, name]}
+                gradientColors={['hsl(var(--primary))', 'hsl(var(--lilac))', 'hsl(var(--emerald))']}
               />
             ) : (
-              <div className="text-center text-muted-foreground">
-                <p className="text-sm">{t("dashboard.noBudgetYet")}</p>
-              </div>
+              <p className="text-center text-muted-foreground text-sm">{t("dashboard.noBudgetYet")}</p>
             )}
           </div>
           <div className="w-full sm:w-1/2 space-y-2">
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">{t("dashboard.totalBudgeted")}</span>
-              <span className="font-semibold text-foreground">{formatCurrency(totalBudgetedMonthly)}</span>
+              <span className="font-semibold text-foreground font-mono">{formatCurrency(totalBudgetedMonthly)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">{t("dashboard.totalSpent")}</span>
-              <span className="font-semibold text-foreground">{formatCurrency(totalSpentMonthly)}</span>
+              <span className="font-semibold text-foreground font-mono">{formatCurrency(totalSpentMonthly)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">{t("dashboard.remaining")}</span>
-              <span className={`font-semibold ${remainingBudget >= 0 ? 'text-emerald' : 'text-destructive'}`}>
+              <span className={cn("font-semibold font-mono", remainingBudget >= 0 ? 'text-emerald' : 'text-destructive')}>
                 {formatCurrency(remainingBudget)}
               </span>
             </div>
@@ -108,7 +115,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
         </div>
 
         <div className="mt-4 border-t border-border pt-4">
-          <h3 className="text-base font-semibold text-foreground mb-3">{t("dashboard.yourCategories")}</h3>
+          <h3 className="text-base font-semibold text-foreground mb-3 tracking-tight">{t("dashboard.yourCategories")}</h3>
           <div className="space-y-3">
             {categories.length > 0 ? (
               categories.map((cat) => {
@@ -122,7 +129,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
                         <span className="text-lg">{cat.emoji}</span>
                         <span className="font-medium text-foreground text-sm">{cat.name}</span>
                       </div>
-                      <div className="text-sm text-right flex items-center space-x-1">
+                      <div className="text-sm text-right flex items-center space-x-1 font-mono">
                         <span className={cn("font-semibold", isCategoryOverBudget ? "text-destructive" : "text-foreground")}>
                           {formatCurrency(cat.spent)}
                         </span>
@@ -139,7 +146,7 @@ const CategoryOverviewCard: React.FC<CategoryOverviewCardProps> = ({
           </div>
         </div>
       </CardContent>
-    </Card>
+    </motion.div>
   );
 };
 

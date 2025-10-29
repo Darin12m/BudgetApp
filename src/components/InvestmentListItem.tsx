@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/context/CurrencyContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface InvestmentListItemProps {
   investment: Investment;
@@ -41,10 +42,14 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
   };
 
   return (
-    <div className={cn(
-      "flex items-center justify-between p-4 bg-card rounded-lg shadow-sm border border-border/50 hover:bg-muted/50 transition-colors active:bg-muted backdrop-blur-lg animate-in fade-in slide-in-from-bottom-2 duration-300",
-      isAlerted && "border-destructive ring-2 ring-destructive/50 animate-pulse-red"
-    )}>
+    <motion.div
+      className={cn(
+        "flex items-center justify-between p-4 glassmorphic-card hover:bg-muted/50 transition-colors active:bg-muted animate-in fade-in slide-in-from-bottom-2 duration-300",
+        isAlerted && "border-destructive ring-2 ring-destructive/50 animate-pulse-red"
+      )}
+      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-sm)" }}
+      whileTap={{ scale: 0.99 }}
+    >
       <div className="flex items-center space-x-3 flex-1 min-w-0">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
           investment.type === 'Stock' ? 'bg-blue/10 text-blue' : 'bg-lilac/10 text-lilac'
@@ -73,7 +78,7 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
         {typeof change24hPercent === 'number' && (
           <div className={`flex items-center justify-end rounded-full px-2 py-1 ${isPositive24h ? 'bg-arrowUp/10' : 'bg-arrowDown/10'} ${priceChangeClasses[priceChangeStatus]} animate-float-up-down`}>
             {Change24hIcon && <Change24hIcon className={`w-3 h-3 mr-1 ${change24hColor}`} />}
-            <p className={`font-semibold text-sm ${change24hColor}`}>
+            <p className={`font-semibold text-sm ${change24hColor} font-mono`}>
               {change24hPercent.toFixed(2)}%
             </p>
           </div>
@@ -83,12 +88,15 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
             <AlertTriangle className="w-3 h-3 mr-1" /> {t("investments.alert")}
           </p>
         )}
-        <p className={`text-xs ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(gainLoss)}</p>
+        <p className={`text-xs ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]} font-mono`}>{formatCurrency(gainLoss)}</p>
       </div>
-      <Button variant="ghost" size="icon" onClick={() => onEdit(investment)} className="ml-2 flex-shrink-0 text-muted-foreground hover:bg-muted/50">
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        variant="ghost" size="icon" onClick={() => onEdit(investment)} className="ml-2 flex-shrink-0 text-muted-foreground hover:bg-muted/50">
         <Edit className="h-4 w-4" />
-      </Button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 };
 

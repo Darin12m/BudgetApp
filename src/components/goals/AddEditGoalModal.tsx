@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useCurrency } from '@/context/CurrencyContext';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 // Predefined colors for selection
 const GOAL_COLORS = [
@@ -146,7 +147,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
             value={target}
             onChange={(e) => { setTarget(e.target.value); setErrors(prev => ({ ...prev, target: '' })); }}
             placeholder={`${selectedCurrency.symbol} 15000.00`}
-            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
+            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] font-mono"
           />
           {errors.target && <p className="text-destructive text-xs mt-1">{errors.target}</p>}
         </div>
@@ -164,7 +165,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
             value={current}
             onChange={(e) => { setCurrent(e.target.value); setErrors(prev => ({ ...prev, current: '' })); }}
             placeholder={`${selectedCurrency.symbol} 500.00`}
-            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
+            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] font-mono"
           />
           {errors.current && <p className="text-destructive text-xs mt-1">{errors.current}</p>}
         </div>
@@ -188,7 +189,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
                 {targetDate ? format(targetDate, "PPP") : <span>{t("transactions.pickADate")}</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-card border border-border/50 card-shadow backdrop-blur-lg">
+            <PopoverContent className="w-auto p-0 glassmorphic-card">
               <Calendar
                 mode="single"
                 selected={targetDate}
@@ -211,12 +212,18 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       </div>
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-        <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
           <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
-        </Button>
-        <Button type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform min-h-[44px]">
           <Save className="h-4 w-4 mr-2" /> {t("common.save")} {t("goals.goal")}
-        </Button>
+        </motion.button>
       </DialogFooter>
     </form>
   );
@@ -224,7 +231,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg">
+        <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
               {goalToEdit ? t("goals.editGoal") : t("goals.newGoalTitle")}
@@ -240,7 +247,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent onPointerDown={(e) => e.stopPropagation()}>
+      <DialogContent className="glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
             {goalToEdit ? t("goals.editGoal") : t("goals.newGoalTitle")}

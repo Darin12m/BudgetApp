@@ -22,6 +22,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface AddFundsModalProps {
   isOpen: boolean;
@@ -87,23 +88,29 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
             value={amountToAdd}
             onChange={(e) => { setAmountToAdd(e.target.value); setErrors(prev => ({ ...prev, amountToAdd: '' })); }}
             placeholder={`${selectedCurrency.symbol} 50.00`}
-            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
+            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] font-mono"
           />
           {errors.amountToAdd && <p className="text-destructive text-xs mt-1">{errors.amountToAdd}</p>}
         </div>
       </div>
 
       <div className="text-sm text-muted-foreground col-span-full text-center mt-2">
-        {t("goals.current")}: <span className="font-semibold text-foreground">{formatCurrency(currentAmountInUSD)}</span> / {t("goals.target")}: <span className="font-semibold text-foreground">{formatCurrency(targetAmountInUSD)}</span>
+        {t("goals.current")}: <span className="font-semibold text-foreground font-mono">{formatCurrency(currentAmountInUSD)}</span> / {t("goals.target")}: <span className="font-semibold text-foreground font-mono">{formatCurrency(targetAmountInUSD)}</span>
       </div>
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-        <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
           <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
-        </Button>
-        <Button type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform min-h-[44px]">
           <Save className="h-4 w-4 mr-2" /> {t("goals.addFunds")}
-        </Button>
+        </motion.button>
       </DialogFooter>
     </form>
   );
@@ -111,7 +118,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg">
+        <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
               <Plus className="w-5 h-5 mr-2" /> {t("goals.addFundsTo", { goalName: goalName })}
@@ -127,7 +134,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent onPointerDown={(e) => e.stopPropagation()}>
+      <DialogContent className="glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <Plus className="w-5 h-5 mr-2" /> {t("goals.addFundsTo", { goalName: goalName })}

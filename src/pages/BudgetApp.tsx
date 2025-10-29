@@ -26,6 +26,7 @@ import TransactionsView from './budget-app-views/TransactionsView';
 // New custom hook
 import { useBudgetAppLogic } from '@/hooks/use-budget-app-logic';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 
 interface BudgetAppProps {
   userUid: string | null;
@@ -134,7 +135,11 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid, setShowProfilePopup })
           {loading ? (
             <LoadingSpinner />
           ) : (
-            <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
               {activeView === 'dashboard' && (
                 <DashboardView
                   totalBudgeted={totalBudgeted}
@@ -198,7 +203,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid, setShowProfilePopup })
                   formatCurrency={formatCurrency}
                 />
               )}
-            </>
+            </motion.div>
           )}
         </main>
       </div>

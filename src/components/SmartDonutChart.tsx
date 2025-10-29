@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
 import { PieSectorDataItem } from 'recharts/types/polar/Pie';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/context/CurrencyContext';
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useTranslation } from 'react-i18next';
 
 interface CustomActiveShapeProps extends PieSectorDataItem {
+  fill: string;
 }
 
 const DefaultCustomActiveShape: React.FC<CustomActiveShapeProps> = (props) => {
@@ -19,7 +21,7 @@ const DefaultCustomActiveShape: React.FC<CustomActiveShapeProps> = (props) => {
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 8}
+        outerRadius={outerRadius + 8} // Slightly larger on hover
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
@@ -30,17 +32,17 @@ const DefaultCustomActiveShape: React.FC<CustomActiveShapeProps> = (props) => {
   );
 };
 
-interface DonutChartData {
+interface SmartDonutChartData {
   name: string;
   value: number;
   color?: string;
   percentage?: number;
 }
 
-interface DonutWithCenterTextProps {
+interface SmartDonutChartProps {
   mainValue: number | string;
   mainLabel?: string;
-  data: DonutChartData[];
+  data: SmartDonutChartData[];
   innerRadius?: number;
   outerRadius?: number;
   chartId: string;
@@ -59,9 +61,48 @@ interface DonutWithCenterTextProps {
   strokeColor?: string;
   backgroundFill?: string;
   isOverBudget?: boolean;
+  gradientColors?: string[]; // Array of Tailwind color classes or CSS variables
+  animateGradientBorder?: boolean;
+  showLegend?: boolean;
 }
 
-const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
+const useCountUp = (end: number, duration: number = 1000) => {
+  const [count, setCount] = useState(0);
+  const requestRef = useRef<number>();
+  const startTimeRef = useRef<number>();
+
+  const animate = useCallback((time: number) => {
+    if (!startTimeRef.current) {
+      startTimeRef.current = time;
+    }
+    const elapsed = time - startTimeRef.current;
+    const progress = Math.min(elapsed / duration, 1);
+    const newCount = end * progress;
+
+    setCount(newCount);
+
+    if (progress < 1) {
+      requestRef.current = requestAnimationFrame(animate);
+    } else {
+      setCount(end);
+    }
+  }, [end, duration]);
+
+  useEffect(() => {
+    startTimeRef.current = undefined;
+    requestRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
+    };
+  }, [end, animate]);
+
+  return count;
+};
+
+
+const SmartDonutChart: React.FC<SmartDonutChartProps> = ({
   mainValue,
   mainLabel,
   data,
@@ -76,15 +117,18 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
   mainFontWeightClass = 'font-bold',
   subTextColorClass = 'text-muted-foreground',
   subFontWeightClass = 'font-normal',
-  startAngle,
-  endAngle,
-  paddingAngle,
-  strokeWidth,
-  strokeColor,
-  backgroundFill,
+  startAngle = 90,
+  endAngle = -270,
+  paddingAngle = 2,
+  strokeWidth = 1,
+  strokeColor = "transparent",
+  backgroundFill = "hsl(var(--muted)/50%)",
   isOverBudget = false,
+  gradientColors = ['hsl(var(--gradient-start))', 'hsl(var(--gradient-middle))', 'hsl(var(--gradient-end))'],
+  animateGradientBorder = false,
+  showLegend = false,
 }) => {
-  const { t } = useTranslation(); // Initialize useTranslation hook
+  const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const { formatCurrency } = useCurrency();
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -109,8 +153,22 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
   const mainTextFontSize = calculateFontSize(String(mainValue), textContainerDiameter, 28, 10, 1.5);
   const subTextFontSize = calculateFontSize(String(mainLabel), textContainerDiameter, 16, 8, 1.8);
 
+  // Count-up animation for numeric mainValue
+  const isNumericMainValue = typeof mainValue === 'number';
+  const animatedMainValue = useCountUp(isNumericMainValue ? (mainValue as number) : 0, 1000);
+  const displayedMainValue = isNumericMainValue ? formatCurrency(animatedMainValue) : mainValue;
+
+  const gradientId = `donut-gradient-${chartId}`;
+  const gradientStops = gradientColors.map((color, index) => (
+    <stop key={index} offset={`${(index / (gradientColors.length - 1)) * 100}%`} stopColor={color} />
+  ));
+
   return (
-    <div className={cn("relative w-full h-full flex items-center justify-center", className)}>
+    <motion.div
+      className={cn("relative w-full h-full flex items-center justify-center", className)}
+      whileHover={{ rotateX: 3, rotateY: -3, scale: 1.03 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
       <ResponsiveContainer width="100%" height="100%">
         <PieChart
           onMouseEnter={onPieEnter}
@@ -125,12 +183,9 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
           }}
         >
           <defs>
-            {data.map((entry, index) => {
-              if (entry.color && entry.color.startsWith('url(#')) {
-                return null;
-              }
-              return null;
-            })}
+            <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+              {gradientStops}
+            </linearGradient>
           </defs>
 
           {backgroundFill && (
@@ -169,7 +224,7 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
             {data.map((entry, index) => (
               <Cell
                 key={`cell-${chartId}-${index}`}
-                fill={entry.color || `hsl(var(--primary))`}
+                fill={entry.color || `url(#${gradientId})`} // Use individual color or gradient
                 style={{ filter: `drop-shadow(0 0 8px ${entry.color || `hsl(var(--primary))`}60)` }}
               />
             ))}
@@ -195,12 +250,29 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
               fontSize: '0.9rem',
               fontWeight: 500,
             }}
-            formatter={(value: number) =>
-              formatValue ? formatValue(value) : `$${Number(value).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}`
+            formatter={(value: number, name: string) =>
+              tooltipFormatter ? tooltipFormatter(value, name, {}) : [
+                formatValue ? formatValue(value) : `$${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                name
+              ]
             }
           />
+          {showLegend && (
+            <g>
+              {data.map((entry, index) => (
+                <text
+                  key={`legend-${chartId}-${index}`}
+                  x={outerRadius + 20}
+                  y={cy - data.length * 10 + index * 20}
+                  fill="hsl(var(--foreground))"
+                  fontSize={12}
+                >
+                  <circle cx={outerRadius + 10} cy={cy - data.length * 10 + index * 20 - 4} r={4} fill={entry.color || `url(#${gradientId})`} />
+                  {entry.name}
+                </text>
+              ))}
+            </g>
+          )}
         </PieChart>
       </ResponsiveContainer>
 
@@ -215,10 +287,10 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
         }}
       >
         <span
-          className={cn(mainTextColorClass, mainFontWeightClass, "text-center")}
+          className={cn(mainTextColorClass, mainFontWeightClass, "text-center font-mono")}
           style={{ fontSize: `${mainTextFontSize}px`, lineHeight: 1 }}
         >
-          {mainValue}
+          {displayedMainValue}
         </span>
         {mainLabel && (
           <span
@@ -229,8 +301,8 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
           </span>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-export default DonutWithCenterText;
+export default SmartDonutChart;

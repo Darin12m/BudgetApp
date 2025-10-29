@@ -8,6 +8,7 @@ import { Investment } from '@/hooks/use-investment-data';
 import { toast } from 'sonner';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface MicroInvestingSuggestionCardProps {
   weeklyRemainingBudget: number;
@@ -74,37 +75,48 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
   }
 
   return (
-    <Card className="card-shadow border-none bg-gradient-to-br from-primary/10 to-blue/10 border border-border/50 animate-in fade-in slide-in-from-bottom-2 duration-500 backdrop-blur-lg">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="glassmorphic-card border-none bg-gradient-to-br from-primary/10 to-blue/10 animate-in fade-in slide-in-from-bottom-2 duration-500"
+      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+    >
       <CardContent className="p-4 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 flex-1">
           <Zap className="w-6 h-6 text-primary flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-foreground">
-              {t("microInvesting.leftThisWeek", { amount: <span className="text-emerald font-semibold">{formatCurrency(weeklyRemainingBudget)}</span> })}
+              {t("microInvesting.leftThisWeek", { amount: <span className="text-emerald font-semibold font-mono">{formatCurrency(weeklyRemainingBudget)}</span> })}
             </p>
             <p className="text-sm text-muted-foreground">
-              {t("microInvesting.considerInvesting", { amount: <span className="text-primary font-semibold">{formatCurrency(suggestedInvestmentAmount)}</span>, assetName: suggestedAsset.name })}
+              {t("microInvesting.considerInvesting", { amount: <span className="text-primary font-semibold font-mono">{formatCurrency(suggestedInvestmentAmount)}</span>, assetName: suggestedAsset.name })}
             </p>
           </div>
         </div>
         <div className="flex items-center space-x-2 flex-shrink-0">
-          <Button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleInvestClick}
-            className="h-8 px-4 py-2 rounded-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground text-xs font-semibold transition-transform hover:scale-[1.02] active:scale-98"
+            className="h-8 px-4 py-2 rounded-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground text-xs font-semibold transition-transform"
           >
             {t("microInvesting.invest")}
-          </Button>
-          <Button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             variant="ghost"
             size="icon"
             onClick={onDismiss}
             className="h-8 w-8 text-muted-foreground hover:bg-muted/50"
           >
             <X className="h-4 w-4" />
-          </Button>
+          </motion.button>
         </div>
       </CardContent>
-    </Card>
+    </motion.div>
   );
 };
 

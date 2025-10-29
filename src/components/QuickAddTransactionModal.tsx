@@ -18,6 +18,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Category } from '@/hooks/use-finance-data';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface QuickAddTransactionModalProps {
   isOpen: boolean;
@@ -110,7 +111,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
           id="merchant"
           value={merchant}
           onChange={(e) => { setMerchant(e.target.value); setErrors(prev => ({ ...prev, merchant: '' })); }}
-          className="col-span-3 bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
+          className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
           placeholder={t("transactions.merchantPlaceholder")}
         />
         {errors.merchant && <p className="text-destructive text-xs mt-1 col-start-2 col-span-3">{errors.merchant}</p>}
@@ -127,7 +128,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
             value={amount}
             onChange={(e) => { setAmount(e.target.value); setErrors(prev => ({ ...prev, amount: '' })); }}
             placeholder={`${selectedCurrency.symbol} 25.50`}
-            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
+            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] font-mono"
           />
           {errors.amount && <p className="text-destructive text-xs mt-1">{errors.amount}</p>}
         </div>
@@ -137,28 +138,32 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
           {t("transactions.type")}
         </Label>
         <div className="col-span-3 flex items-center space-x-2">
-          <Button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             type="button"
             variant={isExpense ? "default" : "outline"}
             onClick={() => setIsExpense(true)}
             className={cn(
-              "flex-1",
+              "flex-1 min-h-[44px]",
               isExpense ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "bg-muted/50 border-none hover:bg-muted text-foreground"
             )}
           >
             <ArrowDownCircle className="h-4 w-4 mr-2" /> {t("transactions.expense")}
-          </Button>
-          <Button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             type="button"
             variant={!isExpense ? "default" : "outline"}
             onClick={() => setIsExpense(false)}
             className={cn(
-              "flex-1",
+              "flex-1 min-h-[44px]",
               !isExpense ? "bg-emerald hover:bg-emerald/90 text-white" : "bg-muted/50 border-none hover:bg-muted text-foreground"
             )}
           >
             <ArrowUpCircle className="h-4 w-4 mr-2" /> {t("transactions.income")}
-          </Button>
+          </motion.button>
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
@@ -257,7 +262,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
                     {nextDate ? format(nextDate, "PPP") : <span>{t("transactions.pickADate")}</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-card border border-border/50 card-shadow backdrop-blur-lg">
+                <PopoverContent className="w-auto p-0 glassmorphic-card">
                   <Calendar
                     mode="single"
                     selected={nextDate}
@@ -273,12 +278,18 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       )}
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-        <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
           <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
-        </Button>
-        <Button type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform min-h-[44px]">
           <Save className="h-4 w-4 mr-2" /> {t("common.save")} {t("transactions.transaction")}
-        </Button>
+        </motion.button>
       </DialogFooter>
     </form>
   );
@@ -286,7 +297,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg">
+        <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
               <Plus className="w-5 h-5 mr-2" /> {t("transactions.quickAddTransaction")}
@@ -302,7 +313,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]" onPointerDown={(e) => e.stopPropagation()}>
+      <DialogContent className="sm:max-w-[425px] glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <Plus className="w-5 h-5 mr-2" /> {t("transactions.quickAddTransaction")}

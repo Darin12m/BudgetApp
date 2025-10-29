@@ -10,12 +10,15 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDateRange } from "@/context/DateRangeContext"; // Import the context
+import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
 export function DateRangePicker({ className }: DateRangePickerProps) {
+  const { t } = useTranslation();
   const { selectedRange, setRange, setQuickPeriod } = useDateRange(); // Removed goToPreviousPeriod, goToNextPeriod
   const [calendarMonth, setCalendarMonth] = React.useState<Date>(selectedRange.from || new Date());
 
@@ -41,12 +44,12 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
         label: generateLabel(newRange.from, newRange.from),
       });
     } else {
-      setRange({ from: undefined, to: undefined, label: 'Select Date Range' });
+      setRange({ from: undefined, to: undefined, label: t("dateRangePicker.selectDateRange") });
     }
   };
 
   const generateLabel = (from: Date | undefined, to: Date | undefined): string => {
-    if (!from && !to) return 'Select Date Range';
+    if (!from && !to) return t("dateRangePicker.selectDateRange");
     if (from && !to) return format(from, 'MMM dd, yyyy');
     if (!from && to) return format(to, 'MMM dd, yyyy');
 
@@ -65,7 +68,9 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
       {/* Removed Previous Period Button */}
       <Popover>
         <PopoverTrigger asChild>
-          <Button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             id="date"
             variant={"outline"}
             className={cn(
@@ -75,15 +80,15 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {selectedRange.label}
-          </Button>
+          </motion.button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 bg-card border border-border/50 card-shadow backdrop-blur-lg" align="start">
+        <PopoverContent className="w-auto p-0 glassmorphic-card" align="start">
           <div className="flex flex-col sm:flex-row">
             <div className="flex flex-col p-4 border-b sm:border-b-0 sm:border-r border-border/50">
-              <Button variant="ghost" onClick={() => setQuickPeriod('today')} className="justify-start">Today</Button>
-              <Button variant="ghost" onClick={() => setQuickPeriod('thisWeek')} className="justify-start">This Week</Button>
-              <Button variant="ghost" onClick={() => setQuickPeriod('thisMonth')} className="justify-start">This Month</Button>
-              <Button variant="ghost" onClick={() => setQuickPeriod('lastMonth')} className="justify-start">Last Month</Button>
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} variant="ghost" onClick={() => setQuickPeriod('today')} className="justify-start">{t("dateRangePicker.today")}</motion.button>
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} variant="ghost" onClick={() => setQuickPeriod('thisWeek')} className="justify-start">{t("dateRangePicker.thisWeek")}</motion.button>
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} variant="ghost" onClick={() => setQuickPeriod('thisMonth')} className="justify-start">{t("dateRangePicker.thisMonth")}</motion.button>
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} variant="ghost" onClick={() => setQuickPeriod('lastMonth')} className="justify-start">{t("dateRangePicker.lastMonth")}</motion.button>
             </div>
             <Calendar
               initialFocus

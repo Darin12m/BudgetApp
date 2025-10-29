@@ -4,8 +4,9 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
-import DonutWithCenterText from '@/components/DonutWithCenterText';
+import SmartDonutChart from '@/components/SmartDonutChart'; // Import SmartDonutChart
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface AllocationData {
   name: string;
@@ -21,7 +22,7 @@ interface EnhancedPortfolioAllocationChartProps {
 }
 
 const CHART_PALETTE = [
-  'hsl(var(--primary))',
+  'hsl(var(--blue))',
   'hsl(var(--emerald))',
   'hsl(var(--lilac))',
   'hsl(25 95% 53%)',
@@ -46,21 +47,23 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
   return (
     <div className="flex flex-col gap-2 w-full sm:w-1/2 max-h-[200px] overflow-y-auto pr-2">
       {chartData.map((entry, index) => (
-        <div
+        <motion.div
           key={`legend-item-${index}`}
           className={cn(
             "flex items-center justify-between p-2 rounded-md transition-colors"
           )}
+          whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
+          whileTap={{ scale: 0.98 }}
         >
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
             <span className="text-sm text-foreground truncate">{entry.name}</span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground">{entry.percentage.toFixed(0)}%</span>
-            <span className="text-sm font-semibold text-foreground">{formatCurrency(entry.value)}</span>
+            <span className="text-sm text-muted-foreground font-mono">{entry.percentage.toFixed(0)}%</span>
+            <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );
@@ -81,16 +84,20 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
   }, [data]);
 
   return (
-    <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+    <motion.div
+      className="glassmorphic-card"
+      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+        <CardTitle className="text-lg font-semibold tracking-tight">{title}</CardTitle>
       </CardHeader>
       <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
         {chartData.length > 0 ? (
           <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-            <DonutWithCenterText
+            <SmartDonutChart
               chartId="portfolio-allocation"
-              mainValue={formatCurrencyValueSymbol(totalPortfolioValue)}
+              mainValue={totalPortfolioValue}
               mainLabel={t("dashboard.totalAllocated")}
               data={chartData.map(item => ({ ...item, color: item.color || 'hsl(var(--primary))' }))}
               innerRadius={60}
@@ -102,6 +109,11 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
               strokeWidth={1}
               strokeColor="transparent"
               backgroundFill="hsl(var(--muted)/50%)"
+              mainTextColorClass="text-foreground"
+              mainFontWeightClass="font-bold"
+              tooltipFormatter={(value, name) => [formatCurrency(value), name]}
+              gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
+              animateGradientBorder={true}
             />
           </div>
         ) : (
@@ -114,7 +126,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
           />
         )}
       </CardContent>
-    </Card>
+    </motion.div>
   );
 };
 

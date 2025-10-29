@@ -31,7 +31,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
   const ModalContent = (
     <> {/* Removed Card wrapper */}
       <DialogHeader> {/* Using DialogHeader for consistent styling, works with Drawer too */}
-        <DialogTitle className="flex items-center"> {/* Added flex and items-center */}
+        <DialogTitle className="flex items-center tracking-tight"> {/* Added flex and items-center */}
           {investmentToEdit ? 'Edit Investment' : 'Add New Investment'}
         </DialogTitle>
       </DialogHeader>
@@ -47,9 +47,9 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg"> {/* Apply glassmorphism to drawer content */}
+        <DrawerContent className="safe-top safe-bottom glassmorphic-card"> {/* Apply glassmorphism to drawer content */}
           <DrawerHeader className="text-left">
-            <DrawerTitle className="flex items-center"> {/* Added flex and items-center */}
+            <DrawerTitle className="flex items-center tracking-tight"> {/* Added flex and items-center */}
               {investmentToEdit ? 'Edit Investment' : 'Add New Investment'}
             </DrawerTitle>
           </DrawerHeader>
@@ -68,7 +68,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="z-[1000] sm:max-w-[425px] bg-card text-foreground card-shadow border border-border/50 p-6 backdrop-blur-lg" onPointerDown={(e) => e.stopPropagation()}> {/* Added styling directly to DialogContent */}
+      <DialogContent className="z-[1000] sm:max-w-[425px] glassmorphic-card p-6" onPointerDown={(e) => e.stopPropagation()}> {/* Added styling directly to DialogContent */}
         {ModalContent}
       </DialogContent>
     </Dialog>

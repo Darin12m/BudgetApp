@@ -25,6 +25,7 @@ import {
 import { Category } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 // Predefined colors and emojis for selection
 const CATEGORY_COLORS = [
@@ -138,7 +139,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
             value={budgeted}
             onChange={(e) => { setBudgeted(e.target.value); setErrors(prev => ({ ...prev, budgeted: '' })); }}
             placeholder={`${selectedCurrency.symbol} 300.00`}
-            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
+            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] font-mono"
           />
           {errors.budgeted && <p className="text-destructive text-xs mt-1">{errors.budgeted}</p>}
         </div>
@@ -163,12 +164,18 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       </div>
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-        <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
           <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
-        </Button>
-        <Button type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="submit" className="flex-1 sm:flex-none bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform min-h-[44px]">
           <Save className="h-4 w-4 mr-2" /> {t("common.save")} {t("budget.category")}
-        </Button>
+        </motion.button>
       </DialogFooter>
     </form>
   );
@@ -176,7 +183,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="safe-top safe-bottom bg-card backdrop-blur-lg">
+        <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center">
               {categoryToEdit ? t("budget.editCategory") : t("budget.newCategory")}
@@ -192,7 +199,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent onPointerDown={(e) => e.stopPropagation()}>
+      <DialogContent className="glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
             {categoryToEdit ? t("budget.editCategory") : t("budget.newCategory")}

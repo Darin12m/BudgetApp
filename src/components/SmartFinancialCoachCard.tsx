@@ -6,6 +6,7 @@ import { Lightbulb, TrendingUp, TrendingDown, Zap } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface SmartFinancialCoachCardProps {
   currentWeekSpending: number;
@@ -83,9 +84,13 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
   }, [totalBudgetedMonthly, dailyAvgSpending, daysPassedThisMonth, forecastedRemainingBalance, totalExpensesThisMonth, currentMonthDate, formatCurrency, t]);
 
   return (
-    <Card className="card-shadow border-none bg-card border border-border/50 animate-in fade-in slide-in-from-bottom-2 duration-500 backdrop-blur-lg">
+    <motion.div
+      className="glassmorphic-card animate-in fade-in slide-in-from-bottom-2 duration-500"
+      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold flex items-center">
+        <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
           <Lightbulb className="w-5 h-5 mr-2 text-primary" /> {t("smartCoach.title")}
         </CardTitle>
       </CardHeader>
@@ -115,7 +120,7 @@ const SmartFinancialCoachCard: React.FC<SmartFinancialCoachCardProps> = ({
           </p>
         )}
       </CardContent>
-    </Card>
+    </motion.div>
   );
 };
 

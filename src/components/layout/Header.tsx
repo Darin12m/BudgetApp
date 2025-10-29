@@ -22,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, onSidebarToggle, setSh
   const userInitials = userDisplayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   return (
-    <header className="bg-card backdrop-blur-lg border-b border-border sticky top-0 z-40 safe-top card-shadow transition-colors duration-300">
+    <header className="glassmorphic-card sticky top-0 z-40 safe-top transition-colors duration-300 rounded-none border-b">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
           <button
@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, onSidebarToggle, setSh
             <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
           </button>
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground capitalize truncate">{title}</h2>
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground capitalize tracking-tight truncate">{title}</h2>
             {subtitle && <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block truncate">{subtitle}</p>}
           </div>
         </div>

@@ -61,12 +61,18 @@ export default {
         amber: { // Adding amber for warning state
           "500": "hsl(var(--amber-500))",
         },
+        // New gradient colors for SmartDonut
+        'gradient-start': 'var(--gradient-start)',
+        'gradient-middle': 'var(--gradient-middle)',
+        'gradient-end': 'var(--gradient-end)',
       },
       borderRadius: {
-        lg: "var(--radius)", // Now 1rem (16px)
-        md: "calc(var(--radius) - 4px)", // 12px
-        sm: "calc(var(--radius) - 8px)", // 8px
-        xl: "1rem", // Explicitly define xl for 16px
+        lg: "1.5rem", // Increased from 1rem (16px) to 24px
+        md: "1rem",   // Adjusted from calc(var(--radius) - 4px) to 16px
+        sm: "0.75rem", // Adjusted from calc(var(--radius) - 8px) to 12px
+        xl: "2rem",   // Explicitly define xl for 32px
+        "2xl": "2.5rem", // Even larger for hero cards
+        "3xl": "3rem", // Max for very rounded elements
       },
       keyframes: {
         "accordion-down": {
@@ -123,6 +129,15 @@ export default {
           "0%": { opacity: "0", transform: "scale(0.9)" },
           "100%": { opacity: "1", transform: "scale(1)" },
         },
+        "rotate-gradient": { // Keyframe for rotating gradient border
+          "0%": { backgroundPosition: "0% 50%" },
+          "100%": { backgroundPosition: "100% 50%" },
+        },
+        "shimmer": { // Skeleton loader shimmer
+          "100%": {
+            transform: "translateX(100%)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -135,9 +150,14 @@ export default {
         "pulse-red-glow": "pulse-red-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", // New animation
         "modal-in": "modal-in 0.18s ease-out forwards",
         "scale-in": "scale-in 0.3s ease-out forwards", // New animation
+        "rotate-gradient": "rotate-gradient 3s ease-in-out infinite alternate", // Apply to gradient border
+        "shimmer": "shimmer 1.5s infinite",
       },
       boxShadow: {
         glass: '0 10px 30px rgba(0,0,0,0.35)', // Soft, diffused shadow for glassmorphism
+        'glass-sm': '0 5px 15px rgba(0,0,0,0.2)',
+        'glass-md': '0 15px 40px rgba(0,0,0,0.4)',
+        'glass-lg': '0 20px 50px rgba(0,0,0,0.5)',
       },
     },
   },

@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { exportAllUserData } from '@/lib/data-export'; // Import the new export utility
+import { motion } from 'framer-motion';
 
 interface SettingsPageProps {
   userUid: string | null;
@@ -57,6 +58,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
   const { selectedRange } = useDateRange();
   const { budgetSettings, updateDocument, loading: financeLoading, transactions, categories, goals } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
   const { selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
+  const { isDarkMode, toggleTheme } = useTheme(); // For theme toggle in settings
 
   const navigate = useNavigate();
 
@@ -183,35 +185,55 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
 
       <div className={`flex flex-col flex-1 min-w-0 ${sidebarOpen ? 'sm:ml-72' : 'sm:ml-0'} transition-all duration-300 ease-in-out`}>
         <Header
-          title={t("settings.title")}
+          title={t("navigation.settings")}
           onSidebarToggle={handleSidebarToggle}
           setShowProfilePopup={setShowProfilePopup}
         />
 
         <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full">
-          <div className="space-y-6 sm:space-y-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="space-y-6 sm:space-y-8"
+          >
 
             {/* Account Info */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+            <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
+                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
                   <UserCircle className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.accountInfo")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   {t("settings.changeName")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
-                <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   {t("settings.changeEmail")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
-                <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   {t("settings.changePassword")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
-                <div className="flex items-center justify-between px-4 py-6">
+                <div className="flex items-center justify-between px-4 py-3">
                   <Label htmlFor="2fa-toggle" className="flex items-center text-base cursor-pointer">
                     <ShieldCheck className="w-5 h-5 mr-2 text-muted-foreground" />
                     {t("settings.enableTwoFactorAuth")}
@@ -221,11 +243,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <Separator />
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 text-destructive hover:bg-destructive/10">
+                    <motion.button
+                      whileHover={{ scale: 1.01, x: 5 }}
+                      whileTap={{ scale: 0.99 }}
+                      className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all"
+                    >
                       <Trash2 className="w-5 h-5 mr-2" /> {t("settings.deleteAccount")}
-                    </Button>
+                    </motion.button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50">
+                  <AlertDialogContent className="glassmorphic-card">
                     <AlertDialogHeader>
                       <AlertDialogTitle>{t("settings.deleteAccountConfirmationTitle")}</AlertDialogTitle>
                       <AlertDialogDescription>
@@ -242,9 +268,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </Card>
 
             {/* Budget Settings */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+            <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
+                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
                   <DollarSign className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.budget")}
                 </CardTitle>
               </CardHeader>
@@ -258,9 +284,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     value={monthlyBudgetInput}
                     onChange={(e) => setMonthlyBudgetInput(e.target.value)}
                     placeholder={`${selectedCurrency.symbol} 3000.00`}
-                    className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
+                    className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
                   />
-                  <Button onClick={handleSaveMonthlyBudget} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground">
+                  <Button onClick={handleSaveMonthlyBudget} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]">
                     {t("settings.saveMonthlyBudget")}
                   </Button>
                 </div>
@@ -268,7 +294,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <div className="grid gap-2">
                   <Label htmlFor="default-budget-period" className="text-base">{t("settings.defaultBudgetPeriod")}</Label>
                   <Select value="monthly" onValueChange={() => toast.info(t("common.comingSoon"))}>
-                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
+                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
                       <SelectValue placeholder={t("settings.selectPeriod")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -303,9 +329,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     value={microInvestingPercentage}
                     onChange={(e) => setMicroInvestingPercentage(e.target.value)}
                     placeholder="e.g., 30"
-                    className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
+                    className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
                   />
-                  <Button onClick={handleSaveMicroInvestingSettings} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground">
+                  <Button onClick={handleSaveMicroInvestingSettings} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]">
                     {t("settings.saveMicroInvestingSettings")}
                   </Button>
                 </div>
@@ -322,9 +348,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     value={priceAlertThresholdInput}
                     onChange={(e) => setPriceAlertThresholdInput(e.target.value)}
                     placeholder="e.g., 5 for ±5%"
-                    className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0"
+                    className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
                   />
-                  <Button onClick={handleSavePriceAlertThreshold} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground">
+                  <Button onClick={handleSavePriceAlertThreshold} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]">
                     {t("settings.saveAlertThreshold")}
                   </Button>
                 </div>
@@ -332,35 +358,55 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </Card>
 
             {/* Data Management */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+            <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
+                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
                   <Database className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.dataManagement")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   <Upload className="w-5 h-5 mr-2" /> {t("settings.importCSV")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
-                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   <Download className="w-5 h-5 mr-2" /> {t("settings.exportCSVAdvanced")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
-                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   <Database className="w-5 h-5 mr-2" /> {t("settings.backupData")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
-                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   <Download className="w-5 h-5 mr-2" /> {t("settings.restoreFromBackup")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
               </CardContent>
             </Card>
 
             {/* Localization */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+            <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
+                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
                   <Globe className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.localization")}
                 </CardTitle>
               </CardHeader>
@@ -368,7 +414,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <div className="grid gap-2">
                   <Label htmlFor="default-currency-settings" className="text-base">{t("settings.defaultCurrency")}</Label>
                   <Select value={selectedCurrency.code} onValueChange={(value) => { setCurrency(value); toast.info(t("common.comingSoon")); }}>
-                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
+                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
                       <SelectValue placeholder={t("settings.selectCurrency")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -381,14 +427,19 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                   </Select>
                 </div>
                 <Separator />
-                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   <Clock className="w-5 h-5 mr-2" /> {t("settings.regionTimezone")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
                 <div className="grid gap-2">
                   <Label htmlFor="app-language-settings" className="text-base">{t("settings.appLanguage")}</Label>
                   <Select value={i18n.language} onValueChange={(value) => { i18n.changeLanguage(value); localStorage.setItem('i18nextLng', value); toast.info(t("common.comingSoon")); }}>
-                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
+                    <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
                       <SelectValue placeholder={t("settings.selectLanguage")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -401,9 +452,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </Card>
 
             {/* Integrations (Placeholder) */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+            <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
+                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
                   <Key className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.apiIntegrations")}
                 </CardTitle>
               </CardHeader>
@@ -416,43 +467,72 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                   {t("settings.connectedAccounts")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </Button>
                 <Separator /> */}
-                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   <LinkIcon className="w-5 h-5 mr-2" /> {t("settings.bankConnections")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
-                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   <img src="/icons/google.svg" alt="Google" className="w-5 h-5 mr-2" /> {t("settings.googleSignIn")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
               </CardContent>
             </Card>
 
             {/* Privacy */}
-            <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+            <Card className="glassmorphic-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
+                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
                   <Info className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.privacy")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   {t("settings.gdprNotice")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
-                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   {t("settings.privacyPolicy")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
-                <Button variant="ghost" onClick={() => toast.info(t("common.comingSoon"))} className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={() => toast.info(t("common.comingSoon"))}
+                >
                   {t("settings.termsOfService")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
+                </motion.button>
                 <Separator />
                 <AlertDialog open={isDeleteDataConfirmOpen} onOpenChange={setIsDeleteDataConfirmOpen}>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 text-destructive hover:bg-destructive/10">
+                    <motion.button
+                      whileHover={{ scale: 1.01, x: 5 }}
+                      whileTap={{ scale: 0.99 }}
+                      className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all"
+                    >
                       <Trash2 className="w-5 h-5 mr-2" /> {t("settings.deleteAllPersonalData")}
-                    </Button>
+                    </motion.button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50">
+                  <AlertDialogContent className="glassmorphic-card">
                     <AlertDialogHeader>
                       <AlertDialogTitle>{t("settings.deleteDataConfirmationTitle")}</AlertDialogTitle>
                       <AlertDialogDescription>
@@ -467,7 +547,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 </AlertDialog>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
         </main>
         <BottomNavBar />
       </div>

@@ -153,7 +153,13 @@
     "noNetWorthGrowth": "No net worth growth data yet.",
     "addAccountsAndTransactions": "Add accounts and transactions to see your net worth grow.",
     "autoPay": "Auto-Pay",
-    "addRegularExpenses": "Add regular expenses to track them here."
+    "addRegularExpenses": "Add regular expenses to track them here.",
+    "goodMorning": "Good morning",
+    "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
+    "underBudget": "You’ve stayed {{percentage}}% under budget this month. Keep it up!",
+    "overBudgetBy": "You’re {{amount}} over budget this month. Time to review!",
+    "noBudgetSet": "Set up your budget to get insights!"
   },
   "budget": {
     "monthlyBudget": "Monthly Budget",
@@ -307,7 +313,9 @@
     "live": "Live",
     "tickerSymbolPlaceholder": "e.g., AAPL",
     "coinSymbolOrIdPlaceholder": "e.g., bitcoin or BTC",
-    "noDataToDisplay": "No data to display."
+    "noDataToDisplay": "No data to display.",
+    "gainLossPercentage": "Gain/Loss %",
+    "totalValue": "Total Value"
   },
   "microInvesting": {
     "leftThisWeek": "You have {{amount}} left this week.",
@@ -366,5 +374,12 @@
     "manageAccount": "Manage Account",
     "openProfile": "Open Profile",
     "yourProfile": "Your Profile"
+  },
+  "dateRangePicker": {
+    "selectDateRange": "Select Date Range",
+    "today": "Today",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month"
   }
 }

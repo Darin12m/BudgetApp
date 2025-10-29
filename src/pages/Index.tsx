@@ -2,8 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Plus, TrendingUp, TrendingDown, DollarSign, Wallet, List, LucideIcon } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, DollarSign, Wallet, List, LucideIcon, Sun, Moon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -17,15 +16,16 @@ import BottomNavBar from '@/components/BottomNavBar';
 import MicroInvestingSuggestionCard from '@/components/MicroInvestingSuggestionCard';
 import SmartFinancialCoachCard from '@/components/SmartFinancialCoachCard';
 import Sidebar from '@/components/layout/Sidebar';
-import Header from '@/components/layout/Header'; // Import Header
+import Header from '@/components/layout/Header';
 import { format } from 'date-fns';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDateRange } from '@/context/DateRangeContext';
-import { DateRangePicker } from '@/components/common/DateRangePicker';
 import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
 import CategoryOverviewCard from '@/components/dashboard/CategoryOverviewCard';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import SmartDonutChart from '@/components/SmartDonutChart'; // Ensure SmartDonutChart is imported
 
 interface IndexPageProps {
   userUid: string | null;
@@ -136,6 +136,31 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
     return data;
   }, [investments, t]);
 
+  // --- Dynamic Dashboard Greeting ---
+  const dynamicGreeting = useMemo(() => {
+    const hour = new Date().getHours();
+    let greeting = t("dashboard.goodMorning");
+    if (hour >= 12 && hour < 18) greeting = t("dashboard.goodAfternoon");
+    if (hour >= 18 || hour < 5) greeting = t("dashboard.goodEvening");
+
+    const userName = userUid ? (userUid.split('@')[0] || t("common.guest")) : t("common.guest"); // Basic name from email or 'Guest'
+
+    let budgetMessage = '';
+    if (totalBudgeted > 0) {
+      const spentPercentage = (totalSpent / totalBudgeted) * 100;
+      if (remainingBudget >= 0) {
+        budgetMessage = t("dashboard.underBudget", { percentage: Math.round(100 - spentPercentage) });
+      } else {
+        budgetMessage = t("dashboard.overBudgetBy", { amount: formatCurrency(Math.abs(remainingBudget)) });
+      }
+    } else {
+      budgetMessage = t("dashboard.noBudgetSet");
+    }
+
+    return `${greeting}, ${userName}. ${budgetMessage}`;
+  }, [userUid, totalBudgeted, totalSpent, remainingBudget, formatCurrency, t]);
+
+
   // --- Handlers ---
   const handleQuickAddTransaction = useCallback(async (amountInUSD: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string, inputCurrencyCode?: string) => {
     if (!userUid) {
@@ -236,7 +261,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
       <div className={`flex flex-col flex-1 min-w-0 ${sidebarOpen ? 'sm:ml-72' : 'sm:ml-0'} transition-all duration-300 ease-in-out`}>
         <Header
           title={t("navigation.dashboard")}
-          subtitle={t("dashboard.welcomeMessage")}
+          subtitle={dynamicGreeting}
           onSidebarToggle={handleSidebarToggle}
           setShowProfilePopup={setShowProfilePopup}
         />
@@ -256,7 +281,12 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
           )}
 
           {!isLoading && !hasError && (
-            <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="space-y-6 sm:space-y-8"
+            >
               {/* Smart Financial Coach Card */}
               <SmartFinancialCoachCard
                 currentWeekSpending={currentWeekSpending}
@@ -300,39 +330,57 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
               />
 
               {/* Total Investment Portfolio Card */}
-              <Card className="card-shadow border-none bg-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
+              <motion.div
+                className="glassmorphic-card text-foreground animate-in fade-in slide-in-from-bottom-2 duration-300"
+                whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm text-muted-foreground">{t("investments.totalPortfolioValue")}</p>
                     <Wallet className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <p className="text-4xl font-bold mb-1">{formatCurrency(overallPortfolioSummary.currentValue)}</p>
+                  <p className="text-4xl font-bold font-mono tracking-tight mb-1">{formatCurrency(overallPortfolioSummary.currentValue)}</p>
                   <div className="flex items-center space-x-2">
                     {PortfolioGainLossIcon && <PortfolioGainLossIcon className={`w-4 h-4 ${portfolioGainLossColor}`} />}
-                    <span className={`text-sm ${portfolioGainLossColor}`}>
+                    <span className={`text-sm ${portfolioGainLossColor} font-mono`}>
                       {overallPortfolioSummary.totalGainLossPercentage.toFixed(2)}% {t("dashboard.thisMonth")}
                     </span>
                   </div>
                 </CardContent>
-              </Card>
+              </motion.div>
 
               {/* Quick Action Buttons */}
               <div className="grid grid-cols-2 gap-4">
-                <Button onClick={() => setIsQuickAddModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setIsQuickAddModalOpen(true)}
+                  className="flex flex-col h-auto py-4 items-center justify-center text-center bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground rounded-xl shadow-sm transition-transform"
+                >
                   <Plus className="w-5 h-5 mb-1" />
                   <span className="text-xs font-medium">{t("dashboard.addExpense")}</span>
-                </Button>
-                <Button onClick={() => setIsAddInvestmentModalOpen(true)} className="flex flex-col h-auto py-4 items-center justify-center text-center bg-emerald hover:bg-emerald/90 dark:bg-emerald dark:hover:bg-emerald/90 text-white rounded-xl shadow-sm transition-transform hover:scale-[1.02] active:scale-98">
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setIsAddInvestmentModalOpen(true)}
+                  className="flex flex-col h-auto py-4 items-center justify-center text-center bg-emerald hover:bg-emerald/90 dark:bg-emerald dark:hover:bg-emerald/90 text-white rounded-xl shadow-sm transition-transform"
+                >
                   <DollarSign className="w-5 h-5 mb-1" />
                   <span className="text-xs font-medium">{t("dashboard.addInvestment")}</span>
-                </Button>
+                </motion.button>
               </div>
 
               {/* Top 3 Performing Assets */}
               {topPerformers.length > 0 && (
-                <Card className="card-shadow border-none bg-card animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
+                <motion.div
+                  className="glassmorphic-card animate-in fade-in slide-in-from-bottom-2 duration-300"
+                  whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                >
                   <CardHeader>
-                    <CardTitle className="text-lg font-semibold">{t("dashboard.topPerformers")}</CardTitle>
+                    <CardTitle className="text-lg font-semibold tracking-tight">{t("dashboard.topPerformers")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {topPerformers.map(inv => {
@@ -348,7 +396,12 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
                       };
 
                       return (
-                        <div key={inv.id} className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted">
+                        <motion.div
+                          key={inv.id}
+                          whileHover={{ scale: 1.01, backgroundColor: "hsl(var(--muted)/20%)" }}
+                          whileTap={{ scale: 0.99 }}
+                          className="flex items-center justify-between p-3 rounded-lg transition-colors"
+                        >
                           <div className="flex items-center space-x-3 flex-1 min-w-0">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                               inv.type === 'Stock' ? 'bg-blue/10 text-blue dark:bg-blue/20 dark:text-blue' : 'bg-lilac/10 text-lilac dark:bg-lilac/20 dark:text-lilac'
@@ -363,17 +416,17 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
                           <div className="text-right ml-2 flex-shrink-0">
                             <div className={`flex items-center justify-end rounded-full px-2 py-1 ${isPositive ? 'bg-arrowUp/10' : 'bg-arrowDown/10'} ${priceChangeClasses[priceChangeStatus]} animate-float-up-down`}>
                               <Icon className={`w-3 h-3 mr-1 ${gainLossColor}`} />
-                              <p className={`font-semibold text-sm ${gainLossColor}`}>
+                              <p className={`font-semibold text-sm ${gainLossColor} font-mono`}>
                                 {gainLossPercentage.toFixed(2)}%
                               </p>
                             </div>
-                            <p className={`text-xs ${gainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]}`}>{formatCurrency(inv.quantity * inv.currentPrice)}</p>
+                            <p className={`text-xs ${gainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]} font-mono`}>{formatCurrency(inv.quantity * inv.currentPrice)}</p>
                           </div>
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </CardContent>
-                </Card>
+                </motion.div>
               )}
 
               {/* Overall Allocation Chart Preview */}
@@ -383,7 +436,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
                 emptyMessage={t("dashboard.noDataToDisplay")}
                 totalPortfolioValue={overallPortfolioSummary.currentValue}
               />
-            </div>
+            </motion.div>
           )}
         </main>
         <BottomNavBar />

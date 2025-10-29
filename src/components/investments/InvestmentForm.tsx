@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface InvestmentFormProps {
   investment: Investment | null;
@@ -243,12 +244,16 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           }}
           className="col-span-3 justify-start"
         >
-          <ToggleGroupItem value="Stock" aria-label="Toggle Stock" className="px-4 py-2 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm min-h-[44px]">
-            {t("investments.stock")}
-          </ToggleGroupItem>
-          <ToggleGroupItem value="Crypto" aria-label="Toggle Crypto" className="px-4 py-2 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm min-h-[44px]">
-            {t("investments.crypto")}
-          </ToggleGroupItem>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <ToggleGroupItem value="Stock" aria-label="Toggle Stock" className="px-4 py-2 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm min-h-[44px]">
+              {t("investments.stock")}
+            </ToggleGroupItem>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <ToggleGroupItem value="Crypto" aria-label="Toggle Crypto" className="px-4 py-2 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm min-h-[44px]">
+              {t("investments.crypto")}
+            </ToggleGroupItem>
+          </motion.div>
         </ToggleGroup>
       </div>
 
@@ -276,7 +281,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           {t("investments.buyPrice")}
         </Label>
         <div className="col-span-3">
-          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} placeholder={`${selectedCurrency.symbol} 150.00`} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
+          <Input id="buyPrice" type="number" step="0.01" value={buyPrice} onChange={(e) => { setBuyPrice(e.target.value); setErrors(prev => ({ ...prev, buyPrice: '' })); }} placeholder={`${selectedCurrency.symbol} 150.00`} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] font-mono" />
           {errors.buyPrice && <p className="text-destructive text-xs mt-1">{errors.buyPrice}</p>}
         </div>
       </div>
@@ -287,7 +292,9 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
         </Label>
         <div className="col-span-3 flex items-center space-x-2">
           <LivePriceDisplay price={livePrice} loading={livePriceLoading} error={livePriceError} />
-          <Button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             type="button"
             variant="ghost"
             size="icon"
@@ -296,7 +303,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
             className="h-8 w-8 text-muted-foreground hover:bg-muted/50"
           >
             <RefreshCw className={`h-4 w-4 ${livePriceLoading ? 'animate-spin' : ''}`} />
-          </Button>
+          </motion.button>
           {errors.livePrice && <p className="text-destructive text-xs mt-1">{errors.livePrice}</p>}
         </div>
       </div>
@@ -306,7 +313,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           {t("investments.quantity")}
         </Label>
         <div className="col-span-3">
-          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
+          <Input id="quantity" type="number" step="0.0001" value={quantity} onChange={(e) => { setQuantity(e.target.value); setErrors(prev => ({ ...prev, quantity: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] font-mono" />
           {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity}</p>}
         </div>
       </div>
@@ -329,11 +336,14 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
         {investment && (
           <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
             <AlertDialogTrigger asChild>
-              <Button type="button" variant="destructive" className="w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="button" variant="destructive" className="w-full sm:w-auto transition-transform min-h-[44px]">
                 <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
-              </Button>
+              </motion.button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="glassmorphic-card">
               <AlertDialogHeader>
                 <AlertDialogTitle>{t("common.areYouSure")}</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -348,12 +358,18 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           </AlertDialog>
         )}
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="button" variant="outline" onClick={onClose} className="flex-1 bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
             {t("common.cancel")}
-          </Button>
-          <Button type="submit" disabled={isSaveDisabled} className="flex-1 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform hover:scale-[1.02] active:scale-98 min-h-[44px]">
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit" disabled={isSaveDisabled} className="flex-1 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground transition-transform min-h-[44px]">
             <Save className="h-4 w-4 mr-2" /> {t("common.save")}
-          </Button>
+          </motion.button>
         </div>
       </div>
     </form>

@@ -5,6 +5,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/context/CurrencyContext';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import SmartDonutChart from '@/components/SmartDonutChart'; // Import SmartDonutChart
+import { motion } from 'framer-motion';
 
 interface AllocationData {
   name: string;
@@ -22,38 +24,45 @@ const InvestmentAllocationChart: React.FC<InvestmentAllocationChartProps> = ({ t
   const { t } = useTranslation(); // Initialize useTranslation hook
   const { formatCurrency } = useCurrency();
 
+  const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+
   return (
-    <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
+    <motion.div
+      className="glassmorphic-card"
+      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+        <CardTitle className="text-lg font-semibold tracking-tight">{title}</CardTitle>
       </CardHeader>
       <CardContent className="h-[250px] flex items-center justify-center">
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={90}
-                fill="#8884d8"
-                dataKey="value"
-                labelLine={false}
-              >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ fontSize: '12px', backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', color: 'hsl(var(--tooltip-text-color))' }} />
-              <Legend wrapperStyle={{ fontSize: '12px' }} />
-            </PieChart>
-          </ResponsiveContainer>
+          <SmartDonutChart
+            chartId={`investment-allocation-${title.replace(/\s/g, '-')}`}
+            mainValue={totalValue}
+            mainLabel={t("dashboard.totalAllocated")}
+            data={data}
+            innerRadius={60}
+            outerRadius={90}
+            formatValue={formatCurrency}
+            startAngle={90}
+            endAngle={-270}
+            paddingAngle={2}
+            strokeWidth={1}
+            strokeColor="transparent"
+            backgroundFill="hsl(var(--muted)/50%)"
+            mainTextColorClass="text-foreground"
+            mainFontWeightClass="font-bold"
+            tooltipFormatter={(value, name) => [formatCurrency(value), name]}
+            gradientColors={['hsl(var(--blue))', 'hsl(var(--emerald))', 'hsl(var(--lilac))']}
+            animateGradientBorder={true}
+            showLegend={true}
+          />
         ) : (
           <p className="text-muted-foreground">{emptyMessage}</p>
         )}
       </CardContent>
-    </Card>
+    </motion.div>
   );
 };
 

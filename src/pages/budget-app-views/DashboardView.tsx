@@ -12,6 +12,7 @@ import StatsCard from '@/components/dashboard/StatsCard';
 import CategoryOverviewCard from '@/components/dashboard/CategoryOverviewCard';
 import RechartsTooltip from '@/components/common/RechartsTooltip';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface ChartData {
   month: string;
@@ -73,7 +74,12 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
 }) => {
   const { t } = useTranslation(); // Initialize useTranslation hook
   return (
-    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="space-y-4 sm:space-y-6 pb-24 sm:pb-6"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <RemainingBudgetCard
           totalBudgeted={totalBudgeted}
@@ -86,16 +92,20 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
           smartSummary={smartSummary}
         />
 
-        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
+        <motion.div
+          className="glassmorphic-card p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
           <div className="flex items-center space-x-3 mb-3">
             {RunOutIcon && <RunOutIcon className={`w-5 h-5 ${runOutColor}`} />}
-            <h3 className={`text-base sm:text-lg font-semibold ${runOutColor}`}>{t("dashboard.smartForecast")}</h3>
+            <h3 className={`text-base sm:text-lg font-semibold ${runOutColor} tracking-tight`}>{t("dashboard.smartForecast")}</h3>
           </div>
           <p className={`text-sm sm:text-base ${runOutColor} mb-4`}>{runOutMessage}</p>
 
           {totalBudgeted > 0 && dailyAvgSpending > 0 && spendingForecastChartData.length > 1 ? (
             <>
-              <h4 className="text-sm font-semibold text-foreground mb-2">{t("dashboard.spendingTrajectory")}</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-2 tracking-tight">{t("dashboard.spendingTrajectory")}</h4>
               <ResponsiveContainer width="100%" height={150}>
                 <LineChart data={spendingForecastChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
@@ -114,7 +124,7 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
               <p className="text-sm mt-2">{t("dashboard.addTransactionsAndBudget")}</p>
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -157,8 +167,12 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
-          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">{t("dashboard.spendingTrend")}</h3>
+        <motion.div
+          className="glassmorphic-card p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
+          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 tracking-tight">{t("dashboard.spendingTrend")}</h3>
           {spendingTrend.length > 1 ? (
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={spendingTrend}>
@@ -177,7 +191,7 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
               <p className="text-sm mt-2">{t("dashboard.addMoreTransactions")}</p>
             </div>
           )}
-        </div>
+        </motion.div>
 
         <CategoryOverviewCard
           categories={categories}
@@ -186,8 +200,12 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
         />
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
-        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">{t("dashboard.netWorthGrowth")}</h3>
+      <motion.div
+        className="glassmorphic-card p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+        whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 tracking-tight">{t("dashboard.netWorthGrowth")}</h3>
         {netWorthTrend.length > 1 ? (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={netWorthTrend}>
@@ -205,13 +223,17 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
             <p className="text-sm mt-2">{t("dashboard.addAccountsAndTransactions")}</p>
           </div>
         )}
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
+        <motion.div
+          className="glassmorphic-card p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-base sm:text-lg font-semibold text-foreground">{t("dashboard.upcomingRecurringBills")}</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-foreground tracking-tight">{t("dashboard.upcomingRecurringBills")}</h3>
               <p className="text-sm text-muted-foreground mt-1">{t("dashboard.total")}: {formatCurrency(recurringTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0))}/{t("transactions.month")}</p>
             </div>
             <Link to="/budget-app?view=recurring" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:bg-primary/90 font-medium flex items-center">
@@ -222,7 +244,12 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
           <div className="space-y-2 sm:space-y-3">
             {recurringTransactions.length > 0 ? (
               recurringTransactions.slice(0, 5).map(txn => (
-                <div key={txn.id} className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted">
+                <motion.div
+                  key={txn.id}
+                  whileHover={{ scale: 1.01, backgroundColor: "hsl(var(--muted)/20%)" }}
+                  whileTap={{ scale: 0.99 }}
+                  className="flex items-center justify-between p-3 rounded-lg transition-colors"
+                >
                   <div className="flex items-center space-x-3 flex-1 min-w-0">
                     <div className="w-10 h-10 bg-lilac/10 rounded-full flex items-center justify-center flex-shrink-0 text-lilac">
                       <span className="text-lg">{txn.emoji}</span>
@@ -233,10 +260,10 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
                     </div>
                   </div>
                   <div className="text-right ml-2 flex-shrink-0">
-                    <p className="font-semibold text-sm text-foreground">{formatCurrency(txn.amount)}</p>
+                    <p className="font-semibold text-sm text-foreground font-mono">{formatCurrency(txn.amount)}</p>
                     <span className="text-xs text-lilac font-medium">{t("transactions.autoPay")}</span>
                   </div>
-                </div>
+                </motion.div>
               ))
             ) : (
               <div className="p-6 text-center text-muted-foreground">
@@ -251,11 +278,15 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
+        <motion.div
+          className="glassmorphic-card p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base sm:text-lg font-semibold text-foreground">{t("dashboard.recentTransactions")}</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground tracking-tight">{t("dashboard.recentTransactions")}</h3>
             <Link to="/budget-app?view=transactions" className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:bg-primary/90 font-medium flex items-center">
               {t("common.viewAll")}
               <ArrowRight className="w-4 h-4 ml-1" />
@@ -264,7 +295,12 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
           <div className="space-y-2 sm:space-y-3">
             {transactions.length > 0 ? (
               transactions.slice(0, 5).map(txn => (
-                <div key={txn.id} className="p-4 active:bg-muted/50 transition-colors">
+                <motion.div
+                  key={txn.id}
+                  whileHover={{ scale: 1.01, backgroundColor: "hsl(var(--muted)/20%)" }}
+                  whileTap={{ scale: 0.99 }}
+                  className="p-4 rounded-lg transition-colors"
+                >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center space-x-3 flex-1 min-w-0">
                       <span className="2xl flex-shrink-0">
@@ -275,7 +311,7 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
                         <p className="text-xs text-muted-foreground">{categories.find(c => c.id === txn.categoryId)?.name || t("common.uncategorized")}</p>
                       </div>
                     </div>
-                    <p className={`font-bold text-sm ml-2 flex-shrink-0 ${txn.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>
+                    <p className={`font-bold text-sm ml-2 flex-shrink-0 font-mono ${txn.amount > 0 ? 'text-emerald' : 'text-foreground'}`}>
                       {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
                     </p>
                   </div>
@@ -287,7 +323,7 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
                       {txn.status}
                     </span>
                   </div>
-                </div>
+                </motion.div>
               ))
             ) : (
               <div className="p-6 text-center text-muted-foreground">
@@ -302,9 +338,9 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 });
 

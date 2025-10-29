@@ -7,8 +7,9 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { CustomProgress } from '@/components/common/CustomProgress';
-import DonutWithCenterText from '@/components/DonutWithCenterText';
+import SmartDonutChart from '@/components/SmartDonutChart'; // Import the new SmartDonutChart
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface RemainingBudgetCardProps {
   totalBudgeted: number;
@@ -102,7 +103,11 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   }, [spentPercentage, t]);
 
   return (
-    <div className="bg-card rounded-xl sm:rounded-2xl p-6 card-shadow animate-in fade-in slide-in-from-top-2 duration-300 border border-border/50 backdrop-blur-lg">
+    <motion.div
+      className="glassmorphic-card p-6 animate-in fade-in slide-in-from-top-2 duration-300"
+      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+    >
       <div className="flex flex-col sm:flex-row items-center sm:justify-between mb-4">
         <div className="flex-1 text-center sm:text-left mb-6 sm:mb-0">
           <p className="text-sm text-muted-foreground mb-1">{t("dashboard.remainingBudget")}</p>
@@ -111,7 +116,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
               <AlertTriangle className="w-3 h-3 mr-1" /> {t("dashboard.overBudget")}
             </Badge>
           )}
-          <p className={cn("font-bold", remainingBudgetTextColor)} style={{ fontSize: 'clamp(2.25rem, 8vw, 3.75rem)' }}>
+          <p className={cn("font-bold font-mono tracking-tight", remainingBudgetTextColor)} style={{ fontSize: 'clamp(2.25rem, 8vw, 3.75rem)' }}>
             {formatCurrency(animatedRemainingBudget)}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
@@ -120,9 +125,9 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
         </div>
 
         <div className="w-40 h-40 relative flex-shrink-0">
-          <DonutWithCenterText
+          <SmartDonutChart
             chartId="budget-summary"
-            mainValue={`${Math.round(spentPercentage)}%`}
+            mainValue={spentPercentage}
             mainLabel={t("dashboard.used")}
             data={donutData}
             innerRadius={65}
@@ -134,12 +139,17 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
             strokeWidth={2}
             strokeColor="hsl(var(--primary))"
             backgroundFill="hsl(var(--muted)/50%)"
+            mainTextColorClass={cn("text-foreground", isOverBudget ? "text-destructive" : isCloseToLimit ? "text-amber-500" : "text-emerald")}
+            mainFontWeightClass="font-bold"
+            tooltipFormatter={(value, name) => [`${Math.round(value)}%`, name]}
+            gradientColors={['hsl(var(--primary))', 'hsl(var(--lilac))', 'hsl(var(--emerald))']}
+            animateGradientBorder={true}
           />
         </div>
       </div>
 
       <div className="mt-6">
-        <p className="text-sm font-semibold text-foreground mb-2">{t("dashboard.spendingTrend")}</p>
+        <p className="text-sm font-semibold text-foreground mb-2 tracking-tight">{t("dashboard.spendingTrend")}</p>
         <div className="h-[80px] w-full"> 
           <ResponsiveContainer width="100%" height="100%"> 
             <AreaChart data={sparklineData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
@@ -183,7 +193,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
         </div>
         <span className="text-muted-foreground">{t("dashboard.totalSpentColon")} {formatCurrency(totalSpent)}</span>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -36,13 +36,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
   return (
     <>
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 h-full bg-card backdrop-blur-lg border-r border-border transition-transform duration-300 ease-in-out z-50 ${
+      <aside className={`fixed left-0 top-0 h-full glassmorphic-card transition-transform duration-300 ease-in-out z-50 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } w-64 sm:w-72 card-shadow flex flex-col`}>
+      } w-64 sm:w-72 flex flex-col rounded-none border-r`}>
         <div className="flex flex-col h-full">
           <div className="p-5 sm:p-6 border-b border-border">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-lilac bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-lilac bg-clip-text text-transparent tracking-tight">
                 FinanceFlow
               </h1>
               <button onClick={onClose} className="p-2 hover:bg-muted/50 rounded-lg active:bg-muted sm:hidden">

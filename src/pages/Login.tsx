@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation(); // Initialize useTranslation hook
@@ -107,9 +108,14 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md card-shadow border border-border/50 backdrop-blur-lg">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="w-full max-w-md glassmorphic-card"
+      >
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-blue bg-clip-text text-transparent">
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-blue bg-clip-text text-transparent tracking-tight">
             {t("login.title")}
           </CardTitle>
           <CardDescription className="mt-2 text-muted-foreground">
@@ -148,10 +154,13 @@ const LoginPage: React.FC = () => {
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={loading}>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit" className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isRegisterMode ? t("login.signUp") : t("login.logIn")}
-            </Button>
+            </motion.button>
           </form>
 
           <div className="flex items-center my-6">
@@ -160,7 +169,9 @@ const LoginPage: React.FC = () => {
             <Separator className="flex-1" />
           </div>
 
-          <Button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             variant="outline"
             className="w-full flex items-center justify-center space-x-2 bg-muted/50 hover:bg-muted text-foreground min-h-[44px]"
             onClick={handleGoogleLogin}
@@ -168,7 +179,7 @@ const LoginPage: React.FC = () => {
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("login.signInWithGoogle")}
-          </Button>
+          </motion.button>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {isRegisterMode ? t("login.alreadyHaveAccount") : t("login.dontHaveAccount")}{' '}
@@ -186,7 +197,7 @@ const LoginPage: React.FC = () => {
             </a>
           </p>
         </CardContent>
-      </Card>
+      </motion.div>
     </div>
   );
 };

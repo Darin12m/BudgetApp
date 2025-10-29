@@ -18,6 +18,7 @@ import {
 import { Goal } from '@/hooks/use-finance-data';
 import { formatDate } from '@/lib/utils';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface GoalsViewProps {
   goals: Goal[];
@@ -38,14 +39,24 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
 }) => {
   const { t } = useTranslation(); // Initialize useTranslation hook
   return (
-    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-6 animate-in fade-in duration-500">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="space-y-4 sm:space-y-6 pb-24 sm:pb-6"
+    >
       <div className="flex items-center justify-between">
-        <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t("goals.title")}</h2>
-        <Button onClick={handleAddGoal} className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{t("goals.title")}</h2>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleAddGoal}
+          className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 dark:hover:bg-primary/90 transition-colors text-sm active:bg-primary/80"
+        >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">{t("goals.newGoal")}</span>
           <span className="sm:hidden">{t("common.new")}</span>
-        </Button>
+        </motion.button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -54,20 +65,25 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
             const percentage = (goal.current / goal.target) * 100;
 
             return (
-              <div key={goal.id} className="bg-card rounded-xl sm:rounded-2xl p-5 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
+              <motion.div
+                key={goal.id}
+                className="glassmorphic-card p-5 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <Target className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: goal.color }} />
-                  <span className="text-sm font-medium text-muted-foreground">{Math.round(percentage)}%</span>
+                  <span className="text-sm font-medium text-muted-foreground font-mono">{Math.round(percentage)}%</span>
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3">{goal.name}</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 tracking-tight">{goal.name}</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">{t("goals.current")}</span>
-                    <span className="font-semibold text-foreground">{formatCurrency(goal.current)}</span>
+                    <span className="font-semibold text-foreground font-mono">{formatCurrency(goal.current)}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">{t("goals.target")}</span>
-                    <span className="font-semibold text-foreground">{formatCurrency(goal.target)}</span>
+                    <span className="font-semibold text-foreground font-mono">{formatCurrency(goal.target)}</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-3 overflow-hidden mt-3">
                     <div
@@ -83,19 +99,30 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
                   </p>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <Button onClick={() => handleOpenAddFunds(goal)} className="flex-1 bg-muted/50 hover:bg-muted text-foreground transition-transform hover:scale-[1.02] active:scale-98">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleOpenAddFunds(goal)}
+                    className="flex-1 bg-muted/50 hover:bg-muted text-foreground transition-transform"
+                  >
                     {t("goals.addFunds")}
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleEditGoal(goal)} className="h-10 w-10 text-muted-foreground hover:bg-muted/50">
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    variant="ghost" size="icon" onClick={() => handleEditGoal(goal)} className="h-10 w-10 text-muted-foreground hover:bg-muted/50">
                     <Edit className="h-4 w-4" />
-                  </Button>
+                  </motion.button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10">
                         <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </motion.button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent className="bg-card text-foreground card-shadow border border-border/50">
+                    <AlertDialogContent className="glassmorphic-card">
                       <AlertDialogHeader>
                         <AlertDialogTitle>{t("common.areYouSure")}</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -109,11 +136,11 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-              </div>
+              </motion.div>
             );
           })
         ) : (
-          <div className="col-span-full bg-card rounded-xl sm:rounded-2xl p-6 text-center card-shadow border border-border/50 backdrop-blur-lg">
+          <div className="col-span-full glassmorphic-card p-6 text-center">
             <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-lg font-semibold text-foreground">{t("goals.noGoalsSetup")}</p>
             <p className="text-sm mt-2 text-muted-foreground">{t("goals.createFirstGoalDescription")}</p>
@@ -124,8 +151,12 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
         )}
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
-        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">{t("goals.goalProgressOverTime")}</h3>
+      <motion.div
+        className="glassmorphic-card p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+        whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 tracking-tight">{t("goals.goalProgressOverTime")}</h3>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={[
             { month: 'Apr', emergency: 5200, vacation: 800, laptop: 1100 },
@@ -149,8 +180,8 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
             <Line type="monotone" dataKey="laptop" stroke="hsl(var(--lilac))" strokeWidth={2} name={t("goals.laptop")} dot={false} />
           </LineChart>
         </ResponsiveContainer>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 });
 

@@ -26,6 +26,7 @@ import Header from '@/components/layout/Header'; // Import Header
 import AddInvestmentModal from '@/components/AddInvestmentModal';
 import EnhancedPortfolioAllocationChart from '@/components/investments/EnhancedPortfolioAllocationChart';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 
 // --- Interfaces ---
 interface PortfolioSummary {
@@ -259,137 +260,148 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
         <main className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 pb-24 sm:pb-6 w-full">
           {error && <ErrorMessage message={error} />}
 
-          {/* Overall Portfolio Overview */}
-          <OverallPortfolioSummaryCard
-            currentValue={overallPortfolioSummary.currentValue}
-            gainLossPercentage={overallPortfolioSummary.totalGainLossPercentage}
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="space-y-6 sm:space-y-8"
+          >
+            {/* Overall Portfolio Overview */}
+            <OverallPortfolioSummaryCard
+              currentValue={overallPortfolioSummary.currentValue}
+              gainLossPercentage={overallPortfolioSummary.totalGainLossPercentage}
+            />
 
-          {/* Tabs for Stocks and Crypto */}
-          <Tabs value={activeTab} onValueChange={(value: 'all' | 'stocks' | 'crypto') => setActiveTab(value)} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-card rounded-xl p-1 card-shadow backdrop-blur-lg">
-              <TabsTrigger value="all" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">{t("investments.allHoldings")}</TabsTrigger>
-              <TabsTrigger value="stocks" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">{t("investments.stocks")}</TabsTrigger>
-              <TabsTrigger value="crypto" className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:card-shadow data-[state=active]:border-none data-[state=active]:rounded-lg transition-all text-muted-foreground">{t("investments.crypto")}</TabsTrigger>
-            </TabsList>
+            {/* Tabs for Stocks and Crypto */}
+            <Tabs value={activeTab} onValueChange={(value: 'all' | 'stocks' | 'crypto') => setActiveTab(value)} className="w-full">
+              <TabsList className="grid w-full grid-cols-3 glassmorphic-card p-1 rounded-xl">
+                <TabsTrigger value="all" className="data-[state=active]:glassmorphic-card data-[state=active]:text-foreground data-[state=active]:rounded-lg transition-all text-muted-foreground">{t("investments.allHoldings")}</TabsTrigger>
+                <TabsTrigger value="stocks" className="data-[state=active]:glassmorphic-card data-[state=active]:text-foreground data-[state=active]:rounded-lg transition-all text-muted-foreground">{t("investments.stocks")}</TabsTrigger>
+                <TabsTrigger value="crypto" className="data-[state=active]:glassmorphic-card data-[state=active]:text-foreground data-[state=active]:rounded-lg transition-all text-muted-foreground">{t("investments.crypto")}</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="all" className="mt-6 space-y-6">
-              <EnhancedPortfolioAllocationChart
-                title={t("investments.overallAllocation")}
-                data={overallAllocationData}
-                emptyMessage={t("investments.noInvestmentsFound")}
-                totalPortfolioValue={overallPortfolioSummary.currentValue}
-              />
-              <InvestmentHoldingsList
-                title={t("investments.allHoldings")}
-                investments={getSortedInvestments(investments)}
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortByChange={handleSortByChange}
-                onToggleSortOrder={handleToggleSortOrder}
-                onEditInvestment={handleEditInvestment}
-                priceChange={priceChange}
-                onAddInvestment={handleAddInvestment}
-                emptyMessage={t("investments.noInvestmentsFound")}
-                emptyIcon={Wallet}
-                emptyButtonText={t("investments.addFirstInvestment")}
-                alertedInvestments={alertedInvestments}
-              />
-            </TabsContent>
+              <TabsContent value="all" className="mt-6 space-y-6">
+                <EnhancedPortfolioAllocationChart
+                  title={t("investments.overallAllocation")}
+                  data={overallAllocationData}
+                  emptyMessage={t("investments.noInvestmentsFound")}
+                  totalPortfolioValue={overallPortfolioSummary.currentValue}
+                />
+                <InvestmentHoldingsList
+                  title={t("investments.allHoldings")}
+                  investments={getSortedInvestments(investments)}
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSortByChange={handleSortByChange}
+                  onToggleSortOrder={handleToggleSortOrder}
+                  onEditInvestment={handleEditInvestment}
+                  priceChange={priceChange}
+                  onAddInvestment={handleAddInvestment}
+                  emptyMessage={t("investments.noInvestmentsFound")}
+                  emptyIcon={Wallet}
+                  emptyButtonText={t("investments.addFirstInvestment")}
+                  alertedInvestments={alertedInvestments}
+                />
+              </TabsContent>
 
-            <TabsContent value="stocks" className="mt-6 space-y-6">
-              <OverallPortfolioSummaryCard
-                currentValue={stockSummary.currentValue}
-                gainLossPercentage={stockSummary.totalGainLossPercentage}
-              />
-              <InvestmentAllocationChart
-                title={t("investments.stockAllocation")}
-                data={stockAllocationData}
-                emptyMessage={t("investments.noStockData")}
-              />
-              <InvestmentHoldingsList
-                title={t("investments.stockHoldings")}
-                investments={sortedStockInvestments}
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortByChange={handleSortByChange}
-                onToggleSortOrder={handleToggleSortOrder}
-                onEditInvestment={handleEditInvestment}
-                priceChange={priceChange}
-                onAddInvestment={handleAddInvestment}
-                emptyMessage={t("investments.noStockInvestments")}
-                emptyIcon={DollarSign}
-                emptyButtonText={t("investments.addFirstStock")}
-                alertedInvestments={alertedInvestments}
-              />
-            </TabsContent>
+              <TabsContent value="stocks" className="mt-6 space-y-6">
+                <OverallPortfolioSummaryCard
+                  currentValue={stockSummary.currentValue}
+                  gainLossPercentage={stockSummary.totalGainLossPercentage}
+                />
+                <InvestmentAllocationChart
+                  title={t("investments.stockAllocation")}
+                  data={stockAllocationData}
+                  emptyMessage={t("investments.noStockData")}
+                />
+                <InvestmentHoldingsList
+                  title={t("investments.stockHoldings")}
+                  investments={sortedStockInvestments}
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSortByChange={handleSortByChange}
+                  onToggleSortOrder={handleToggleSortOrder}
+                  onEditInvestment={handleEditInvestment}
+                  priceChange={priceChange}
+                  onAddInvestment={handleAddInvestment}
+                  emptyMessage={t("investments.noStockInvestments")}
+                  emptyIcon={DollarSign}
+                  emptyButtonText={t("investments.addFirstStock")}
+                  alertedInvestments={alertedInvestments}
+                />
+              </TabsContent>
 
-            <TabsContent value="crypto" className="mt-6 space-y-6">
-              <OverallPortfolioSummaryCard
-                currentValue={cryptoSummary.currentValue}
-                gainLossPercentage={cryptoSummary.totalGainLossPercentage}
-              />
-              <InvestmentAllocationChart
-                title={t("investments.cryptoAllocation")}
-                data={cryptoAllocationData}
-                emptyMessage={t("investments.noCryptoData")}
-              />
-              <InvestmentHoldingsList
-                title={t("investments.cryptoHoldings")}
-                investments={sortedCryptoInvestments}
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortByChange={handleSortByChange}
-                onToggleSortOrder={handleToggleSortOrder}
-                onEditInvestment={handleEditInvestment}
-                priceChange={priceChange}
-                onAddInvestment={handleAddInvestment}
-                emptyMessage={t("investments.noCryptoInvestments")}
-                emptyIcon={Bitcoin}
-                emptyButtonText={t("investments.addFirstCrypto")}
-                alertedInvestments={alertedInvestments}
-              />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="crypto" className="mt-6 space-y-6">
+                <OverallPortfolioSummaryCard
+                  currentValue={cryptoSummary.currentValue}
+                  gainLossPercentage={cryptoSummary.totalGainLossPercentage}
+                />
+                <InvestmentAllocationChart
+                  title={t("investments.cryptoAllocation")}
+                  data={cryptoAllocationData}
+                  emptyMessage={t("investments.noCryptoData")}
+                />
+                <InvestmentHoldingsList
+                  title={t("investments.cryptoHoldings")}
+                  investments={sortedCryptoInvestments}
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSortByChange={handleSortByChange}
+                  onToggleSortOrder={handleToggleSortOrder}
+                  onEditInvestment={handleEditInvestment}
+                  priceChange={priceChange}
+                  onAddInvestment={handleAddInvestment}
+                  emptyMessage={t("investments.noCryptoInvestments")}
+                  emptyIcon={Bitcoin}
+                  emptyButtonText={t("investments.addFirstCrypto")}
+                  alertedInvestments={alertedInvestments}
+                />
+              </TabsContent>
+            </Tabs>
 
-          {/* Portfolio Growth Visualization */}
-          <Card className="card-shadow border-none bg-card border border-border/50 backdrop-blur-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-semibold">{t("investments.portfolioGrowth")}</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[250px] flex items-center justify-center">
-              {portfolioGrowthChartData.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={portfolioGrowthChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis
-                      dataKey="date"
-                      stroke="hsl(var(--muted-foreground))"
-                      style={{ fontSize: '10px' }}
-                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    />
-                    <YAxis
-                      stroke="hsl(var(--muted-foreground))"
-                      style={{ fontSize: '10px' }}
-                      tickFormatter={(value) => formatCurrency(Number(value))}
-                    />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
-                      formatter={(value) => formatCurrency(Number(value))}
-                      labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    />
-                    <Line type="monotone" dataKey="value" stroke="hsl(var(--emerald))" strokeWidth={2} name={t("investments.portfolioValue")} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="p-6 text-center text-muted-foreground">
-                  <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-lg font-semibold text-foreground">{t("investments.noGrowthData")}</p>
-                  <p className="text-sm mt-2">{t("investments.addMoreInvestmentsGrowth")}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            {/* Portfolio Growth Visualization */}
+            <motion.div
+              className="glassmorphic-card"
+              whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.portfolioGrowth")}</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[250px] flex items-center justify-center">
+                {portfolioGrowthChartData.length > 1 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={portfolioGrowthChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis
+                        dataKey="date"
+                        stroke="hsl(var(--muted-foreground))"
+                        style={{ fontSize: '10px' }}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      />
+                      <YAxis
+                        stroke="hsl(var(--muted-foreground))"
+                        style={{ fontSize: '10px' }}
+                        tickFormatter={(value) => formatCurrency(Number(value))}
+                      />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
+                        formatter={(value) => formatCurrency(Number(value))}
+                        labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      />
+                      <Line type="monotone" dataKey="value" stroke="hsl(var(--emerald))" strokeWidth={2} name={t("investments.portfolioValue")} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="p-6 text-center text-muted-foreground">
+                    <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-lg font-semibold text-foreground">{t("investments.noGrowthData")}</p>
+                    <p className="text-sm mt-2">{t("investments.addMoreInvestmentsGrowth")}</p>
+                  </div>
+                )}
+              </CardContent>
+            </motion.div>
+          </motion.div>
         </main>
 
         {/* Add/Edit Investment Modal */}
@@ -402,12 +414,14 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
         />
 
         {/* Fixed Add Button for Mobile (now above BottomNavBar) */}
-        <Button
-          className="fixed bottom-20 right-4 sm:hidden rounded-full p-3 shadow-lg bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground z-30 animate-in fade-in zoom-in duration-300 transition-transform hover:scale-[1.05] active:scale-95"
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="fixed bottom-20 right-4 sm:hidden rounded-full p-3 shadow-lg bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground z-30 animate-in fade-in zoom-in duration-300 transition-transform"
           onClick={handleAddInvestment}
         >
           <Plus className="w-6 h-6" />
-        </Button>
+        </motion.button>
 
         <BottomNavBar />
       </div>

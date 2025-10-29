@@ -4,6 +4,7 @@ import React, { memo } from 'react';
 import { TrendingUp, LucideIcon } from 'lucide-react';
 import { Account } from '@/hooks/use-finance-data';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { motion } from 'framer-motion';
 
 interface StatsCardProps {
   title: string;
@@ -19,14 +20,18 @@ interface StatsCardProps {
 const StatsCard: React.FC<StatsCardProps> = memo(({ title, value, subtitle, icon: Icon, color, bgColor, trend, accounts }) => {
   const { t } = useTranslation(); // Initialize useTranslation hook
   return (
-    <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 card-shadow animate-in fade-in slide-in-from-bottom-2 duration-300 border border-border/50 backdrop-blur-lg">
+    <motion.div
+      className="glassmorphic-card p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+    >
       <div className="flex items-center justify-between mb-2">
         <div className="flex-1">
           <p className="text-xs sm:text-sm text-muted-foreground mb-1">{title}</p>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{value}</p>
+          <p className="text-lg sm:text-2xl font-bold text-foreground font-mono tracking-tight">{value}</p>
           {subtitle && <p className="text-xs text-muted-foreground mt-1 truncate">{subtitle}</p>}
           {trend && (
-            <p className={`text-xs ${trend.color} mt-1 flex items-center`}>
+            <p className={`text-xs ${trend.color} mt-1 flex items-center font-mono`}>
               <TrendingUp className="w-3 h-3 mr-1" />
               {trend.value}
             </p>
@@ -44,7 +49,7 @@ const StatsCard: React.FC<StatsCardProps> = memo(({ title, value, subtitle, icon
           {t("dashboard.autoUpdated")} {accounts.length > 0 ? accounts[0].lastUpdated : 'N/A'}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 });
 
