@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Sun, Moon, DollarSign, Key, User, LogOut, ChevronRight, Palette, Zap, BellRing, Menu, Calendar, Landmark, FileText, Trash2,
   Lock, Mail, UserCircle, ShieldCheck, Clock, Database, Upload, Download, Globe, Info, Gavel, Link as LinkIcon, ArrowRight,
-  Eye, EyeOff, Loader2, AtSign, KeyRound, User as UserIcon // Added Eye, EyeOff, Loader2, AtSign, KeyRound, UserIcon
+  Eye, EyeOff, Loader2, AtSign, KeyRound, User as UserIcon, Save // Added Save icon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
