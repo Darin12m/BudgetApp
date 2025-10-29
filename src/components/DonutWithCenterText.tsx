@@ -74,9 +74,9 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
   tooltipFormatter,
   activeShape: CustomActiveShape = DefaultCustomActiveShape,
   className,
-  mainTextColorClass = 'text-white',
+  mainTextColorClass = 'text-foreground', // Changed to text-foreground
   mainFontWeightClass = 'font-bold',
-  subTextColorClass = 'text-white',
+  subTextColorClass = 'text-muted-foreground', // Changed to text-muted-foreground
   subFontWeightClass = 'font-normal',
   startAngle,
   endAngle,
@@ -188,14 +188,14 @@ const DonutWithCenterText: React.FC<DonutWithCenterTextProps> = ({
             }}
             contentStyle={{
               backgroundColor: 'hsl(var(--card))',
-              color: '#fff',
+              color: 'hsl(var(--foreground))', // Changed to foreground
               borderRadius: '10px',
-              border: '1px solid rgba(255,255,255,0.15)',
+              border: '1px solid hsl(var(--border))', // Changed to border
               padding: '10px 12px',
               boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
             }}
             itemStyle={{
-              color: '#fff',
+              color: 'hsl(var(--foreground))', // Changed to foreground
               fontSize: '0.9rem',
               fontWeight: 500,
             }}
