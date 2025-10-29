@@ -23,8 +23,8 @@ const CURRENCIES: Currency[] = [
   { code: 'JPY', symbol: '¥', conversionRateToUSD: 1 / 158 }, // 1 JPY = 1/158 USD (placeholder rate)
 ];
 
-// Find the default USD currency object
-const USD_CURRENCY = CURRENCIES.find(c => c.code === 'USD')!;
+// Find the default MKD currency object, fallback to USD if MKD is not found (shouldn't happen with static list)
+const MKD_CURRENCY = CURRENCIES.find(c => c.code === 'MKD') || CURRENCIES.find(c => c.code === 'USD')!;
 
 // Define the shape of the context value
 interface CurrencyContextType {
@@ -41,24 +41,19 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 
 // CurrencyProvider component
 export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(USD_CURRENCY); // Default to USD
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(MKD_CURRENCY); // Default to MKD
 
   // Use useLayoutEffect to read from localStorage before the first render
   useLayoutEffect(() => {
     const savedCurrencyCode = localStorage.getItem('selectedCurrency');
-    if (savedCurrencyCode) {
-      const foundCurrency = CURRENCIES.find(c => c.code === savedCurrencyCode);
-      if (foundCurrency) {
-        setSelectedCurrency(foundCurrency);
-      } else {
-        // If saved currency is not in our list, default to USD
-        setSelectedCurrency(USD_CURRENCY);
-        localStorage.setItem('selectedCurrency', USD_CURRENCY.code);
-      }
+    const mkdCurrency = CURRENCIES.find(c => c.code === 'MKD') || CURRENCIES.find(c => c.code === 'USD')!;
+
+    if (savedCurrencyCode === mkdCurrency.code) {
+      setSelectedCurrency(mkdCurrency);
     } else {
-      // If no currency is saved, default to USD and save it
-      setSelectedCurrency(USD_CURRENCY);
-      localStorage.setItem('selectedCurrency', USD_CURRENCY.code);
+      // Always default to MKD and save it
+      setSelectedCurrency(mkdCurrency);
+      localStorage.setItem('selectedCurrency', mkdCurrency.code);
     }
   }, []);
 

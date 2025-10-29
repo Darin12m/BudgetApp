@@ -38,25 +38,10 @@ const App = () => {
 
   // Theme initialization using useLayoutEffect to prevent FOUC
   useLayoutEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const htmlElement = document.documentElement;
-
-    if (savedTheme === 'dark') {
-      htmlElement.classList.add('dark');
-    } else if (savedTheme === 'light') {
-      htmlElement.classList.remove('dark');
-    } else {
-      // If no theme is saved, default to dark and save it
-      if (prefersDark) {
-        htmlElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        // If system prefers light or no preference, default to dark and save it
-        htmlElement.classList.add('dark'); // Default to dark as per requirement
-        localStorage.setItem('theme', 'dark');
-      }
-    }
+    // Always start with dark mode and save it to localStorage
+    htmlElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
   }, []); // Run once on mount
 
   useEffect(() => {
