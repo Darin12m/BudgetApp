@@ -32,13 +32,14 @@ interface InvestmentFormProps {
   onSave: (investment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice' | 'change24hPercent'>) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
+  initialType?: 'Stock' | 'Crypto'; // New prop
 }
 
-const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onDelete, onClose }) => {
+const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onDelete, onClose, initialType }) => {
   const { t } = useTranslation(); // Initialize useTranslation hook
   const { formatCurrency, formatUSD, selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
   const [name, setName] = useState(investment?.name || '');
-  const [type, setType] = useState<'Stock' | 'Crypto'>(investment?.type || 'Stock');
+  const [type, setType] = useState<'Stock' | 'Crypto'>(investment?.type || initialType || 'Stock'); // Use initialType here
   const [quantity, setQuantity] = useState(investment?.quantity.toString() || '');
   const [buyPrice, setBuyPrice] = useState(investment?.buyPrice ? convertUSDToSelected(investment.buyPrice).toString() : '');
   const [datePurchased, setDatePurchased] = useState(investment?.datePurchased || format(new Date(), 'yyyy-MM-dd'));
@@ -139,8 +140,9 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       setLivePrice(investment.currentPrice);
       setLivePriceError(null);
     } else {
+      // Reset form for new investment, respecting initialType
       setName('');
-      setType('Stock');
+      setType(initialType || 'Stock'); // Use initialType for new forms
       setQuantity('');
       setBuyPrice('');
       setDatePurchased(format(new Date(), 'yyyy-MM-dd'));
@@ -150,7 +152,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       setLivePriceError(null);
     }
     setErrors({});
-  }, [investment, convertUSDToSelected]);
+  }, [investment, initialType, convertUSDToSelected]); // Add initialType to dependencies
 
   useEffect(() => {
     if (debounceRef.current) {

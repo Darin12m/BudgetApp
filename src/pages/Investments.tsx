@@ -83,6 +83,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
+  const [initialInvestmentType, setInitialInvestmentType] = useState<'Stock' | 'Crypto' | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<'all' | 'stocks' | 'crypto'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'gainLossPercentage' | 'totalValue'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -208,13 +209,15 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
   }, [portfolioSnapshots]);
 
   // --- Handlers ---
-  const handleAddInvestment = useCallback(() => {
+  const handleAddInvestment = useCallback((type?: 'Stock' | 'Crypto') => {
     setEditingInvestment(null);
+    setInitialInvestmentType(type);
     setIsModalOpen(true);
   }, []);
 
   const handleEditInvestment = useCallback((investment: Investment) => {
     setEditingInvestment(investment);
+    setInitialInvestmentType(investment.type); // Set initial type for editing
     setIsModalOpen(true);
   }, []);
 
@@ -226,12 +229,14 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
     }
     setIsModalOpen(false);
     setEditingInvestment(null);
+    setInitialInvestmentType(undefined);
   }, [editingInvestment, addInvestment, updateInvestment]);
 
   const handleDeleteInvestment = useCallback(async (id: string) => {
     await deleteInvestment(id);
     setIsModalOpen(false);
     setEditingInvestment(null);
+    setInitialInvestmentType(undefined);
   }, [deleteInvestment]);
 
   const handleSortByChange = useCallback((value: 'name' | 'gainLossPercentage' | 'totalValue') => {
@@ -300,6 +305,18 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                 <Card className="glassmorphic-card">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.overallAllocation")}</CardTitle>
+                    <div className="flex space-x-2">
+                      <Button onClick={() => handleAddInvestment('Stock')} className="flex items-center space-x-1 px-3 py-2 rounded-xl transition-colors text-sm active:bg-primary/80">
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">{t("investments.addStock")}</span>
+                        <span className="sm:hidden">{t("common.add")}</span>
+                      </Button>
+                      <Button onClick={() => handleAddInvestment('Crypto')} className="flex items-center space-x-1 px-3 py-2 rounded-xl transition-colors text-sm active:bg-primary/80">
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">{t("investments.addCrypto")}</span>
+                        <span className="sm:hidden">{t("common.add")}</span>
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
                     {overallAllocationData.length > 0 ? (
@@ -352,7 +369,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                   onToggleSortOrder={handleToggleSortOrder}
                   onEditInvestment={handleEditInvestment}
                   priceChange={priceChange}
-                  onAddInvestment={handleAddInvestment}
+                  onAddInvestment={() => handleAddInvestment()} // General add
                   emptyMessage={t("investments.noInvestmentsFound")}
                   emptyIcon={Wallet}
                   emptyButtonText={t("investments.addFirstInvestment")}
@@ -368,6 +385,11 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                 <Card className="glassmorphic-card">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.stockAllocation")}</CardTitle>
+                    <Button onClick={() => handleAddInvestment('Stock')} className="flex items-center space-x-1 px-3 py-2 rounded-xl transition-colors text-sm active:bg-primary/80">
+                      <Plus className="w-4 h-4" />
+                      <span className="hidden sm:inline">{t("investments.addStock")}</span>
+                      <span className="sm:hidden">{t("common.add")}</span>
+                    </Button>
                   </CardHeader>
                   <CardContent className="h-[250px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
                     {stockAllocationData.length > 0 ? (
@@ -420,7 +442,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                   onToggleSortOrder={handleToggleSortOrder}
                   onEditInvestment={handleEditInvestment}
                   priceChange={priceChange}
-                  onAddInvestment={handleAddInvestment}
+                  onAddInvestment={() => handleAddInvestment('Stock')}
                   emptyMessage={t("investments.noStockInvestments")}
                   emptyIcon={DollarSign}
                   emptyButtonText={t("investments.addFirstStock")}
@@ -436,6 +458,11 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                 <Card className="glassmorphic-card">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-lg font-semibold tracking-tight">{t("investments.cryptoAllocation")}</CardTitle>
+                    <Button onClick={() => handleAddInvestment('Crypto')} className="flex items-center space-x-1 px-3 py-2 rounded-xl transition-colors text-sm active:bg-primary/80">
+                      <Plus className="w-4 h-4" />
+                      <span className="hidden sm:inline">{t("investments.addCrypto")}</span>
+                      <span className="sm:hidden">{t("common.add")}</span>
+                    </Button>
                   </CardHeader>
                   <CardContent className="h-[250px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
                     {cryptoAllocationData.length > 0 ? (
@@ -488,7 +515,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
                   onToggleSortOrder={handleToggleSortOrder}
                   onEditInvestment={handleEditInvestment}
                   priceChange={priceChange}
-                  onAddInvestment={handleAddInvestment}
+                  onAddInvestment={() => handleAddInvestment('Crypto')}
                   emptyMessage={t("investments.noCryptoInvestments")}
                   emptyIcon={Bitcoin}
                   emptyButtonText={t("investments.addFirstCrypto")}
@@ -565,6 +592,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
           onSave={handleSaveInvestment}
           onDelete={handleDeleteInvestment}
           investmentToEdit={editingInvestment}
+          initialType={initialInvestmentType} // Pass initial type
         />
 
         {/* Fixed Add Button for Mobile (now above BottomNavBar) */}
@@ -573,7 +601,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({ userUid, setShowProfi
             "fixed bottom-20 right-4 sm:hidden rounded-xl p-3 shadow-lg z-30 animate-in fade-in zoom-in duration-300 transition-transform",
             "glassmorphic-card bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground"
           )}
-          onClick={handleAddInvestment}
+          onClick={() => handleAddInvestment()} // General add for mobile
         >
           <Plus className="w-6 h-6" />
         </Button>

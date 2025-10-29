@@ -81,7 +81,7 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
       percentage: total > 0 ? (item.value / total) * 100 : 0,
       color: CHART_PALETTE[index % CHART_PALETTE.length],
     }));
-  }, [data]);
+  }, [data, palette]); // Added palette to dependencies
 
   return (
     <motion.div
@@ -94,24 +94,24 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
       </CardHeader>
       <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
         {chartData.length > 0 ? (
-          <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-            <ProDonut
-              chartId="portfolio-allocation"
-              data={chartData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
-              totalValue={totalPortfolioValue}
-              totalLabel={t("dashboard.totalAllocated")}
-              innerRadius={60}
-              outerRadius={90}
+          <>
+            <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
+              <ProDonut
+                chartId="portfolio-allocation"
+                data={chartData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
+                totalValue={totalPortfolioValue}
+                totalLabel={t("dashboard.totalAllocated")}
+                innerRadius={60}
+                outerRadius={90}
+              />
+            </div>
+            <AllocationLegendList
+              chartData={chartData}
+              formatCurrency={formatCurrency}
             />
-          </div>
+          </>
         ) : (
           <p className="text-muted-foreground w-full text-center">{emptyMessage}</p>
-        )}
-        {chartData.length > 0 && (
-          <AllocationLegendList
-            chartData={chartData}
-            formatCurrency={formatCurrency}
-          />
         )}
       </CardContent>
     </motion.div>

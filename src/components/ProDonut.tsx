@@ -81,8 +81,9 @@ const ProDonut: React.FC<ProDonutProps> = memo(({
   const containerDiameter = outerRadius * 2;
   const totalValueText = formatCurrency(totalValue);
 
-  const mainFontSize = calculateFontSize(totalValueText, containerDiameter, 28, 10, 0.6); // Adjust charWidthFactor as needed
-  const subLabelFontSize = calculateFontSize(displayedTotalLabel, containerDiameter, 16, 8, 0.5); // Adjust charWidthFactor as needed
+  // Adjusted font sizes for better visual balance
+  const mainFontSize = calculateFontSize(totalValueText, containerDiameter, 24, 10, 0.6);
+  const subLabelFontSize = calculateFontSize(displayedTotalLabel, containerDiameter, 14, 8, 0.5);
 
   return (
     <motion.div
@@ -101,14 +102,15 @@ const ProDonut: React.FC<ProDonutProps> = memo(({
             innerRadius={innerRadius}
             outerRadius={outerRadius}
             fill="#8884d8"
-            paddingAngle={5}
+            paddingAngle={3} // Slightly reduced padding for a fuller look
             dataKey="value"
             nameKey="name"
-            cornerRadius={5}
+            cornerRadius={5} // Rounded corners for segments
             isAnimationActive={true}
-            animationDuration={800}
+            animationDuration={1000} // 1 second animation
             animationEasing="ease-out"
             stroke="none" // Remove stroke to prevent lines between segments
+            strokeLinecap="round" // Rounded ends for segments
           >
             {processedData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.fill} aria-label={`${entry.name}: ${entry.percentage.toFixed(0)}%`} />
@@ -123,21 +125,22 @@ const ProDonut: React.FC<ProDonutProps> = memo(({
 
       {/* Centered Content */}
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none gap-y-1"
+        className="absolute flex flex-col items-center justify-center pointer-events-none"
         style={{
-          width: `${outerRadius * 2}px`,
-          height: `${outerRadius * 2}px`,
+          // Position relative to the center of the donut
           top: '50%',
           left: '50%',
-          transform: 'translate(-50%, -50%)',
+          transform: 'translate(-50%, -50%)', // Perfect centering
+          width: `${innerRadius * 2 * 0.9}px`, // Constrain width to inner circle for text wrapping
+          textAlign: 'center',
         }}
       >
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.5, ease: "easeOut" }}
-          className={cn(mainTextColorClass, mainFontWeightClass, "text-center font-mono")}
-          style={{ fontSize: `${mainFontSize}px`, lineHeight: 1 }}
+          className={cn(mainTextColorClass, mainFontWeightClass, "font-mono")}
+          style={{ fontSize: `${mainFontSize}px`, lineHeight: 1.2 }} // Adjusted line-height
         >
           {totalValueText}
         </motion.span>
@@ -146,8 +149,8 @@ const ProDonut: React.FC<ProDonutProps> = memo(({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.7, ease: "easeOut" }}
-            className={cn(subTextColorClass, subFontWeightClass, "text-center")}
-            style={{ fontSize: `${subLabelFontSize}px`, lineHeight: 1 }}
+            className={cn(subTextColorClass, subFontWeightClass)}
+            style={{ fontSize: `${subLabelFontSize}px`, lineHeight: 1.2, marginTop: '4px' }} // Small offset for sublabel
           >
             {displayedTotalLabel}
           </motion.span>

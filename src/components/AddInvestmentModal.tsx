@@ -6,6 +6,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { Investment } from '@/hooks/use-investment-data';
 import InvestmentForm from './investments/InvestmentForm';
 import { useDeviceDetection } from '@/hooks/use-device-detection'; // Import the new hook
+import { useTranslation } from 'react-i18next';
 
 interface AddInvestmentModalProps {
   isOpen: boolean;
@@ -13,9 +14,11 @@ interface AddInvestmentModalProps {
   onSave: (investment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => void;
   onDelete: (id: string) => void;
   investmentToEdit?: Investment | null;
+  initialType?: 'Stock' | 'Crypto'; // New prop
 }
 
-const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose, onSave, onDelete, investmentToEdit }) => {
+const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose, onSave, onDelete, investmentToEdit, initialType }) => {
+  const { t } = useTranslation();
   const { isMobile } = useDeviceDetection();
 
   const handleSave = useCallback((newInvestment: Omit<Investment, 'id' | 'ownerUid' | 'previousPrice'>) => {
@@ -32,7 +35,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
     <> {/* Removed Card wrapper */}
       <DialogHeader> {/* Using DialogHeader for consistent styling, works with Drawer too */}
         <DialogTitle className="flex items-center tracking-tight"> {/* Added flex and items-center */}
-          {investmentToEdit ? 'Edit Investment' : 'Add New Investment'}
+          {investmentToEdit ? t("investments.editInvestment") : t("investments.addInvestmentTitle")}
         </DialogTitle>
       </DialogHeader>
       <InvestmentForm
@@ -40,6 +43,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
         onSave={handleSave}
         onDelete={handleDelete}
         onClose={onClose}
+        initialType={initialType} // Pass initial type to form
       />
     </>
   );
@@ -50,7 +54,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
         <DrawerContent className="safe-top safe-bottom glassmorphic-card"> {/* Apply glassmorphism to drawer content */}
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center tracking-tight"> {/* Added flex and items-center */}
-              {investmentToEdit ? 'Edit Investment' : 'Add New Investment'}
+              {investmentToEdit ? t("investments.editInvestment") : t("investments.addInvestmentTitle")}
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4"> {/* Wrap form in a div for padding within drawer */}
@@ -59,6 +63,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
               onSave={handleSave}
               onDelete={handleDelete}
               onClose={onClose}
+              initialType={initialType} // Pass initial type to form
             />
           </div>
         </DrawerContent>
