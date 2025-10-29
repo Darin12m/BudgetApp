@@ -94,13 +94,18 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   const formatCurrencySymbolOnly = useCallback((valueInUSD: number, options?: Intl.NumberFormatOptions): string => {
     const valueInSelectedCurrency = valueInUSD / selectedCurrency.conversionRateToUSD;
 
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: selectedCurrency.code,
-      currencyDisplay: 'symbol', // Display only the symbol
+    // Format the number without any currency symbol/code
+    const numberFormatter = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
+      maximumFractionDigits: 2, // Ensure consistent decimal places
       ...options,
-    }).format(valueInSelectedCurrency);
+      style: 'decimal', // Force decimal style to avoid currency symbols
+    });
+
+    const formattedNumber = numberFormatter.format(valueInSelectedCurrency);
+
+    // Prepend the actual symbol
+    return `${selectedCurrency.symbol} ${formattedNumber}`;
   }, [selectedCurrency]);
 
   // New: Converts a value (assumed to be in selectedCurrency) to USD
