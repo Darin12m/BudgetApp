@@ -25,9 +25,10 @@ interface QuickAddTransactionModalProps {
   onClose: () => void;
   onSave: (amount: number, merchant: string, date: string, categoryId: string, isRecurring: boolean, frequency?: 'Monthly' | 'Weekly' | 'Yearly', nextDate?: string, inputCurrencyCode?: string) => void;
   categories: Category[];
+  uncategorizedCategoryId: string; // New prop
 }
 
-const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isOpen, onClose, onSave, categories }) => {
+const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isOpen, onClose, onSave, categories, uncategorizedCategoryId }) => {
   const { t } = useTranslation(); // Initialize useTranslation hook
   const { isMobile } = useDeviceDetection();
   const { formatCurrency, selectedCurrency, convertInputToUSD } = useCurrency();
@@ -45,26 +46,21 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
     setAmount('');
     setMerchant('');
     setDate(format(new Date(), 'yyyy-MM-dd'));
-    setSelectedCategoryId('');
+    setSelectedCategoryId(uncategorizedCategoryId); // Default to uncategorized
     setIsRecurring(false);
     setFrequency('Monthly');
     setNextDate(undefined);
     setIsExpense(true);
     setErrors({});
-  }, []);
+  }, [uncategorizedCategoryId]);
 
   useEffect(() => {
     if (!isOpen) {
       resetForm();
     } else {
-      if (categories.length > 0) {
-        const uncategorized = categories.find(cat => cat.name === 'Uncategorized');
-        setSelectedCategoryId(uncategorized ? uncategorized.id : ''); // Default to empty string for 'None'
-      } else {
-        setSelectedCategoryId('');
-      }
+      setSelectedCategoryId(uncategorizedCategoryId); // Always default to uncategorized when opening
     }
-  }, [isOpen, resetForm, categories]);
+  }, [isOpen, resetForm, uncategorizedCategoryId]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -72,7 +68,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
     if (isNaN(parseFloat(amount))) newErrors.amount = t("transactions.amountInvalid");
     if (!merchant.trim()) newErrors.merchant = t("transactions.merchantRequired");
     if (!date) newErrors.date = t("transactions.dateRequired");
-    if (!selectedCategoryId) newErrors.categoryId = t("transactions.categoryRequired");
+    if (!selectedCategoryId || selectedCategoryId === uncategorizedCategoryId) newErrors.categoryId = t("transactions.categoryRequired"); // Validate if a specific category is chosen
     if (isRecurring && !nextDate) newErrors.nextDate = t("transactions.nextDueDateRequired");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -188,15 +184,17 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
               <SelectValue placeholder={categories.length > 0 ? t("transactions.selectCategory") : t("transactions.noCategoriesAvailable")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">{t("transactions.noCategory")}</SelectItem> {/* Added 'No Category' option */}
+              <SelectItem value={uncategorizedCategoryId}>
+                <span className="mr-2">❓</span> {t("transactions.noCategory")}
+              </SelectItem>
               {categories.length > 0 ? (
-                categories.map((cat) => (
+                categories.filter(cat => cat.id !== uncategorizedCategoryId).map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
                     <span className="mr-2">{cat.emoji}</span> {cat.name}
                   </SelectItem>
                 ))
               ) : (
-                <SelectItem value="" disabled>
+                <SelectItem value="no-categories-available" disabled>
                   {t("transactions.noCategoriesAddOne")}
                 </SelectItem>
               )}

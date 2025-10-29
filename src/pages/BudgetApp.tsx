@@ -69,6 +69,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid, setShowProfilePopup })
     spendingTrend,
     netWorthTrend,
     formatCurrency,
+    uncategorizedCategoryId, // New: Get uncategorizedCategoryId
 
     // UI State
     activeView,
@@ -125,7 +126,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid, setShowProfilePopup })
       <div className={`flex flex-col flex-1 min-w-0 ${sidebarOpen ? 'sm:ml-72' : 'sm:ml-0'} transition-all duration-300 ease-in-out`}>
         <Header
           title={t(`navigation.${activeView}`)}
-          subtitle={t("dashboard.welcomeMessage")}
           onSidebarToggle={handleSidebarToggle}
           setShowProfilePopup={setShowProfilePopup}
         />
@@ -213,6 +213,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid, setShowProfilePopup })
         onClose={() => setIsQuickAddModalOpen(false)}
         onSave={handleQuickAddTransaction}
         categories={categories}
+        uncategorizedCategoryId={uncategorizedCategoryId} // Pass uncategorized ID
       />
 
       <AddEditTransactionModal
@@ -223,6 +224,7 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid, setShowProfilePopup })
         transactionToEdit={transactionToEdit}
         categories={categories}
         recurringTemplates={recurringTemplates}
+        uncategorizedCategoryId={uncategorizedCategoryId} // Pass uncategorized ID
       />
 
       <AddEditCategoryModal
@@ -231,13 +233,6 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid, setShowProfilePopup })
         onSave={handleSaveCategory}
         categoryToEdit={categoryToEdit}
         existingCategoryNames={categories.map(cat => cat.name)}
-      />
-
-      <AddEditGoalModal
-        isOpen={isAddEditGoalModalOpen}
-        onClose={() => setIsAddEditGoalModalOpen(false)}
-        onSave={handleSaveGoal}
-        goalToEdit={goalToEdit}
       />
 
       {goalToFund && (

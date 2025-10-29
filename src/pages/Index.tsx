@@ -56,6 +56,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
     weeklyBudgetTarget,
     topSpendingCategories,
     currentMonthTransactions,
+    uncategorizedCategoryId, // New: Get uncategorizedCategoryId
   } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
 
   const {
@@ -262,7 +263,6 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
       <div className={`flex flex-col flex-1 min-w-0 ${sidebarOpen ? 'sm:ml-72' : 'sm:ml-0'} transition-all duration-300 ease-in-out`}>
         <Header
           title={t("navigation.dashboard")}
-          subtitle={dynamicGreeting}
           onSidebarToggle={handleSidebarToggle}
           setShowProfilePopup={setShowProfilePopup}
         />
@@ -436,6 +436,7 @@ const Index: React.FC<IndexPageProps> = ({ userUid, setShowProfilePopup }) => {
         onClose={() => setIsQuickAddModalOpen(false)}
         onSave={handleQuickAddTransaction}
         categories={categories}
+        uncategorizedCategoryId={uncategorizedCategoryId} // Pass uncategorized ID
       />
 
       <AddInvestmentModal

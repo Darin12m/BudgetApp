@@ -54,6 +54,7 @@ export const useBudgetAppLogic = (userUid: string | null) => {
     weeklyBudgetTarget,
     topSpendingCategories,
     currentMonthTransactions,
+    uncategorizedCategoryId, // New: Get uncategorizedCategoryId
   } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
 
   // --- UI State ---
@@ -491,6 +492,7 @@ export const useBudgetAppLogic = (userUid: string | null) => {
     RunOutIcon,
     dailyAvgSpending,
     spendingForecastChartData,
+    uncategorizedCategoryId, // New: Return uncategorizedCategoryId
     // UI State
     activeView,
     sidebarOpen,

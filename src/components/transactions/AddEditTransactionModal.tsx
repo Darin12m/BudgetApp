@@ -39,6 +39,7 @@ interface AddEditTransactionModalProps {
   transactionToEdit?: Transaction | null;
   categories: Category[];
   recurringTemplates: RecurringTransaction[];
+  uncategorizedCategoryId: string; // New prop
 }
 
 const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
@@ -49,6 +50,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   transactionToEdit,
   categories,
   recurringTemplates,
+  uncategorizedCategoryId,
 }) => {
   const { t } = useTranslation(); // Initialize useTranslation hook
   const { isMobile } = useDeviceDetection();
@@ -95,18 +97,13 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
         setDate(new Date());
         setMerchant('');
         setAmount('');
-        if (categories.length > 0) {
-          const uncategorized = categories.find(cat => cat.name === 'Uncategorized');
-          setSelectedCategoryId(uncategorized ? uncategorized.id : ''); // Default to empty string for 'None'
-        } else {
-          setSelectedCategoryId('');
-        }
+        setSelectedCategoryId(uncategorizedCategoryId); // Default to uncategorized
         setStatus('pending');
         setIsExpense(true);
       }
       setErrors({});
     }
-  }, [isOpen, transactionToEdit, categories, recurringTemplates, isInstanceFromRecurringTemplate, convertUSDToSelected]);
+  }, [isOpen, transactionToEdit, categories, recurringTemplates, isInstanceFromRecurringTemplate, convertUSDToSelected, uncategorizedCategoryId]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -114,7 +111,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
     if (!merchant.trim()) newErrors.merchant = t("transactions.merchantRequired");
     if (!amount || parseFloat(amount) === 0) newErrors.amount = t("transactions.amountRequired");
     if (isNaN(parseFloat(amount))) newErrors.amount = t("transactions.amountInvalid");
-    if (!selectedCategoryId.trim()) newErrors.categoryId = t("transactions.categoryRequired");
+    if (!selectedCategoryId || selectedCategoryId === uncategorizedCategoryId) newErrors.categoryId = t("transactions.categoryRequired"); // Validate if a specific category is chosen
     if (isRecurring && !nextDate) newErrors.nextDate = t("transactions.nextDueDateRequired");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -273,15 +270,17 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
               <SelectValue placeholder={categories.length > 0 ? t("transactions.selectCategory") : t("transactions.noCategoriesAvailable")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">{t("transactions.noCategory")}</SelectItem> {/* Added 'No Category' option */}
+              <SelectItem value={uncategorizedCategoryId}>
+                <span className="mr-2">❓</span> {t("transactions.noCategory")}
+              </SelectItem>
               {categories.length > 0 ? (
-                categories.map((cat) => (
+                categories.filter(cat => cat.id !== uncategorizedCategoryId).map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
                     <span className="mr-2">{cat.emoji}</span> {cat.name}
                   </SelectItem>
                 ))
               ) : (
-                <SelectItem value="" disabled>
+                <SelectItem value="no-categories-available" disabled>
                   {t("transactions.noCategoriesAddOne")}
                 </SelectItem>
               )}

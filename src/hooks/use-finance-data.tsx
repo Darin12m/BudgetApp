@@ -137,8 +137,10 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
   const [budgetSettings, setBudgetSettings] = useState<BudgetSettings>({ id: '', rolloverEnabled: true, previousMonthLeftover: 0, ownerUid: '', inputCurrencyCode: 'USD' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [uncategorizedCategoryId, setUncategorizedCategoryId] = useState<string>('loading-uncategorized'); // Default to a loading state
 
   const hasCreatedDefaultBudgetSettings = useRef(false);
+  const hasCreatedDefaultCategories = useRef(false); // New ref for categories
 
   useEffect(() => {
     if (!userUid) {
@@ -185,6 +187,45 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
     });
     unsubscribes.push(unsubscribeBudgetSettings);
 
+    // Fetch categories and ensure 'Uncategorized' exists
+    const categoriesRef = collection(db, 'categories');
+    const qCategories = query(categoriesRef, where("ownerUid", "==", userUid));
+    const unsubscribeCategories = onSnapshot(qCategories, (snapshot) => {
+      const fetchedCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Category[];
+      setCategories(fetchedCategories);
+
+      const existingUncategorized = fetchedCategories.find(cat => cat.name === 'Uncategorized');
+      if (existingUncategorized) {
+        setUncategorizedCategoryId(existingUncategorized.id);
+      } else {
+        if (!hasCreatedDefaultCategories.current) {
+          hasCreatedDefaultCategories.current = true;
+          addDoc(categoriesRef, {
+            name: 'Uncategorized',
+            budgeted: 0,
+            spent: 0, // Will be calculated dynamically
+            color: '#9CA3AF', // A neutral gray color
+            emoji: '❓',
+            ownerUid: userUid,
+            inputCurrencyCode: 'USD',
+            createdAt: serverTimestamp(),
+          }).then((docRef) => {
+            setUncategorizedCategoryId(docRef.id);
+            toast.success("Default 'Uncategorized' category created.");
+          }).catch(err => {
+            console.error("Error creating default 'Uncategorized' category:", err);
+            toast.error("Failed to create default 'Uncategorized' category.");
+            hasCreatedDefaultCategories.current = false;
+          });
+        }
+      }
+    }, (err) => {
+      console.error("Error fetching categories:", err.code, err.message);
+      toast.error(`Failed to load categories. Error: ${err.code} - ${err.message}`);
+    });
+    unsubscribes.push(unsubscribeCategories);
+
+
     const fetchData = (collectionName: string, setState: (data: any[]) => void, applyDateFilter: boolean = false) => {
       let q = query(collection(db, collectionName), where("ownerUid", "==", userUid));
 
@@ -208,7 +249,6 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
     };
 
     fetchData('transactions', setTransactions, true);
-    fetchData('categories', setCategories);
     fetchData('accounts', setAccounts);
     fetchData('goals', setGoals);
     fetchData('recurringTransactions', setRecurringTemplates); // Fetch recurring templates
@@ -447,5 +487,6 @@ export const useFinanceData = (userUid: string | null, startDate: Date | undefin
     weeklyBudgetTarget,
     topSpendingCategories,
     currentMonthTransactions,
+    uncategorizedCategoryId, // Return the uncategorized category ID
   };
 };
