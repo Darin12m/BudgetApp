@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Sun, Moon, DollarSign, Key, User, LogOut, ChevronRight, Palette, Zap, BellRing, Menu, Calendar, Landmark, FileText, Trash2,
-  Lock, Mail, UserCircle, ShieldCheck, Clock, Database, Upload, Download, Globe, Info, Gavel, Link as LinkIcon, ArrowRight
+  Lock, Mail, UserCircle, ShieldCheck, Clock, Database, Upload, Download, Globe, Info, Gavel, Link as LinkIcon, ArrowRight,
+  Eye, EyeOff, Loader2, AtSign, KeyRound, User as UserIcon // Added Eye, EyeOff, Loader2, AtSign, KeyRound, UserIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -15,7 +16,18 @@ import { toast } from 'sonner';
 import BottomNavBar from '@/components/BottomNavBar';
 import { useFinanceData } from '@/hooks/use-finance-data';
 import { auth, db } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
+import {
+  signOut,
+  updateEmail,
+  updatePassword,
+  updateProfile,
+  deleteUser,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'firebase/auth'; // Added Firebase Auth functions
+import { doc, updateDoc } from 'firebase/firestore'; // Added Firestore functions
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header'; // Import Header
@@ -37,9 +49,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { exportAllUserData } from '@/lib/data-export'; // Import the new export utility
 import { motion } from 'framer-motion';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Import Dialog components
+import { useAuth } from '@/context/AuthContext'; // Import useAuth to get current user
 
 interface SettingsPageProps {
   userUid: string | null;
@@ -48,6 +62,7 @@ interface SettingsPageProps {
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopup }) => {
   const { t } = useTranslation();
+  const { user } = useAuth(); // Get the current user from AuthContext
   const [monthlyBudgetInput, setMonthlyBudgetInput] = useState<string>('');
   const [microInvestingEnabled, setMicroInvestingEnabled] = useState<boolean>(true);
   const [microInvestingPercentage, setMicroInvestingPercentage] = useState<string>('30');
@@ -55,10 +70,30 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [isDeleteDataConfirmOpen, setIsDeleteDataConfirmOpen] = useState(false);
 
+  // Account Management States
+  const [displayNameInput, setDisplayNameInput] = useState(user?.displayName || '');
+  const [newEmailInput, setNewEmailInput] = useState('');
+  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [confirmNewPasswordInput, setConfirmNewPasswordInput] = useState('');
+
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isConnectingGoogle, setIsConnectingGoogle] = useState(false);
+
+  const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
   const { selectedRange } = useDateRange();
-  const { budgetSettings, updateDocument, loading: financeLoading, transactions, categories, goals } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
-  const { selectedCurrency, convertInputToUSD, convertUSDToSelected } = useCurrency();
-  const { isDarkMode, toggleTheme } = useTheme(); // For theme toggle in settings
+  const { budgetSettings, updateDocument, loading: financeLoading } = useFinanceData(userUid, selectedRange.from, selectedRange.to);
+  const { selectedCurrency, convertInputToUSD, convertUSDToSelected, setCurrency } = useCurrency();
+  const { isDarkMode, toggleTheme } = useTheme();
 
   const navigate = useNavigate();
 
@@ -70,6 +105,227 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
       setPriceAlertThresholdInput(budgetSettings.priceAlertThreshold?.toString() || '5');
     }
   }, [budgetSettings, convertUSDToSelected]);
+
+  useEffect(() => {
+    if (user) {
+      setDisplayNameInput(user.displayName || '');
+      setNewEmailInput(user.email || ''); // Pre-fill with current email
+    }
+  }, [user]);
+
+  // --- Firebase Account Management Handlers ---
+
+  const handleUpdateName = useCallback(async () => {
+    if (!user || !userUid) {
+      toast.error(t("common.error"));
+      return;
+    }
+    if (!displayNameInput.trim()) {
+      toast.error(t("settings.nameRequired"));
+      return;
+    }
+
+    setIsUpdatingName(true);
+    try {
+      await updateProfile(user, { displayName: displayNameInput.trim() });
+      await updateDoc(doc(db, "users", user.uid), { name: displayNameInput.trim() });
+      toast.success(t("settings.nameUpdateSuccess"));
+    } catch (error: any) {
+      console.error("Error updating display name:", error);
+      toast.error(`${t("common.error")}: ${error.message}`);
+    } finally {
+      setIsUpdatingName(false);
+    }
+  }, [user, userUid, displayNameInput, t]);
+
+  const handleChangeEmail = useCallback(async () => {
+    if (!user || !user.email || !userUid) {
+      toast.error(t("common.error"));
+      return;
+    }
+    if (!newEmailInput.trim() || !/\S+@\S+\.\S+/.test(newEmailInput.trim())) {
+      toast.error(t("settings.invalidEmail"));
+      return;
+    }
+    if (!currentPasswordInput) {
+      toast.error(t("settings.passwordRequired"));
+      return;
+    }
+
+    setIsUpdatingEmail(true);
+    try {
+      const credential = EmailAuthProvider.credential(user.email, currentPasswordInput);
+      await reauthenticateWithCredential(user, credential);
+      await updateEmail(user, newEmailInput.trim());
+      await updateDoc(doc(db, "users", user.uid), { email: newEmailInput.trim() });
+      toast.success(t("settings.emailUpdateSuccess"));
+      setShowChangeEmailModal(false);
+      setCurrentPasswordInput(''); // Clear password
+    } catch (error: any) {
+      console.error("Error updating email:", error);
+      let errorMessage = `${t("settings.emailUpdateError")}: ${error.message}`;
+      if (error.code === 'auth/requires-recent-login') {
+        errorMessage = t("settings.reauthenticateRequired");
+      } else if (error.code === 'auth/invalid-credential') {
+        errorMessage = t("settings.invalidPassword");
+      } else if (error.code === 'auth/email-already-in-use') {
+        errorMessage = t("settings.emailInUse");
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsUpdatingEmail(false);
+    }
+  }, [user, userUid, newEmailInput, currentPasswordInput, t]);
+
+  const validatePassword = (password: string) => {
+    if (password.length < 8) return t("settings.passwordTooShort");
+    if (!/[A-Z]/.test(password)) return t("settings.passwordUppercase");
+    if (!/[a-z]/.test(password)) return t("settings.passwordLowercase");
+    if (!/[0-9]/.test(password)) return t("settings.passwordNumber");
+    return null;
+  };
+
+  const handleChangePassword = useCallback(async () => {
+    if (!user || !user.email) {
+      toast.error(t("common.error"));
+      return;
+    }
+    if (!currentPasswordInput) {
+      toast.error(t("settings.passwordRequired"));
+      return;
+    }
+    const newPasswordError = validatePassword(newPasswordInput);
+    if (newPasswordError) {
+      toast.error(newPasswordError);
+      return;
+    }
+    if (newPasswordInput !== confirmNewPasswordInput) {
+      toast.error(t("settings.passwordsMismatch"));
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const credential = EmailAuthProvider.credential(user.email, currentPasswordInput);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, newPasswordInput);
+      toast.success(t("settings.passwordUpdateSuccess"));
+      setShowChangePasswordModal(false);
+      setCurrentPasswordInput('');
+      setNewPasswordInput('');
+      setConfirmNewPasswordInput('');
+    } catch (error: any) {
+      console.error("Error updating password:", error);
+      let errorMessage = `${t("settings.passwordUpdateError")}: ${error.message}`;
+      if (error.code === 'auth/requires-recent-login') {
+        errorMessage = t("settings.reauthenticateRequired");
+      } else if (error.code === 'auth/invalid-credential') {
+        errorMessage = t("settings.invalidPassword");
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = t("settings.passwordTooWeak");
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  }, [user, currentPasswordInput, newPasswordInput, confirmNewPasswordInput, t]);
+
+  const handleDeleteAccount = useCallback(async () => {
+    if (!user || !userUid) {
+      toast.error(t("common.error"));
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    try {
+      // Re-authenticate if necessary (Firebase might require it for deleteUser)
+      // For simplicity, we'll assume the user was recently logged in or re-authenticated for another action.
+      // In a real app, you might prompt for password again here.
+      await deleteUser(user);
+
+      // Delete user data from Firestore
+      const collectionsToDelete = [
+        'accounts', 'budgetSettings', 'categories', 'goals',
+        'investments', 'portfolioSnapshots', 'recurringTransactions', 'transactions', 'users'
+      ];
+
+      for (const collectionName of collectionsToDelete) {
+        const q = query(collection(db, collectionName), where("ownerUid", "==", userUid));
+        const querySnapshot = await getDocs(q);
+        const deletePromises = querySnapshot.docs.map(d => deleteDoc(doc(db, collectionName, d.id)));
+        await Promise.all(deletePromises);
+      }
+
+      toast.success(t("settings.accountDeleteSuccess"));
+      navigate('/login');
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+      let errorMessage = `${t("settings.accountDeleteError")}: ${error.message}`;
+      if (error.code === 'auth/requires-recent-login') {
+        errorMessage = t("settings.reauthenticateRequired");
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsDeletingAccount(false);
+      setShowDeleteAccountConfirm(false);
+    }
+  }, [user, userUid, navigate, t]);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('selectedCurrency'); // Clear currency preference
+      localStorage.removeItem('i18nextLng'); // Clear language preference
+      localStorage.removeItem('selectedDateRange'); // Clear date range preference
+      toast.success(t("settings.signOutSuccess"));
+      setShowProfilePopup(false); // Close popup if open
+      navigate('/login');
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast.error(t("settings.signOutError"));
+    }
+  }, [navigate, setShowProfilePopup, t]);
+
+  const handleConnectGoogle = useCallback(async () => {
+    if (!user || !userUid) {
+      toast.error(t("common.error"));
+      return;
+    }
+    setIsConnectingGoogle(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      // Link the Google account to the current user
+      if (user.providerData.some(p => p.providerId === GoogleAuthProvider.PROVIDER_ID)) {
+        toast.info(t("settings.googleAlreadyLinked"));
+      } else {
+        // If the user is already signed in with email/password, link the Google account
+        // If the Google account is already linked to another user, Firebase will throw an error
+        // For simplicity, we're assuming the user is not trying to link an already-linked Google account to a different email user.
+        // A more robust solution would involve handling 'auth/credential-already-in-use'
+        await user.linkWithCredential(result.credential!);
+        await updateDoc(doc(db, "users", user.uid), {
+          name: result.user.displayName,
+          email: result.user.email,
+          avatar: result.user.photoURL,
+          googleLinked: true,
+        }, { merge: true }); // Use merge to avoid overwriting other fields
+        toast.success(t("settings.googleLinkedSuccess"));
+      }
+    } catch (error: any) {
+      console.error("Error connecting Google account:", error);
+      let errorMessage = `${t("settings.googleLinkedError")}: ${error.message}`;
+      if (error.code === 'auth/credential-already-in-use') {
+        errorMessage = t("settings.googleCredentialInUse");
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsConnectingGoogle(false);
+    }
+  }, [user, userUid, t]);
+
+
+  // --- Other Settings Handlers (existing) ---
 
   const handleSaveMonthlyBudget = async () => {
     if (!userUid || !budgetSettings?.id) {
@@ -179,6 +435,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
     else navigate(`/budget-app?view=${view}`);
   }, [navigate]);
 
+  const isGoogleLinked = user?.providerData.some(p => p.providerId === GoogleAuthProvider.PROVIDER_ID);
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} onViewChange={handleViewChange} userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
@@ -206,20 +464,27 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <motion.button
-                  whileHover={{ scale: 1.01, x: 5 }}
-                  whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
-                  onClick={() => toast.info(t("common.comingSoon"))}
-                >
-                  {t("settings.changeName")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </motion.button>
+                <div className="grid gap-2 px-4 py-3">
+                  <Label htmlFor="display-name" className="text-base">{t("settings.changeName")}</Label>
+                  <Input
+                    id="display-name"
+                    value={displayNameInput}
+                    onChange={(e) => setDisplayNameInput(e.target.value)}
+                    placeholder={t("settings.namePlaceholder")}
+                    className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
+                    disabled={isUpdatingName}
+                  />
+                  <Button onClick={handleUpdateName} className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={isUpdatingName}>
+                    {isUpdatingName ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserIcon className="w-4 h-4 mr-2" />}
+                    {t("common.save")} {t("settings.name")}
+                  </Button>
+                </div>
                 <Separator />
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
                   className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
-                  onClick={() => toast.info(t("common.comingSoon"))}
+                  onClick={() => setShowChangeEmailModal(true)}
                 >
                   {t("settings.changeEmail")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
@@ -228,7 +493,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
                   className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
-                  onClick={() => toast.info(t("common.comingSoon"))}
+                  onClick={() => setShowChangePasswordModal(true)}
                 >
                   {t("settings.changePassword")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
@@ -241,14 +506,16 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                   <Switch id="2fa-toggle" checked={false} onCheckedChange={() => toast.info(t("common.comingSoon"))} />
                 </div>
                 <Separator />
-                <AlertDialog>
+                <AlertDialog open={showDeleteAccountConfirm} onOpenChange={setShowDeleteAccountConfirm}>
                   <AlertDialogTrigger asChild>
                     <motion.button
                       whileHover={{ scale: 1.01, x: 5 }}
                       whileTap={{ scale: 0.99 }}
                       className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all"
+                      disabled={isDeletingAccount}
                     >
-                      <Trash2 className="w-5 h-5 mr-2" /> {t("settings.deleteAccount")}
+                      {isDeletingAccount ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="w-5 h-5 mr-2" />}
+                      {t("settings.deleteAccount")}
                     </motion.button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="glassmorphic-card">
@@ -260,10 +527,43 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">{t("common.cancel")}</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => toast.info(t("common.comingSoon"))} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("common.delete")}</AlertDialogAction>
+                      <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("common.delete")}</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
+                <Separator />
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="w-5 h-5 mr-2" /> {t("settings.signOut")}
+                </motion.button>
+              </CardContent>
+            </Card>
+
+            {/* Connect Google Account */}
+            <Card className="glassmorphic-card">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center tracking-tight">
+                  <LinkIcon className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.socialConnections")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <motion.button
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  onClick={handleConnectGoogle}
+                  disabled={isConnectingGoogle || isGoogleLinked}
+                >
+                  <div className="flex items-center">
+                    {isConnectingGoogle ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <img src="/icons/google.svg" alt="Google" className="w-5 h-5 mr-2" />}
+                    {isGoogleLinked ? t("settings.googleAccountLinked") : t("settings.connectGoogleAccount")}
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </motion.button>
               </CardContent>
             </Card>
 
@@ -462,11 +762,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <p className="text-muted-foreground text-sm mb-4">
                   {t("settings.apiIntegrationsDescription")}
                 </p>
-                {/* Connected Accounts - Hidden for now */}
-                {/* <Button variant="ghost" className="w-full justify-between text-base px-4 py-6 hover:bg-muted/50">
-                  {t("settings.connectedAccounts")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
-                <Separator /> */}
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
@@ -474,15 +769,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <LinkIcon className="w-5 h-5 mr-2" /> {t("settings.bankConnections")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </motion.button>
-                <Separator />
-                <motion.button
-                  whileHover={{ scale: 1.01, x: 5 }}
-                  whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
-                  onClick={() => toast.info(t("common.comingSoon"))}
-                >
-                  <img src="/icons/google.svg" alt="Google" className="w-5 h-5 mr-2" /> {t("settings.googleSignIn")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
               </CardContent>
             </Card>
@@ -551,6 +837,148 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
         </main>
         <BottomNavBar />
       </div>
+
+      {/* Change Email Modal */}
+      <Dialog open={showChangeEmailModal} onOpenChange={setShowChangeEmailModal}>
+        <DialogContent className="sm:max-w-[425px] glassmorphic-card">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <AtSign className="w-5 h-5 mr-2" /> {t("settings.changeEmail")}
+            </DialogTitle>
+            <DialogDescription>{t("settings.changeEmailDescription")}</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-email" className="text-right">{t("settings.newEmail")}</Label>
+              <Input
+                id="new-email"
+                type="email"
+                value={newEmailInput}
+                onChange={(e) => setNewEmailInput(e.target.value)}
+                placeholder="new@example.com"
+                className="col-span-3 bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
+                disabled={isUpdatingEmail}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="current-password-email" className="text-right">{t("settings.currentPassword")}</Label>
+              <div className="col-span-3 relative">
+                <Input
+                  id="current-password-email"
+                  type={showPassword ? "text" : "password"}
+                  value={currentPasswordInput}
+                  onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] pr-10"
+                  disabled={isUpdatingEmail}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowChangeEmailModal(false)} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleChangeEmail} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={isUpdatingEmail}>
+              {isUpdatingEmail ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+              {t("common.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Password Modal */}
+      <Dialog open={showChangePasswordModal} onOpenChange={setShowChangePasswordModal}>
+        <DialogContent className="sm:max-w-[425px] glassmorphic-card">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <KeyRound className="w-5 h-5 mr-2" /> {t("settings.changePassword")}
+            </DialogTitle>
+            <DialogDescription>{t("settings.changePasswordDescription")}</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="current-password-pw" className="text-right">{t("settings.currentPassword")}</Label>
+              <div className="col-span-3 relative">
+                <Input
+                  id="current-password-pw"
+                  type={showPassword ? "text" : "password"}
+                  value={currentPasswordInput}
+                  onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] pr-10"
+                  disabled={isUpdatingPassword}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-password" className="text-right">{t("settings.newPassword")}</Label>
+              <div className="col-span-3 relative">
+                <Input
+                  id="new-password"
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPasswordInput}
+                  onChange={(e) => setNewPasswordInput(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] pr-10"
+                  disabled={isUpdatingPassword}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(prev => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="confirm-new-password" className="text-right">{t("settings.confirmNewPassword")}</Label>
+              <div className="col-span-3 relative">
+                <Input
+                  id="confirm-new-password"
+                  type={showConfirmNewPassword ? "text" : "password"}
+                  value={confirmNewPasswordInput}
+                  onChange={(e) => setConfirmNewPasswordInput(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px] pr-10"
+                  disabled={isUpdatingPassword}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmNewPassword(prev => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirmNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowChangePasswordModal(false)} className="flex-1 sm:flex-none bg-muted/50 border-none hover:bg-muted transition-transform min-h-[44px]">
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleChangePassword} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground min-h-[44px]" disabled={isUpdatingPassword}>
+              {isUpdatingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+              {t("common.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

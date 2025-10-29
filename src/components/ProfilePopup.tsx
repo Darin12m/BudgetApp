@@ -96,6 +96,9 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
   const handleLogout = useCallback(async () => {
     try {
       await signOut(auth);
+      localStorage.removeItem('selectedCurrency'); // Clear currency preference
+      localStorage.removeItem('i18nextLng'); // Clear language preference
+      localStorage.removeItem('selectedDateRange'); // Clear date range preference
       toast.success(t("settings.signOutSuccess"));
       onClose();
       navigate('/login');
