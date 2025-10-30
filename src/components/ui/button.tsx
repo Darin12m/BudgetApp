@@ -37,7 +37,30 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'onAnimationStart' | 'onDrag'>, // Omit conflicting properties
+  extends Omit<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    | 'children'
+    | 'onAnimationStart'
+    | 'onAnimationEnd'
+    | 'onDrag'
+    | 'onDragStart'
+    | 'onDragEnd'
+    | 'onDragEnter'
+    | 'onDragExit'
+    | 'onDragLeave'
+    | 'onDragOver'
+    | 'onDrop'
+    | 'onFocus'
+    | 'onBlur'
+    | 'onPointerDown'
+    | 'onPointerMove'
+    | 'onPointerUp'
+    | 'onPointerCancel'
+    | 'onPointerEnter'
+    | 'onPointerLeave'
+    | 'onPointerOver'
+    | 'onPointerOut'
+  >,
     HTMLMotionProps<"button">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
