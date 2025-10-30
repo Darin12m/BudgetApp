@@ -2,7 +2,7 @@
 
 import React, { useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"; // Import Button
 import { Zap, X } from 'lucide-react';
 import { Investment } from '@/hooks/use-investment-data';
 import { toast } from 'sonner';
@@ -96,15 +96,15 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
           </div>
         </div>
         <div className="flex items-center space-x-2 flex-shrink-0">
-          <motion.button
+          <Button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleInvestClick}
             className="h-8 px-4 py-2 rounded-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-primary-foreground text-xs font-semibold transition-transform"
           >
             {t("microInvesting.invest")}
-          </motion.button>
-          <motion.button
+          </Button>
+          <Button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             variant="ghost"
@@ -113,7 +113,7 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
             className="h-8 w-8 text-muted-foreground hover:bg-muted/50"
           >
             <X className="h-4 w-4" />
-          </motion.button>
+          </Button>
         </div>
       </CardContent>
     </motion.div>
