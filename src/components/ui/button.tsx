@@ -37,34 +37,9 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends Omit<
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
-    | 'children'
-    | 'onAnimationStart'
-    | 'onAnimationEnd'
-    | 'onDrag'
-    | 'onDragStart'
-    | 'onDragEnd'
-    | 'onDragEnter'
-    | 'onDragExit'
-    | 'onDragLeave'
-    | 'onDragOver'
-    | 'onDrop'
-    | 'onFocus'
-    | 'onBlur'
-    | 'onPointerDown'
-    | 'onPointerMove'
-    | 'onPointerUp'
-    | 'onPointerCancel'
-    | 'onPointerEnter'
-    | 'onPointerLeave'
-    | 'onPointerOver'
-    | 'onPointerOut'
-  >,
-    HTMLMotionProps<"button">,
+  extends HTMLMotionProps<"button">, // Let HTMLMotionProps define common properties
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
-  children?: React.ReactNode; // Explicitly define children
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
