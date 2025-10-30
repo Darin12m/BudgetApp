@@ -111,7 +111,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
     if (!merchant.trim()) newErrors.merchant = t("transactions.merchantRequired");
     if (!amount || parseFloat(amount) === 0) newErrors.amount = t("transactions.amountRequired");
     if (isNaN(parseFloat(amount))) newErrors.amount = t("transactions.amountInvalid");
-    if (!selectedCategoryId || selectedCategoryId === uncategorizedCategoryId) newErrors.categoryId = t("transactions.categoryRequired"); // Validate if a specific category is chosen
+    // Removed categoryId validation: if (!selectedCategoryId || selectedCategoryId === uncategorizedCategoryId) newErrors.categoryId = t("transactions.categoryRequired");
     if (isRecurring && !nextDate) newErrors.nextDate = t("transactions.nextDueDateRequired");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -131,7 +131,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       date: date ? format(date, 'yyyy-MM-dd') : '',
       merchant: merchant.trim(),
       amount: finalAmount,
-      categoryId: selectedCategoryId,
+      categoryId: selectedCategoryId || uncategorizedCategoryId, // Use uncategorizedCategoryId if selectedCategoryId is empty
       status,
       isRecurring: isRecurring,
       recurringTransactionId: isInstanceFromRecurringTemplate ? transactionToEdit?.recurringTransactionId : undefined,
@@ -144,7 +144,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       recurringPayload = {
         name: merchant.trim(),
         amount: finalAmount,
-        categoryId: selectedCategoryId,
+        categoryId: selectedCategoryId || uncategorizedCategoryId, // Use uncategorizedCategoryId if selectedCategoryId is empty
         frequency,
         nextDate: format(nextDate, 'yyyy-MM-dd'),
         emoji: categoryEmoji,
@@ -286,7 +286,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
               )}
             </SelectContent>
           </Select>
-          {errors.categoryId && <p className="text-destructive text-xs mt-1">{errors.categoryId}</p>}
+          {/* Removed errors.categoryId display */}
         </div>
       </div>
 

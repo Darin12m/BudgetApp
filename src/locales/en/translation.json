@@ -261,7 +261,7 @@
     "merchantPlaceholder": "e.g., Coffee Shop",
     "noTransactionsFoundDescription": "It looks like you haven't added any transactions yet. Start tracking your spending!",
     "transaction": "Transaction",
-    "noCategory": "No Category"
+    "noCategory": "No Category (Optional)"
   },
   "goals": {
     "title": "Savings Goals",

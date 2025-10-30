@@ -68,7 +68,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
     if (isNaN(parseFloat(amount))) newErrors.amount = t("transactions.amountInvalid");
     if (!merchant.trim()) newErrors.merchant = t("transactions.merchantRequired");
     if (!date) newErrors.date = t("transactions.dateRequired");
-    if (!selectedCategoryId || selectedCategoryId === uncategorizedCategoryId) newErrors.categoryId = t("transactions.categoryRequired"); // Validate if a specific category is chosen
+    // Removed categoryId validation: if (!selectedCategoryId || selectedCategoryId === uncategorizedCategoryId) newErrors.categoryId = t("transactions.categoryRequired");
     if (isRecurring && !nextDate) newErrors.nextDate = t("transactions.nextDueDateRequired");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -88,7 +88,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       finalAmount,
       merchant,
       date,
-      selectedCategoryId,
+      selectedCategoryId || uncategorizedCategoryId, // Use uncategorizedCategoryId if selectedCategoryId is empty
       isRecurring,
       isRecurring ? frequency : undefined,
       isRecurring && nextDate ? format(nextDate, 'yyyy-MM-dd') : undefined,
@@ -200,7 +200,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
               )}
             </SelectContent>
           </Select>
-          {errors.categoryId && <p className="text-destructive text-xs mt-1">{errors.categoryId}</p>}
+          {/* Removed errors.categoryId display */}
         </div>
       </div>
 

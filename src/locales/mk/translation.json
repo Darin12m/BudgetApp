@@ -261,7 +261,7 @@
     "merchantPlaceholder": "на пр. Кафуле",
     "noTransactionsFoundDescription": "Изгледа дека сè уште немате додадено трансакции. Започнете со следење на вашето трошење!",
     "transaction": "Трансакција",
-    "noCategory": "Без категорија"
+    "noCategory": "Без категорија (Изборно)"
   },
   "goals": {
     "title": "Цели за штедење",

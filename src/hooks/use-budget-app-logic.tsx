@@ -262,11 +262,13 @@ export const useBudgetAppLogic = (userUid: string | null) => {
       return;
     }
 
+    const finalCategoryId = categoryId || uncategorizedCategoryId; // Use uncategorizedCategoryId if categoryId is empty
+
     const transactionPayload: Omit<Transaction, 'id' | 'ownerUid'> = {
       date: date,
       merchant: merchant || 'Quick Add',
       amount: amountInUSD,
-      categoryId: categoryId,
+      categoryId: finalCategoryId,
       status: 'pending',
       isRecurring: isRecurring,
       inputCurrencyCode: inputCurrencyCode || selectedCurrency.code,
@@ -275,11 +277,11 @@ export const useBudgetAppLogic = (userUid: string | null) => {
     try {
       const transactionId = await addDocument('transactions', transactionPayload);
       if (transactionId && isRecurring && frequency && nextDate) {
-        const categoryEmoji = categories.find(cat => cat.id === categoryId)?.emoji || '💳';
+        const categoryEmoji = categories.find(cat => cat.id === finalCategoryId)?.emoji || '💳';
         await addDocument('recurringTransactions', {
           name: merchant || 'Quick Add',
           amount: amountInUSD,
-          categoryId: categoryId,
+          categoryId: finalCategoryId,
           frequency,
           nextDate,
           emoji: categoryEmoji,
@@ -291,7 +293,7 @@ export const useBudgetAppLogic = (userUid: string | null) => {
       console.error("Error adding transaction:", e.code, e.message);
       toast.error(`Failed to add transaction: ${e.message}`);
     }
-  }, [addDocument, userUid, categories, selectedCurrency.code]);
+  }, [addDocument, userUid, categories, selectedCurrency.code, uncategorizedCategoryId]);
 
   const handleEditTransaction = useCallback((transaction: Transaction) => {
     setTransactionToEdit(transaction);
@@ -304,10 +306,13 @@ export const useBudgetAppLogic = (userUid: string | null) => {
       return;
     }
 
+    const finalCategoryId = transactionData.categoryId || uncategorizedCategoryId; // Use uncategorizedCategoryId if categoryId is empty
+
     try {
       if (transactionToEdit) {
         await updateDocument('transactions', transactionToEdit.id, {
           ...transactionData,
+          categoryId: finalCategoryId, // Ensure categoryId is updated
           recurringTransactionId: transactionToEdit.recurringTransactionId,
         });
         toast.success("Transaction updated successfully!");
@@ -315,11 +320,12 @@ export const useBudgetAppLogic = (userUid: string | null) => {
         const wasRecurringTemplate = recurringTemplates.some(rt => rt.id === transactionToEdit.recurringTransactionId);
 
         if (isRecurring && recurringDetails) {
+          const finalRecurringCategoryId = recurringDetails.categoryId || uncategorizedCategoryId; // Ensure categoryId is updated for recurring
           if (wasRecurringTemplate && transactionToEdit.recurringTransactionId) {
-            await updateDocument('recurringTransactions', transactionToEdit.recurringTransactionId, recurringDetails);
+            await updateDocument('recurringTransactions', transactionToEdit.recurringTransactionId, { ...recurringDetails, categoryId: finalRecurringCategoryId });
             toast.success("Recurring template updated!");
           } else if (!wasRecurringTemplate) {
-            const newRecurringId = await addDocument('recurringTransactions', { ...recurringDetails, ownerUid: userUid });
+            const newRecurringId = await addDocument('recurringTransactions', { ...recurringDetails, categoryId: finalRecurringCategoryId, ownerUid: userUid });
             if (newRecurringId) {
               await updateDocument('transactions', transactionToEdit.id, { isRecurring: true, recurringTransactionId: newRecurringId });
               toast.success("New recurring template added and linked!");
@@ -331,9 +337,10 @@ export const useBudgetAppLogic = (userUid: string | null) => {
           toast.success("Recurring template removed!");
         }
       } else {
-        const newTransactionId = await addDocument('transactions', transactionData);
+        const newTransactionId = await addDocument('transactions', { ...transactionData, categoryId: finalCategoryId });
         if (newTransactionId && isRecurring && recurringDetails) {
-          const newRecurringId = await addDocument('recurringTransactions', { ...recurringDetails, ownerUid: userUid });
+          const finalRecurringCategoryId = recurringDetails.categoryId || uncategorizedCategoryId; // Ensure categoryId is updated for recurring
+          const newRecurringId = await addDocument('recurringTransactions', { ...recurringDetails, categoryId: finalRecurringCategoryId, ownerUid: userUid });
           if (newRecurringId) {
             await updateDocument('transactions', newTransactionId, { isRecurring: true, recurringTransactionId: newRecurringId });
             toast.success("New recurring template added and linked!");
@@ -346,7 +353,7 @@ export const useBudgetAppLogic = (userUid: string | null) => {
       console.error("Error saving transaction:", e.code, e.message);
       toast.error(`Failed to save transaction: ${e.message}`);
     }
-  }, [userUid, transactionToEdit, addDocument, updateDocument, deleteDocument, recurringTemplates, categories, selectedCurrency.code]);
+  }, [userUid, transactionToEdit, addDocument, updateDocument, deleteDocument, recurringTemplates, categories, selectedCurrency.code, uncategorizedCategoryId]);
 
   const handleDeleteTransaction = useCallback(async (transactionId: string) => {
     if (!userUid) {
