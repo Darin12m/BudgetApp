@@ -37,17 +37,19 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>, // Added this line
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'>, // Omit 'children' from standard attributes
     HTMLMotionProps<"button">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  children?: React.ReactNode; // Explicitly define children here if needed, or let HTMLMotionProps handle it
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
+    const MotionComp = motion(Comp); // Correct way to use motion with a dynamic component
     return (
-      <motion.Comp
+      <MotionComp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
