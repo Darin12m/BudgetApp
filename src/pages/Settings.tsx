@@ -25,7 +25,8 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  AuthCredential // Import AuthCredential
 } from 'firebase/auth'; // Added Firebase Auth functions
 import { doc, updateDoc, setDoc } from 'firebase/firestore'; // Added Firestore functions
 import { useNavigate } from 'react-router-dom';
@@ -305,7 +306,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
         // If the Google account is already linked to another user, Firebase will throw an error
         // For simplicity, we're assuming the user is not trying to link an already-linked Google account to a different email user.
         // A more robust solution would involve handling 'auth/credential-already-in-use'
-        await user.linkWithCredential(result.credential!);
+        await (user as any).linkWithCredential(result.credential as AuthCredential); // Fixed: Cast user to any and result.credential to AuthCredential
         await setDoc(doc(db, "users", user.uid), {
           name: result.user.displayName,
           email: result.user.email,
