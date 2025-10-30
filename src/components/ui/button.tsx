@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { motion, HTMLMotionProps } from "framer-motion"; // Import motion and HTMLMotionProps
+import { motion, HTMLMotionProps } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 
@@ -37,22 +37,35 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends HTMLMotionProps<"button">, // Let HTMLMotionProps define common properties
+  extends HTMLMotionProps<"button">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
-    const MotionComp = motion(Comp); // Correct way to use motion with a dynamic component
-    return (
-      <MotionComp
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
-    );
+    const classes = cn(buttonVariants({ variant, size, className }));
+
+    if (asChild) {
+      // If asChild is true, render motion(Slot)
+      const MotionSlot = motion(Slot);
+      return (
+        <MotionSlot
+          ref={ref}
+          className={classes} // Apply classes to the Slot itself
+          {...props}
+        />
+      );
+    } else {
+      // If asChild is false, render motion.button directly
+      return (
+        <motion.button
+          ref={ref}
+          className={classes}
+          {...props}
+        />
+      );
+    }
   },
 );
 Button.displayName = "Button";
