@@ -163,7 +163,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
     }
   };
 
-  const FormContent = (
+  const FormContent = () => ( // Changed to a functional component
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="merchant" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
@@ -424,7 +424,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             </DialogTitle>
           </DrawerHeader>
           <div className="p-4">
-            {FormContent}
+            <FormContent /> {/* Call as a component */}
           </div>
         </DrawerContent>
       </Drawer>
@@ -439,7 +439,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             {isEditing ? <h3 className="text-base sm:text-lg">{t("transactions.editTransaction")}</h3> : <h3 className="text-base sm:text-lg">{t("transactions.newTransaction")}</h3>} {/* Applied consistent typography */}
           </DialogTitle>
         </DialogHeader>
-        {FormContent}
+        <FormContent /> {/* Call as a component */}
       </DialogContent>
     </Dialog>
   );
