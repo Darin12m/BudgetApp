@@ -205,30 +205,30 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
       </div>
 
       <Card className="glassmorphic-card p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"> {/* Applied consistent card style and padding */}
-        <motion.div
-          whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-        >
-          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 tracking-tight">{t("dashboard.netWorthGrowth")}</h3> {/* Applied consistent typography */}
-          {netWorthTrend.length > 1 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={netWorthTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
-                <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} tickFormatter={(value) => formatCurrency(Number(value))} />
-                <RechartsTooltip formatValue={formatCurrency} />
-                <Bar dataKey="value" fill="hsl(var(--emerald))" radius={[8, 8, 0, 0]} name={t("dashboard.netWorth")} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="p-6 text-center text-muted-foreground">
-              <PiggyBank className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-base sm:text-lg font-semibold text-foreground break-words text-balance">{t("dashboard.noNetWorthGrowth")}</p> {/* Applied consistent typography and text wrapping */}
-              <p className="text-xs sm:text-sm mt-2 break-words text-balance">{t("dashboard.addAccountsAndTransactions")}</p> {/* Applied consistent typography and text wrapping */}
-            </div>
-          )}
-        </motion.div>
-      </Card>
+          <motion.div
+            whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 tracking-tight">{t("dashboard.netWorthGrowth")}</h3> {/* Applied consistent typography */}
+            {netWorthTrend.length > 1 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={netWorthTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} tickFormatter={(value) => formatCurrency(Number(value))} />
+                  <RechartsTooltip formatValue={formatCurrency} />
+                  <Bar dataKey="value" fill="hsl(var(--emerald))" radius={[8, 8, 0, 0]} name={t("dashboard.netWorth")} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="p-6 text-center text-muted-foreground">
+                <PiggyBank className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-base sm:text-lg font-semibold text-foreground break-words text-balance">{t("dashboard.noNetWorthGrowth")}</p> {/* Applied consistent typography and text wrapping */}
+                <p className="text-xs sm:text-sm mt-2 break-words text-balance">{t("dashboard.addAccountsAndTransactions")}</p> {/* Applied consistent typography and text wrapping */}
+              </div>
+            )}
+          </motion.div>
+        </Card>
 
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6 lg:grid-cols-2"> {/* Responsive grid */}
         <Card className="glassmorphic-card p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"> {/* Applied consistent card style and padding */}
@@ -349,6 +349,6 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
       </div>
     </motion.div>
   );
-};
+});
 
-export default InvestmentsPage;
+export default DashboardView;
