@@ -29,7 +29,6 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
   const handleSelectChange = (value: string) => {
     const today = new Date();
     let newRange: ContextDateRange | undefined;
-    let label: string;
 
     switch (value) {
       case "today":
@@ -58,11 +57,9 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
         break;
       case "alltime":
         newRange = undefined; // Represents all time
-        label = t("dateRangePicker.allTime");
         break;
       default:
         newRange = undefined;
-        label = t("dateRangePicker.selectDateRange");
     }
     setRange(newRange);
   };
@@ -127,7 +124,7 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
                   from: range.from,
                   to: range.to,
                   label: selectedRange?.label || 'Custom Range', // Keep existing label or set a default
-                });
+                } as ContextDateRange); // Explicit cast
               } else {
                 setRange(undefined); // Handle clearing the range
               }
