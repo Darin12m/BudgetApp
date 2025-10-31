@@ -9,7 +9,7 @@ import {
 } from 'date-fns';
 
 // Define the shape of a date range for the context
-interface ContextDateRange {
+export interface ContextDateRange { // Added export keyword
   from: Date | undefined;
   to: Date | undefined;
   label: string; // A human-readable label for the selected range

@@ -806,7 +806,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
         </main>
         <BottomNavBar />
       </div>
-      </motion.div> {/* Closing tag added here */}
+    </div>
 
       {/* Change Email Modal */}
       <Dialog open={showChangeEmailModal} onOpenChange={setShowChangeEmailModal}>
