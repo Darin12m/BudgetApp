@@ -347,7 +347,7 @@ const DashboardView: React.FC<DashboardViewProps> = memo(({
           </motion.div>
         </Card>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
+import { Card } from '@/components/ui/card'; // Import Card
 
 const SyncStatusIndicator: React.FC = () => {
   const { t } = useTranslation(); // Initialize useTranslation hook
@@ -51,19 +52,15 @@ const SyncStatusIndicator: React.FC = () => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className={cn(
-            "fixed bottom-4 left-4 p-2 rounded-full glassmorphic-card z-50 flex items-center justify-center transition-colors duration-300",
-            colorClass
-          )}
+        <Card className={cn(
+          "fixed bottom-4 left-4 p-2 rounded-full glassmorphic-card z-50 flex items-center justify-center transition-colors duration-300",
+          colorClass
+        )}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
           {icon}
-        </motion.div>
+        </Card>
       </TooltipTrigger>
       <TooltipContent className="bg-tooltip-bg border-tooltip-border-color text-tooltip-text-color">
         <p className="p">{tooltipText}</p>
