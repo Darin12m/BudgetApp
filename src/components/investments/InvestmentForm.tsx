@@ -219,7 +219,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
   return (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="name" className="text-right">
+        <Label htmlFor="name" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("investments.assetName")}
         </Label>
         <div className="col-span-3">
@@ -229,7 +229,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label className="text-right">
+        <Label className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("investments.type")}
         </Label>
         <ToggleGroup
@@ -257,7 +257,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="symbolOrId" className="text-right">
+        <Label htmlFor="symbolOrId" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {type === 'Stock' ? t("investments.tickerSymbol") : t("investments.coinSymbolOrId")}
         </Label>
         <div className="col-span-3">
@@ -270,13 +270,13 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
           />
           {errors.symbolOrId && <p className="text-destructive text-xs mt-1">{errors.symbolOrId}</p>}
           {companyName && type === 'Stock' && !errors.symbolOrId && (
-            <p className="caption mt-1">{companyName}</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">{companyName}</p> {/* Applied consistent typography and truncate */}
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label className="text-right">
+        <Label className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("investments.buyPrice")}
         </Label>
         <div className="col-span-3">
@@ -286,7 +286,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label className="text-right">
+        <Label className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("investments.livePrice")}
         </Label>
         <div className="col-span-3 flex items-center space-x-2">
@@ -306,7 +306,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="quantity" className="text-right">
+        <Label htmlFor="quantity" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("investments.quantity")}
         </Label>
         <div className="col-span-3">
@@ -316,15 +316,15 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({ investment, onSave, onD
       </div>
       
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="datePurchased" className="text-right">
+        <Label htmlFor="datePurchased" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("investments.datePurchased")}
         </Label>
         <div className="col-span-3">
           <Input id="datePurchased" type="date" value={datePurchased} onChange={(e) => { setDatePurchased(e.target.value); setErrors(prev => ({ ...prev, date: '' })); }} className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]" />
           {errors.datePurchased && <p className="text-destructive text-xs mt-1">{errors.datePurchased}</p>}
           {new Date(datePurchased) > new Date() && (
-            <p className="text-amber-500 text-xs mt-1 flex items-center">
-              <AlertCircle className="w-3 h-3 mr-1" /> {t("investments.datePurchasedFutureWarning")}
+            <p className="text-amber-500 text-xs mt-1 flex items-center break-words text-balance"> {/* Applied consistent typography and text wrapping */}
+              <AlertCircle className="w-3 h-3 mr-1 flex-shrink-0" /> <span className="min-w-0">{t("investments.datePurchasedFutureWarning")}</span>
             </p>
           )}
         </div>

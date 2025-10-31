@@ -108,3 +108,23 @@ export const formatDate = (dateInput: string | Date, formatString: string = 'MMM
   const date = typeof dateInput === 'string' ? parseISO(dateInput) : dateInput;
   return format(date, formatString);
 };
+
+/**
+ * Formats a currency value compactly (e.g., 1.2K, 54M).
+ * @param value The numeric value to format.
+ * @param currencySymbol The symbol of the currency (e.g., '$', '€').
+ * @returns A compactly formatted string.
+ */
+export const formatCompactCurrency = (value: number, currencySymbol: string): string => {
+  const absValue = Math.abs(value);
+  if (absValue >= 1_000_000_000) {
+    return `${currencySymbol}${(value / 1_000_000_000).toFixed(1)}B`;
+  }
+  if (absValue >= 1_000_000) {
+    return `${currencySymbol}${(value / 1_000_000).toFixed(1)}M`;
+  }
+  if (absValue >= 1_000) {
+    return `${currencySymbol}${(value / 1_000).toFixed(1)}K`;
+  }
+  return `${currencySymbol}${value.toFixed(2)}`;
+};

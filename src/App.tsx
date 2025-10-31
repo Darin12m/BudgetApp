@@ -18,6 +18,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CurrencyProvider } from "./context/CurrencyContext";
 import { DateRangeProvider } from "./context/DateRangeContext";
 import ProfilePopup from "./components/ProfilePopup"; // Import ProfilePopup
+import { cn } from "./lib/utils"; // Import cn
 
 const queryClient = new QueryClient();
 
@@ -82,52 +83,54 @@ const AppContent = () => {
           <BrowserRouter>
             <CurrencyProvider>
               <DateRangeProvider>
-                <Routes>
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route
-                    path="/"
-                    element={
-                      <ProtectedRoute>
-                        <Index userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/budget-app"
-                    element={
-                      <ProtectedRoute>
-                        <BudgetApp userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/budget-app/:view"
-                    element={
-                      <ProtectedRoute>
-                        <BudgetApp userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/investments"
-                    element={
-                      <ProtectedRoute>
-                        <InvestmentsPage userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/settings"
-                    element={
-                      <ProtectedRoute>
-                        <SettingsPage userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-                <SyncStatusIndicator />
-                <ProfilePopup isOpen={showProfilePopup} onClose={() => setShowProfilePopup(false)} />
+                <div className="flex flex-col min-h-screen"> {/* Main app container */}
+                  <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route
+                      path="/"
+                      element={
+                        <ProtectedRoute>
+                          <Index userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/budget-app"
+                      element={
+                        <ProtectedRoute>
+                          <BudgetApp userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/budget-app/:view"
+                      element={
+                        <ProtectedRoute>
+                          <BudgetApp userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/investments"
+                      element={
+                        <ProtectedRoute>
+                          <InvestmentsPage userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <ProtectedRoute>
+                          <SettingsPage userUid={userUid} setShowProfilePopup={setShowProfilePopup} />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <SyncStatusIndicator />
+                  <ProfilePopup isOpen={showProfilePopup} onClose={() => setShowProfilePopup(false)} />
+                </div>
               </DateRangeProvider>
             </CurrencyProvider>
           </BrowserRouter>

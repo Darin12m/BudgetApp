@@ -36,7 +36,7 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
     <> {/* Removed Card wrapper */}
       <DialogHeader> {/* Using DialogHeader for consistent styling, works with Drawer too */}
         <DialogTitle className="flex items-center tracking-tight"> {/* Added flex and items-center */}
-          <Plus className="w-5 h-5 mr-2" /> {investmentToEdit ? <h3 className="h3">{t("investments.editInvestment")}</h3> : <h3 className="h3">{t("investments.addInvestmentTitle")}</h3>}
+          <Plus className="w-5 h-5 mr-2" /> {investmentToEdit ? <h3 className="text-base sm:text-lg">{t("investments.editInvestment")}</h3> : <h3 className="text-base sm:text-lg">{t("investments.addInvestmentTitle")}</h3>} {/* Applied consistent typography */}
         </DialogTitle>
       </DialogHeader>
       <InvestmentForm
@@ -54,9 +54,9 @@ const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({ isOpen, onClose
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="safe-top safe-bottom glassmorphic-card"> {/* Apply glassmorphism to drawer content */}
           <DrawerHeader className="text-left">
-            <DrawerTitle className="flex items-center tracking-tight"> {/* Added flex and items-center */}
-              <Plus className="w-5 h-5 mr-2" /> {investmentToEdit ? <h3 className="h3">{t("investments.editInvestment")}</h3> : <h3 className="h3">{t("investments.addInvestmentTitle")}</h3>}
-            </DrawerTitle>
+            <DialogTitle className="flex items-center tracking-tight"> {/* Added flex and items-center */}
+              <Plus className="w-5 h-5 mr-2" /> {investmentToEdit ? <h3 className="text-base sm:text-lg">{t("investments.editInvestment")}</h3> : <h3 className="text-base sm:text-lg">{t("investments.addInvestmentTitle")}</h3>} {/* Applied consistent typography */}
+            </DialogTitle>
           </DrawerHeader>
           <div className="p-4"> {/* Wrap form in a div for padding within drawer */}
             <InvestmentForm

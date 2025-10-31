@@ -112,7 +112,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
   const FormContent = (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="name" className="text-right">
+        <Label htmlFor="name" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("budget.categoryName")}
         </Label>
         <div className="col-span-3">
@@ -128,7 +128,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="budgeted" className="text-right">
+        <Label htmlFor="budgeted" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("budget.budgetedAmount")}
         </Label>
         <div className="col-span-3">
@@ -146,7 +146,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       </div>
 
       <div className="grid grid-cols-4 items-start gap-4">
-        <Label className="text-right pt-2">
+        <Label className="text-right pt-2 text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("budget.color")}
         </Label>
         <div className="col-span-3">
@@ -155,7 +155,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       </div>
 
       <div className="grid grid-cols-4 items-start gap-4">
-        <Label className="text-right pt-2">
+        <Label className="text-right pt-2 text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("budget.emoji")}
         </Label>
         <div className="col-span-3">
@@ -179,9 +179,9 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
-            <DrawerTitle className="flex items-center">
-              {categoryToEdit ? <h3 className="h3">{t("budget.editCategory")}</h3> : <h3 className="h3">{t("budget.newCategory")}</h3>}
-            </DrawerTitle>
+            <DialogTitle className="flex items-center">
+              {categoryToEdit ? <h3 className="text-base sm:text-lg">{t("budget.editCategory")}</h3> : <h3 className="text-base sm:text-lg">{t("budget.newCategory")}</h3>} {/* Applied consistent typography */}
+            </DialogTitle>
           </DrawerHeader>
           <div className="p-4">
             {FormContent}
@@ -196,7 +196,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, onC
       <DialogContent className="glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            {categoryToEdit ? <h3 className="h3">{t("budget.editCategory")}</h3> : <h3 className="h3">{t("budget.newCategory")}</h3>}
+            {categoryToEdit ? <h3 className="text-base sm:text-lg">{t("budget.editCategory")}</h3> : <h3 className="text-base sm:text-lg">{t("budget.newCategory")}</h3>} {/* Applied consistent typography */}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

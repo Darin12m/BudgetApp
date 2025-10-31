@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion'; // Import motion
+import { cn } from '@/lib/utils'; // Import cn
 
 interface SidebarProps {
   isOpen: boolean;
@@ -22,16 +23,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
   const location = useLocation();
   const { user } = useAuth();
 
-  const navItems = [
-    { id: 'dashboard', label: t("navigation.dashboard"), icon: Home, path: '/' },
-    { id: 'transactions', label: t("navigation.transactions"), icon: List, path: '/budget-app?view=transactions' },
-    { id: 'budget', label: t("navigation.budget"), icon: DollarSign, path: '/budget-app?view=budget' },
-    { id: 'goals', label: t("navigation.goals"), icon: Target, path: '/budget-app?view=goals' },
-    { id: 'investments', label: t("navigation.investments"), icon: Wallet, path: '/investments' },
-  ];
-
-  const userDisplayName = user?.displayName || "John Doe";
-  const userEmail = user?.email || "john@example.com";
+  const userDisplayName = user?.displayName || t("common.guest");
+  const userEmail = user?.email || t("common.notLoggedIn");
   const userInitials = userDisplayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   return (
@@ -39,11 +32,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
       {/* Sidebar */}
       <aside className={`fixed left-0 top-0 h-full glassmorphic-card transition-transform duration-300 ease-in-out z-50 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } w-64 sm:w-72 flex flex-col rounded-none border-r`}>
+      } w-64 sm:w-72 flex flex-col rounded-none border-r border-border/20 bg-background/40 backdrop-blur-md shadow-lg`}> {/* Applied consistent card style */}
         <div className="flex flex-col h-full">
-          <div className="p-5 sm:p-6 border-b border-border">
+          <div className="p-4 sm:p-5 lg:p-6 border-b border-border/10"> {/* Applied consistent padding and divider */}
             <div className="flex items-center justify-between mb-6">
-              <h1 className="h2 font-bold bg-gradient-to-r from-primary to-lilac bg-clip-text text-transparent tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-lilac bg-clip-text text-transparent tracking-tight"> {/* Applied consistent typography */}
                 FinanceFlow
               </h1>
               <button onClick={onClose} className="p-2 hover:bg-muted/50 rounded-lg active:bg-muted sm:hidden">
@@ -61,14 +54,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
               <div className="w-10 h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
                 {userInitials}
               </div>
-              <div>
-                <p className="font-semibold text-foreground text-sm">{userDisplayName}</p>
-                <p className="text-xs text-muted-foreground">{userEmail}</p>
+              <div className="min-w-0"> {/* Added min-w-0 */}
+                <p className="font-semibold text-foreground text-sm truncate">{userDisplayName}</p> {/* Applied consistent typography and truncate */}
+                <p className="text-xs text-muted-foreground truncate">{userEmail}</p> {/* Applied consistent typography and truncate */}
               </div>
             </motion.button>
           </div>
 
-          <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
+          <nav className="p-4 sm:p-5 lg:p-6 space-y-1 flex-1 overflow-y-auto"> {/* Applied consistent padding */}
             {navItems.map(item => {
               const Icon = item.icon;
               const isActive = (item.path === location.pathname + location.search) || (item.id === 'dashboard' && location.pathname === '/');
@@ -84,10 +77,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
                       : 'text-muted-foreground hover:bg-muted/50 active:bg-muted'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.label}</span>
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="min-w-0 truncate">{item.label}</span> {/* Added min-w-0 and truncate */}
                   {isActive && (
-                    <div className="ml-auto w-1.5 h-1.5 bg-primary dark:bg-primary rounded-full"></div>
+                    <div className="ml-auto w-1.5 h-1.5 bg-primary dark:bg-primary rounded-full flex-shrink-0"></div>
                   )}
                 </Link>
               );
@@ -95,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
           </nav>
 
           {/* Removed Bottom Navigation Icons (Settings, Notifications) - now in ProfilePopup */}
-          <div className="mt-auto p-4 border-t border-border flex justify-center space-x-4">
+          <div className="mt-auto p-4 sm:p-5 lg:p-6 border-t border-border/10 flex justify-center space-x-4"> {/* Applied consistent padding and divider */}
             {/* Placeholder for future bottom items if needed, currently empty as per refactor */}
           </div>
         </div>

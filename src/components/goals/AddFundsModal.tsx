@@ -77,7 +77,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
   const FormContent = (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="amountToAdd" className="text-right">
+        <Label htmlFor="amountToAdd" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.amount")}
         </Label>
         <div className="col-span-3">
@@ -94,9 +94,9 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
         </div>
       </div>
 
-      <div className="p text-muted-foreground col-span-full text-center mt-2">
+      <p className="text-sm sm:text-base text-muted-foreground col-span-full text-center mt-2 break-words text-balance"> {/* Applied consistent typography and text wrapping */}
         {t("goals.current")}: <span className="font-semibold text-foreground font-mono">{formatCurrency(currentAmountInUSD)}</span> / {t("goals.target")}: <span className="font-semibold text-foreground font-mono">{formatCurrency(targetAmountInUSD)}</span>
-      </div>
+      </p>
 
       <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
         <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
@@ -114,9 +114,9 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
-            <DrawerTitle className="flex items-center">
-              <Plus className="w-5 h-5 mr-2" /> <h3 className="h3">{t("goals.addFundsTo", { goalName: goalName })}</h3>
-            </DrawerTitle>
+            <DialogTitle className="flex items-center">
+              <Plus className="w-5 h-5 mr-2" /> <h3 className="text-base sm:text-lg">{t("goals.addFundsTo", { goalName: goalName })}</h3> {/* Applied consistent typography */}
+            </DialogTitle>
           </DrawerHeader>
           <div className="p-4">
             {FormContent}
@@ -131,7 +131,7 @@ const AddFundsModal: React.FC<AddFundsModalProps> = ({ isOpen, onClose, onAddFun
       <DialogContent className="glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            <Plus className="w-5 h-5 mr-2" /> <h3 className="h3">{t("goals.addFundsTo", { goalName: goalName })}</h3>
+            <Plus className="w-5 h-5 mr-2" /> <h3 className="text-base sm:text-lg">{t("goals.addFundsTo", { goalName: goalName })}</h3> {/* Applied consistent typography */}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

@@ -10,6 +10,8 @@ import TransactionCard from '@/components/transactions/TransactionCard';
 import { isWithinInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card'; // Import Card
+import { cn } from '@/lib/utils';
 
 interface TransactionsViewProps {
   transactions: Transaction[];
@@ -63,7 +65,7 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
       className="space-y-4 sm:space-y-6 pb-24 sm:pb-6"
     >
       <div className="flex items-center justify-between">
-        <h2 className="h2 font-bold tracking-tight">{t("transactions.title")}</h2>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight truncate">{t("transactions.title")}</h2> {/* Applied consistent typography and truncate */}
         <motion.button
           whileHover={{ scale: 1.02, boxShadow: "var(--tw-shadow-glass-sm)" }}
           whileTap={{ scale: 0.98 }}
@@ -76,8 +78,8 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
         </motion.button>
       </div>
 
-      <div className="sticky top-[64px] sm:top-[72px] glassmorphic-card z-10 py-2 -mx-4 sm:-mx-6 px-4 sm:px-6 border-b rounded-none">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="sticky top-[64px] sm:top-[72px] glassmorphic-card z-10 py-2 -mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-border/10 rounded-none"> {/* Applied consistent card style and divider */}
+        <div className="flex flex-col sm:flex-row gap-3"> {/* Stack on mobile */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -100,34 +102,35 @@ const TransactionsView: React.FC<TransactionsViewProps> = memo(({
         </div>
       </div>
 
-      <motion.div
-        className="glassmorphic-card overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300"
-        whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-      >
-        <div className="divide-y divide-border">
-          {filteredTransactions.length > 0 ? (
-            filteredTransactions.map(txn => (
-              <TransactionCard
-                key={txn.id}
-                transaction={txn}
-                categories={categories}
-                formatCurrency={formatCurrency}
-                onEdit={handleEditTransaction}
-              />
-            ))
-          ) : (
-            <div className="p-6 text-center text-muted-foreground">
-              <List className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="h3 font-semibold text-foreground">{t("transactions.noTransactionsFound")}</p>
-              <p className="p mt-2">{t("transactions.noTransactionsFoundDescription")}</p>
-              <Button onClick={() => setIsAddEditTransactionModalOpen(true)} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
-                {t("transactions.addFirstTransaction")}
-              </Button>
-            </div>
-          )}
-        </div>
-      </motion.div>
+      <Card className="glassmorphic-card overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300"> {/* Applied consistent card style */}
+        <motion.div
+          whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
+          <div className="divide-y divide-border/10"> {/* Applied consistent divider */}
+            {filteredTransactions.length > 0 ? (
+              filteredTransactions.map(txn => (
+                <TransactionCard
+                  key={txn.id}
+                  transaction={txn}
+                  categories={categories}
+                  formatCurrency={formatCurrency}
+                  onEdit={handleEditTransaction}
+                />
+              ))
+            ) : (
+              <div className="p-6 text-center text-muted-foreground">
+                <List className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-base sm:text-lg font-semibold text-foreground break-words text-balance">{t("transactions.noTransactionsFound")}</p> {/* Applied consistent typography and text wrapping */}
+                <p className="text-xs sm:text-sm mt-2 break-words text-balance">{t("transactions.noTransactionsFoundDescription")}</p> {/* Applied consistent typography and text wrapping */}
+                <Button onClick={() => setIsAddEditTransactionModalOpen(true)} className="mt-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-primary-foreground">
+                  {t("transactions.addFirstTransaction")}
+                </Button>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </Card>
     </motion.div>
   );
 });

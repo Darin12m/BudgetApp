@@ -100,7 +100,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
   const FormContent = (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="merchant" className="text-right">
+        <Label htmlFor="merchant" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.merchant")}
         </Label>
         <Input
@@ -113,7 +113,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
         {errors.merchant && <p className="text-destructive text-xs mt-1 col-start-2 col-span-3">{errors.merchant}</p>}
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="amount" className="text-right">
+        <Label htmlFor="amount" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.amount")}
         </Label>
         <div className="col-span-3">
@@ -130,7 +130,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="type" className="text-right">
+        <Label htmlFor="type" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.type")}
         </Label>
         <div className="col-span-3 flex items-center space-x-2">
@@ -159,23 +159,38 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
         </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="date" className="text-right">
+        <Label htmlFor="date" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.date")}
         </Label>
         <div className="col-span-3">
-          <Input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(e) => { setDate(e.target.value); setErrors(prev => ({ ...prev, date: '' })); }}
-            className="bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]"
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-full justify-start text-left font-normal bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]",
+                  !date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? format(date, "PPP") : <span>{t("transactions.pickADate")}</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 glassmorphic-card">
+              <Calendar
+                mode="single"
+                selected={date ? new Date(date) : undefined} // Ensure date is a Date object
+                onSelect={(d) => { setDate(d ? format(d, 'yyyy-MM-dd') : ''); setErrors(prev => ({ ...prev, date: '' })); }} // Format back to string
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
           {errors.date && <p className="text-destructive text-xs mt-1">{errors.date}</p>}
         </div>
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="category" className="text-right">
+        <Label htmlFor="category" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.category")}
         </Label>
         <div className="col-span-3">
@@ -205,7 +220,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="isRecurring" className="text-right">
+        <Label htmlFor="isRecurring" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.recurring")}
         </Label>
         <div className="col-span-3 flex items-center">
@@ -214,7 +229,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
             checked={isRecurring}
             onCheckedChange={setIsRecurring}
           />
-          <span className="ml-2 p text-muted-foreground">
+          <span className="ml-2 text-sm text-muted-foreground"> {/* Applied consistent typography */}
             {isRecurring ? t("transactions.enabled") : t("transactions.disabled")}
           </span>
         </div>
@@ -223,7 +238,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       {isRecurring && (
         <>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="frequency" className="text-right">
+            <Label htmlFor="frequency" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
               {t("transactions.frequency")}
             </Label>
             <div className="col-span-3">
@@ -240,7 +255,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="nextDate" className="text-right">
+            <Label htmlFor="nextDate" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
               {t("transactions.nextDueDate")}
             </Label>
             <div className="col-span-3">
@@ -261,7 +276,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
                   <Calendar
                     mode="single"
                     selected={nextDate}
-                    onSelect={(d) => { setNextDate(d); setErrors(prev => ({ ...prev, nextDate: '' })); }}
+                    onSelect={(d) => { setNextDate(d || undefined); setErrors(prev => ({ ...prev, nextDate: '' })); }}
                     initialFocus
                   />
                 </PopoverContent>
@@ -288,9 +303,9 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
-            <DrawerTitle className="flex items-center">
-              <Plus className="w-5 h-5 mr-2" /> <h3 className="h3">{t("transactions.quickAddTransaction")}</h3>
-            </DrawerTitle>
+            <DialogTitle className="flex items-center">
+              <Plus className="w-5 h-5 mr-2" /> <h3 className="text-base sm:text-lg">{t("transactions.quickAddTransaction")}</h3> {/* Applied consistent typography */}
+            </DialogTitle>
           </DrawerHeader>
           <div className="p-4">
             {FormContent}
@@ -305,7 +320,7 @@ const QuickAddTransactionModal: React.FC<QuickAddTransactionModalProps> = ({ isO
       <DialogContent className="sm:max-w-[425px] glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            <Plus className="w-5 h-5 mr-2" /> <h3 className="h3">{t("transactions.quickAddTransaction")}</h3>
+            <Plus className="w-5 h-5 mr-2" /> <h3 className="text-base sm:text-lg">{t("transactions.quickAddTransaction")}</h3> {/* Applied consistent typography */}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

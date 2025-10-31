@@ -23,8 +23,8 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, onSidebarToggle, setSh
   const userInitials = userDisplayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   return (
-    <header className="glassmorphic-card sticky top-0 z-40 safe-top transition-colors duration-300 rounded-none border-b">
-      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+    <header className="glassmorphic-card sticky top-0 z-40 safe-top transition-colors duration-300 rounded-none border-b border-border/20 bg-background/40 backdrop-blur-md shadow-lg"> {/* Applied consistent card style */}
+      <div className="flex items-center justify-between px-4 sm:px-5 lg:px-6 py-3 sm:py-4"> {/* Applied consistent padding */}
         <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, onSidebarToggle, setSh
             <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
           </motion.button>
           <div className="flex-1 min-w-0">
-            <h2 className="h3 capitalize truncate">{title}</h2>
+            <h2 className="text-base sm:text-lg capitalize truncate">{title}</h2> {/* Applied consistent typography and truncate */}
           </div>
         </div>
 

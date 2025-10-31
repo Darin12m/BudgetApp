@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface MicroInvestingSuggestionCardProps {
   weeklyRemainingBudget: number;
@@ -83,14 +84,14 @@ const MicroInvestingSuggestionCard: React.FC<MicroInvestingSuggestionCardProps> 
       className="glassmorphic-card border-none bg-gradient-to-br from-primary/10 to-blue/10 animate-in fade-in slide-in-from-bottom-2 duration-500"
       whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
     >
-      <CardContent className="p-4 flex items-center justify-between">
-        <div className="flex items-center space-x-3 flex-1">
+      <CardContent className="p-4 sm:p-5 lg:p-6 flex items-center justify-between"> {/* Applied consistent padding */}
+        <div className="flex items-center space-x-3 flex-1 min-w-0"> {/* Added min-w-0 */}
           <Zap className="w-6 h-6 text-primary flex-shrink-0" />
-          <div>
-            <p className="p font-medium text-foreground">
+          <div className="min-w-0"> {/* Added min-w-0 */}
+            <p className="text-sm sm:text-base font-medium text-foreground break-words text-balance"> {/* Applied consistent typography and text wrapping */}
               {t("microInvesting.leftThisWeek", { amount: <span className="text-emerald font-semibold font-mono">{formatCurrency(weeklyRemainingBudget)}</span> })}
             </p>
-            <p className="caption text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground break-words text-balance"> {/* Applied consistent typography and text wrapping */}
               {t("microInvesting.considerInvesting", { amount: <span className="text-primary font-semibold font-mono">{formatCurrency(suggestedInvestmentAmount)}</span>, assetName: suggestedAsset.name })}
             </p>
           </div>

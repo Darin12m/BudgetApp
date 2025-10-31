@@ -37,6 +37,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDeviceDetection } from '@/hooks/use-device-detection';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { CardContent } from '@/components/ui/card'; // Import CardContent
 
 interface ProfilePopupProps {
   isOpen: boolean;
@@ -162,33 +163,26 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
   }
 
   const content = (
-    <motion.div
-      ref={popupRef}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.15 }}
-      className="glassmorphic-card p-4 w-full max-w-xs space-y-4"
-    >
+    <CardContent className="p-4 sm:p-5 lg:p-6 w-full max-w-xs space-y-4"> {/* Applied consistent padding */}
       {/* User Info */}
-      <div className="flex items-center space-x-3 pb-3 border-b border-border">
+      <div className="flex items-center space-x-3 pb-3 border-b border-border/10"> {/* Applied consistent divider */}
         <div className="w-10 h-10 bg-gradient-to-br from-primary to-lilac rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
           {userInitials}
         </div>
-        <div>
-          <p className="font-semibold text-sm">{userDisplayName}</p>
-          <p className="text-xs text-muted-foreground">{userEmail}</p>
+        <div className="min-w-0"> {/* Added min-w-0 */}
+          <p className="font-semibold text-sm truncate">{userDisplayName}</p> {/* Applied consistent typography and truncate */}
+          <p className="text-xs text-muted-foreground truncate">{userEmail}</p> {/* Applied consistent typography and truncate */}
         </div>
       </div>
 
       {/* Quick Preferences */}
       <div className="space-y-3">
-        <h3 className="caption font-semibold uppercase text-muted-foreground">{t("profilePopup.quickPreferences")}</h3>
+        <h3 className="text-xs sm:text-sm font-semibold uppercase text-muted-foreground">{t("profilePopup.quickPreferences")}</h3> {/* Applied consistent typography */}
         {/* Theme Toggle */}
         <div className="flex items-center justify-between">
-          <Label htmlFor="profile-dark-mode-toggle" className="flex items-center text-sm cursor-pointer">
-            {isDarkMode ? <Moon className="w-4 h-4 mr-2" /> : <Sun className="w-4 h-4 mr-2" />}
-            {t("settings.darkMode")}
+          <Label htmlFor="profile-dark-mode-toggle" className="flex items-center text-sm cursor-pointer min-w-0"> {/* Applied consistent typography and min-w-0 */}
+            {isDarkMode ? <Moon className="w-4 h-4 mr-2 flex-shrink-0" /> : <Sun className="w-4 h-4 mr-2 flex-shrink-0" />}
+            <span className="truncate">{t("settings.darkMode")}</span> {/* Added truncate */}
           </Label>
           <Switch
             id="profile-dark-mode-toggle"
@@ -199,9 +193,9 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
 
         {/* Language Selector */}
         <div className="flex items-center justify-between">
-          <Label htmlFor="profile-app-language" className="flex items-center text-sm">
-            <Globe className="w-4 h-4 mr-2" />
-            {t("settings.appLanguage")}
+          <Label htmlFor="profile-app-language" className="flex items-center text-sm min-w-0"> {/* Applied consistent typography and min-w-0 */}
+            <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="truncate">{t("settings.appLanguage")}</span> {/* Added truncate */}
           </Label>
           <Select value={i18n.language} onValueChange={handleLanguageChange}>
             <SelectTrigger className="w-[120px] h-8 text-xs bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
@@ -216,12 +210,12 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
 
         {/* Currency Selector */}
         <div className="flex items-center justify-between">
-          <Label htmlFor="profile-main-currency" className="flex items-center text-sm">
-            <DollarSign className="w-4 h-4 mr-2" />
-            {t("settings.mainCurrency")}
+          <Label htmlFor="profile-main-currency" className="flex items-center text-sm min-w-0"> {/* Applied consistent typography and min-w-0 */}
+            <DollarSign className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="truncate">{t("settings.mainCurrency")}</span> {/* Added truncate */}
           </Label>
           <Select value={selectedCurrency.code} onValueChange={setCurrency}>
-            <SelectTrigger className="w-[120px] h-8 text-xs bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0">
+            <SelectTrigger className="w-[120px] h-8 text-xs bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
               <SelectValue placeholder={t("settings.selectCurrency")} />
             </SelectTrigger>
             <SelectContent>
@@ -238,24 +232,24 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex items-center justify-between cursor-help">
-              <Label className="flex items-center text-sm">
-                <Check className="w-4 h-4 mr-2 text-emerald" />
-                {t("profilePopup.syncStatus")}
+              <Label className="flex items-center text-sm min-w-0"> {/* Applied consistent typography and min-w-0 */}
+                <Check className="w-4 h-4 mr-2 text-emerald flex-shrink-0" />
+                <span className="truncate">{t("profilePopup.syncStatus")}</span> {/* Added truncate */}
               </Label>
-              <div className={cn("flex items-center space-x-1 text-xs", syncColorClass)}>
+              <div className={cn("flex items-center space-x-1 text-xs flex-shrink-0", syncColorClass)}> {/* Applied consistent typography */}
                 {syncIcon}
                 <span>{syncStatus === 'synced' ? t("syncStatus.synced") : t("syncStatus.offline")}</span>
               </div>
             </div>
           </TooltipTrigger>
           <TooltipContent className="bg-tooltip-bg border-tooltip-border-color text-tooltip-text-color">
-            <p>{syncTooltipText}</p>
+            <p className="text-sm">{syncTooltipText}</p> {/* Applied consistent typography */}
           </TooltipContent>
         </Tooltip>
 
         {/* Export Data */}
-        <Button variant="ghost" onClick={handleExportData} className="w-full justify-start text-sm px-2 py-2 h-auto">
-          <FileText className="w-4 h-4 mr-2" /> {t("settings.exportData")}
+        <Button variant="ghost" onClick={handleExportData} className="w-full justify-start text-sm px-2 py-2 h-auto"> {/* Applied consistent typography */}
+          <FileText className="w-4 h-4 mr-2 flex-shrink-0" /> <span className="min-w-0 truncate">{t("settings.exportData")}</span> {/* Added min-w-0 and truncate */}
         </Button>
       </div>
 
@@ -263,16 +257,16 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
 
       {/* Account Actions */}
       <div className="space-y-2">
-        <h3 className="caption font-semibold uppercase text-muted-foreground">{t("profilePopup.account")}</h3>
-        <Link to="/settings" onClick={onClose} className="flex items-center justify-between w-full text-sm px-2 py-2 h-auto hover:bg-muted/50 rounded-md transition-colors">
-          <div className="flex items-center space-x-2">
-            <SettingsIcon className="w-4 h-4" />
-            <span>{t("profilePopup.manageAccount")}</span>
+        <h3 className="text-xs sm:text-sm font-semibold uppercase text-muted-foreground">{t("profilePopup.account")}</h3> {/* Applied consistent typography */}
+        <Link to="/settings" onClick={onClose} className="flex items-center justify-between w-full text-sm px-2 py-2 h-auto hover:bg-muted/50 rounded-md transition-colors"> {/* Applied consistent typography */}
+          <div className="flex items-center space-x-2 min-w-0"> {/* Added min-w-0 */}
+            <SettingsIcon className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{t("profilePopup.manageAccount")}</span> {/* Added truncate */}
           </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         </Link>
-        <Button variant="ghost" onClick={() => setShowLogoutConfirm(true)} className="w-full justify-start text-sm px-2 py-2 h-auto text-destructive">
-          <LogOut className="w-4 h-4 mr-2" /> {t("settings.signOut")}
+        <Button variant="ghost" onClick={() => setShowLogoutConfirm(true)} className="w-full justify-start text-sm px-2 py-2 h-auto text-destructive"> {/* Applied consistent typography */}
+          <LogOut className="w-4 h-4 mr-2 flex-shrink-0" /> <span className="min-w-0 truncate">{t("settings.signOut")}</span> {/* Added min-w-0 and truncate */}
         </Button>
       </div>
 
@@ -291,7 +285,7 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ isOpen, onClose }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </motion.div>
+    </CardContent>
   );
 
   if (!isOpen) return null;

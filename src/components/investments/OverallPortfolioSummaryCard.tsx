@@ -26,28 +26,29 @@ const OverallPortfolioSummaryCard: React.FC<OverallPortfolioSummaryCardProps> = 
   const formattedCurrentValue = formatCurrencyToParts(currentValue);
 
   return (
-    <motion.div
-      className="glassmorphic-card text-foreground"
-      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-    >
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-2">
-          <p className="caption">{t("investments.totalPortfolioValue")}</p>
-          <Wallet className="h-5 w-5 text-muted-foreground" />
-        </div>
-        <p className={cn("text-4xl font-bold font-mono tracking-tight flex items-baseline")}>
-          <span className="mr-1">{formattedCurrentValue.symbol}</span>
-          <span>{formattedCurrentValue.value}</span>
-        </p>
-        <div className="flex items-center space-x-2">
-          {Icon && <Icon className={`w-4 h-4 ${gainLossColor}`} />}
-          <span className={`p ${gainLossColor} font-mono`}>
-            {gainLossPercentage.toFixed(2)}% {t("dashboard.thisMonth")}
-          </span>
-        </div>
-      </CardContent>
-    </motion.div>
+    <Card className="glassmorphic-card text-foreground"> {/* Applied consistent card style */}
+      <motion.div
+        whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <CardContent className="p-4 sm:p-5 lg:p-6"> {/* Applied consistent padding */}
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs sm:text-sm text-muted-foreground">{t("investments.totalPortfolioValue")}</p> {/* Applied consistent typography */}
+            <Wallet className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className={cn("text-[clamp(2.25rem,8vw,3.75rem)] font-bold font-mono tracking-tight flex items-baseline leading-none", formattedCurrentValue.value.length > 10 ? 'text-xl sm:text-2xl' : '')}> {/* Applied clamped text size and conditional smaller size for long numbers */}
+            <span className="mr-1">{formattedCurrentValue.symbol}</span>
+            <span>{formattedCurrentValue.value}</span>
+          </p>
+          <div className="flex items-center space-x-2">
+            {Icon && <Icon className={`w-4 h-4 ${gainLossColor}`} />}
+            <span className={`text-sm sm:text-base ${gainLossColor} font-mono`}> {/* Applied consistent typography */}
+              {gainLossPercentage.toFixed(2)}% {t("dashboard.thisMonth")}
+            </span>
+          </div>
+        </CardContent>
+      </motion.div>
+    </Card>
   );
 };
 

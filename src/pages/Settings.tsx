@@ -451,24 +451,18 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
           setShowProfilePopup={setShowProfilePopup}
         />
 
-        <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="space-y-6 sm:space-y-8"
-          >
-
+        <main className="min-h-screen bg-background/40 md:bg-background p-3 sm:p-4 lg:p-6 pt-16 pb-20"> {/* Applied global layout polish */}
+          <div className="max-w-6xl mx-auto w-full space-y-4"> {/* Applied max-width container */}
             {/* Account Info */}
-            <Card className="glassmorphic-card">
-              <CardHeader>
-                <CardTitle className="h3 flex items-center">
+            <Card className="glassmorphic-card"> {/* Applied consistent card style */}
+              <CardHeader className="p-4 sm:p-5 lg:p-6 pb-2"> {/* Applied consistent padding */}
+                <CardTitle className="text-base sm:text-lg font-semibold tracking-tight"> {/* Applied consistent typography */}
                   <UserCircle className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.accountInfo")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="grid gap-2 px-4 py-3">
-                  <Label htmlFor="display-name" className="text-base">{t("settings.changeName")}</Label>
+              <CardContent className="space-y-2 p-4 sm:p-5 lg:p-6 pt-0 divide-y divide-border/10"> {/* Applied consistent padding and divider */}
+                <div className="grid gap-2 py-3"> {/* Added py-3 for consistent spacing */}
+                  <Label htmlFor="display-name" className="text-sm sm:text-base">{t("settings.changeName")}</Label> {/* Applied consistent typography */}
                   <Input
                     id="display-name"
                     value={displayNameInput}
@@ -482,36 +476,32 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     {t("common.save")} {t("settings.name")}
                   </Button>
                 </div>
-                <Separator />
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => setShowChangeEmailModal(true)}
                 >
                   {t("settings.changeEmail")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
-                <Separator />
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => setShowChangePasswordModal(true)}
                 >
                   {t("settings.changePassword")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
-                <Separator />
-                <div className="flex items-center justify-between px-4 py-3">
-                  <Label htmlFor="2fa-toggle" className="flex items-center text-base cursor-pointer">
+                <div className="flex items-center justify-between py-3"> {/* Added py-3 for consistent spacing */}
+                  <Label htmlFor="2fa-toggle" className="flex items-center text-sm sm:text-base cursor-pointer"> {/* Applied consistent typography */}
                     <ShieldCheck className="w-5 h-5 mr-2 text-muted-foreground" />
                     {t("settings.enableTwoFactorAuth")}
                   </Label>
                   <Switch id="2fa-toggle" checked={false} onCheckedChange={() => toast.info(t("common.comingSoon"))} />
                 </div>
-                <Separator />
                 <AlertDialog open={showDeleteAccountConfirm} onOpenChange={setShowDeleteAccountConfirm}>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg" disabled={isDeletingAccount}>
+                    <Button variant="destructive" className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg" disabled={isDeletingAccount}> {/* Applied consistent typography and padding */}
                       {isDeletingAccount ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="w-5 h-5 mr-2" />}
                       {t("settings.deleteAccount")}
                     </Button>
@@ -529,11 +519,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-                <Separator />
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all" {/* Applied consistent typography and padding */}
                   onClick={handleLogout}
                 >
                   <LogOut className="w-5 h-5 mr-2" /> {t("settings.signOut")}
@@ -542,15 +531,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </Card>
 
             {/* Connect Google Account */}
-            <Card className="glassmorphic-card">
-              <CardHeader>
-                <CardTitle className="h3 flex items-center">
+            <Card className="glassmorphic-card"> {/* Applied consistent card style */}
+              <CardHeader className="p-4 sm:p-5 lg:p-6 pb-2"> {/* Applied consistent padding */}
+                <CardTitle className="text-base sm:text-lg font-semibold tracking-tight"> {/* Applied consistent typography */}
                   <LinkIcon className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.socialConnections")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-2 p-4 sm:p-5 lg:p-6 pt-0"> {/* Applied consistent padding */}
                 <Button
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-4 py-3 rounded-lg" {/* Applied consistent typography and padding */}
                   onClick={handleConnectGoogle}
                   disabled={isConnectingGoogle || isGoogleLinked}
                 >
@@ -564,15 +553,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </Card>
 
             {/* Budget Settings */}
-            <Card className="glassmorphic-card">
-              <CardHeader>
-                <CardTitle className="h3 flex items-center">
+            <Card className="glassmorphic-card"> {/* Applied consistent card style */}
+              <CardHeader className="p-4 sm:p-5 lg:p-6 pb-2"> {/* Applied consistent padding */}
+                <CardTitle className="text-base sm:text-lg font-semibold tracking-tight"> {/* Applied consistent typography */}
                   <DollarSign className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.budget")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="monthly-budget" className="text-base">{t("settings.monthlyBudget")}</Label>
+              <CardContent className="space-y-4 p-4 sm:p-5 lg:p-6 pt-0 divide-y divide-border/10"> {/* Applied consistent padding and divider */}
+                <div className="grid gap-2 py-3"> {/* Added py-3 for consistent spacing */}
+                  <Label htmlFor="monthly-budget" className="text-sm sm:text-base">{t("settings.monthlyBudget")}</Label> {/* Applied consistent typography */}
                   <Input
                     id="monthly-budget"
                     type="number"
@@ -586,9 +575,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     {t("settings.saveMonthlyBudget")}
                   </Button>
                 </div>
-                <Separator />
-                <div className="grid gap-2">
-                  <Label htmlFor="default-budget-period" className="text-base">{t("settings.defaultBudgetPeriod")}</Label>
+                <div className="grid gap-2 py-3"> {/* Added py-3 for consistent spacing */}
+                  <Label htmlFor="default-budget-period" className="text-sm sm:text-base">{t("settings.defaultBudgetPeriod")}</Label> {/* Applied consistent typography */}
                   <Select value="monthly" onValueChange={() => toast.info(t("common.comingSoon"))}>
                     <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
                       <SelectValue placeholder={t("settings.selectPeriod")} />
@@ -599,9 +587,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     </SelectContent>
                   </Select>
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="rollover-toggle" className="flex items-center text-base cursor-pointer">
+                <div className="flex items-center justify-between py-3"> {/* Added py-3 for consistent spacing */}
+                  <Label htmlFor="rollover-toggle" className="flex items-center text-sm sm:text-base cursor-pointer"> {/* Applied consistent typography */}
                     <ArrowRight className="w-5 h-5 mr-2 text-muted-foreground" />
                     {t("settings.autoRolloverBudgets")}
                   </Label>
@@ -611,9 +598,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     onCheckedChange={(checked) => updateDocument('budgetSettings', budgetSettings.id, { rolloverEnabled: checked })}
                   />
                 </div>
-                <Separator />
-                <div className="grid gap-2">
-                  <Label htmlFor="micro-investing-percentage" className="text-base">
+                <div className="grid gap-2 py-3"> {/* Added py-3 for consistent spacing */}
+                  <Label htmlFor="micro-investing-percentage" className="text-sm sm:text-base"> {/* Applied consistent typography */}
                     {t("settings.suggestionPercentage")}
                   </Label>
                   <Input
@@ -631,9 +617,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     {t("settings.saveMicroInvestingSettings")}
                   </Button>
                 </div>
-                <Separator />
-                <div className="grid gap-2">
-                  <Label htmlFor="price-alert-threshold" className="text-base">
+                <div className="grid gap-2 py-3"> {/* Added py-3 for consistent spacing */}
+                  <Label htmlFor="price-alert-threshold" className="text-sm sm:text-base"> {/* Applied consistent typography */}
                     {t("settings.alertThreshold")}
                   </Label>
                   <Input
@@ -654,44 +639,41 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </Card>
 
             {/* Data Management */}
-            <Card className="glassmorphic-card">
-              <CardHeader>
-                <CardTitle className="h3 flex items-center">
+            <Card className="glassmorphic-card"> {/* Applied consistent card style */}
+              <CardHeader className="p-4 sm:p-5 lg:p-6 pb-2"> {/* Applied consistent padding */}
+                <CardTitle className="text-base sm:text-lg font-semibold tracking-tight"> {/* Applied consistent typography */}
                   <Database className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.dataManagement")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-2 p-4 sm:p-5 lg:p-6 pt-0 divide-y divide-border/10"> {/* Applied consistent padding and divider */}
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <Upload className="w-5 h-5 mr-2" /> {t("settings.importCSV")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
-                <Separator />
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <Download className="w-5 h-5 mr-2" /> {t("settings.exportCSVAdvanced")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
-                <Separator />
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <Database className="w-5 h-5 mr-2" /> {t("settings.backupData")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
-                <Separator />
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <Download className="w-5 h-5 mr-2" /> {t("settings.restoreFromBackup")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -700,15 +682,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </Card>
 
             {/* Localization */}
-            <Card className="glassmorphic-card">
-              <CardHeader>
-                <CardTitle className="h3 flex items-center">
+            <Card className="glassmorphic-card"> {/* Applied consistent card style */}
+              <CardHeader className="p-4 sm:p-5 lg:p-6 pb-2"> {/* Applied consistent padding */}
+                <CardTitle className="text-base sm:text-lg font-semibold tracking-tight"> {/* Applied consistent typography */}
                   <Globe className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.localization")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="default-currency-settings" className="text-base">{t("settings.defaultCurrency")}</Label>
+              <CardContent className="space-y-2 p-4 sm:p-5 lg:p-6 pt-0 divide-y divide-border/10"> {/* Applied consistent padding and divider */}
+                <div className="grid gap-2 py-3"> {/* Added py-3 for consistent spacing */}
+                  <Label htmlFor="default-currency-settings" className="text-sm sm:text-base">{t("settings.defaultCurrency")}</Label> {/* Applied consistent typography */}
                   <Select value={selectedCurrency.code} onValueChange={(value) => { setCurrency(value); toast.info(t("common.comingSoon")); }}>
                     <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
                       <SelectValue placeholder={t("settings.selectCurrency")} />
@@ -722,18 +704,16 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                     </SelectContent>
                   </Select>
                 </div>
-                <Separator />
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <Clock className="w-5 h-5 mr-2" /> {t("settings.regionTimezone")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
-                <Separator />
-                <div className="grid gap-2">
-                  <Label htmlFor="app-language-settings" className="text-base">{t("settings.appLanguage")}</Label>
+                <div className="grid gap-2 py-3"> {/* Added py-3 for consistent spacing */}
+                  <Label htmlFor="app-language-settings" className="text-sm sm:text-base">{t("settings.appLanguage")}</Label> {/* Applied consistent typography */}
                   <Select value={i18n.language} onValueChange={(value) => { i18n.changeLanguage(value); localStorage.setItem('i18nextLng', value); toast.info(t("common.comingSoon")); }}>
                     <SelectTrigger className="w-full bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
                       <SelectValue placeholder={t("settings.selectLanguage")} />
@@ -748,20 +728,20 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </Card>
 
             {/* Integrations (Placeholder) */}
-            <Card className="glassmorphic-card">
-              <CardHeader>
-                <CardTitle className="h3 flex items-center">
+            <Card className="glassmorphic-card"> {/* Applied consistent card style */}
+              <CardHeader className="p-4 sm:p-5 lg:p-6 pb-2"> {/* Applied consistent padding */}
+                <CardTitle className="text-base sm:text-lg font-semibold tracking-tight"> {/* Applied consistent typography */}
                   <Key className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.apiIntegrations")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-muted-foreground text-sm mb-4">
+              <CardContent className="space-y-2 p-4 sm:p-5 lg:p-6 pt-0"> {/* Applied consistent padding */}
+                <p className="text-xs sm:text-sm text-muted-foreground mb-4"> {/* Applied consistent typography */}
                   {t("settings.apiIntegrationsDescription")}
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <LinkIcon className="w-5 h-5 mr-2" /> {t("settings.bankConnections")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -770,43 +750,40 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
             </Card>
 
             {/* Privacy */}
-            <Card className="glassmorphic-card">
-              <CardHeader>
-                <CardTitle className="h3 flex items-center">
+            <Card className="glassmorphic-card"> {/* Applied consistent card style */}
+              <CardHeader className="p-4 sm:p-5 lg:p-6 pb-2"> {/* Applied consistent padding */}
+                <CardTitle className="text-base sm:text-lg font-semibold tracking-tight"> {/* Applied consistent typography */}
                   <Info className="w-5 h-5 mr-2 text-muted-foreground" /> {t("settings.privacy")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-2 p-4 sm:p-5 lg:p-6 pt-0 divide-y divide-border/10"> {/* Applied consistent padding and divider */}
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   {t("settings.gdprNotice")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
-                <Separator />
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   {t("settings.privacyPolicy")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
-                <Separator />
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg hover:bg-muted/50 transition-all"
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   {t("settings.termsOfService")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </motion.button>
-                <Separator />
                 <AlertDialog open={isDeleteDataConfirmOpen} onOpenChange={setIsDeleteDataConfirmOpen}>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="w-full flex justify-between items-center text-base px-4 py-3 rounded-lg">
+                    <Button variant="destructive" className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg"> {/* Applied consistent typography and padding */}
                       <Trash2 className="w-5 h-5 mr-2" /> {t("settings.deleteAllPersonalData")}
                     </Button>
                   </AlertDialogTrigger>

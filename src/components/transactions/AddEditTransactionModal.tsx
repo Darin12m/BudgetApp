@@ -166,7 +166,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
   const FormContent = (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="merchant" className="text-right">
+        <Label htmlFor="merchant" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.merchant")}
         </Label>
         <div className="col-span-3">
@@ -182,7 +182,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="amount" className="text-right">
+        <Label htmlFor="amount" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.amount")}
         </Label>
         <div className="col-span-3">
@@ -200,7 +200,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="type" className="text-right">
+        <Label htmlFor="type" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.type")}
         </Label>
         <div className="col-span-3 flex items-center space-x-2">
@@ -230,7 +230,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="date" className="text-right">
+        <Label htmlFor="date" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.date")}
         </Label>
         <div className="col-span-3">
@@ -251,7 +251,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={(d) => { setDate(d); setErrors(prev => ({ ...prev, date: '' })); }}
+                onSelect={(d) => { setDate(d || undefined); setErrors(prev => ({ ...prev, date: '' })); }}
                 initialFocus
               />
             </PopoverContent>
@@ -261,7 +261,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="category" className="text-right">
+        <Label htmlFor="category" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.category")}
         </Label>
         <div className="col-span-3">
@@ -291,7 +291,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="status" className="text-right">
+        <Label htmlFor="status" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.status")}
         </Label>
         <div className="col-span-3">
@@ -308,7 +308,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="isRecurring" className="text-right">
+        <Label htmlFor="isRecurring" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("transactions.recurring")}
         </Label>
         <div className="col-span-3 flex items-center">
@@ -318,11 +318,11 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             onCheckedChange={setIsRecurring}
             disabled={!!isInstanceFromRecurringTemplate}
           />
-          <span className="ml-2 p text-muted-foreground">
+          <span className="ml-2 text-sm text-muted-foreground"> {/* Applied consistent typography */}
             {isRecurring ? t("transactions.enabled") : t("transactions.disabled")}
           </span>
           {isInstanceFromRecurringTemplate && (
-            <span className="ml-2 text-xs text-muted-foreground">({t("transactions.managedAsRecurringTemplate")})</span>
+            <span className="ml-2 text-xs text-muted-foreground break-words text-balance">({t("transactions.managedAsRecurringTemplate")})</span> {/* Applied consistent typography and text wrapping */}
           )}
         </div>
       </div>
@@ -330,7 +330,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       {isRecurring && (
         <>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="frequency" className="text-right">
+            <Label htmlFor="frequency" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
               {t("transactions.frequency")}
             </Label>
             <div className="col-span-3">
@@ -347,7 +347,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="nextDate" className="text-right">
+            <Label htmlFor="nextDate" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
               {t("transactions.nextDueDate")}
             </Label>
             <div className="col-span-3">
@@ -368,7 +368,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
                   <Calendar
                     mode="single"
                     selected={nextDate}
-                    onSelect={(d) => { setNextDate(d); setErrors(prev => ({ ...prev, nextDate: '' })); }}
+                    onSelect={(d) => { setNextDate(d || undefined); setErrors(prev => ({ ...prev, nextDate: '' })); }}
                     initialFocus
                   />
                 </PopoverContent>
@@ -419,9 +419,9 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
-            <DrawerTitle className="flex items-center">
-              {isEditing ? <h3 className="h3">{t("transactions.editTransaction")}</h3> : <h3 className="h3">{t("transactions.newTransaction")}</h3>}
-            </DrawerTitle>
+            <DialogTitle className="flex items-center">
+              {isEditing ? <h3 className="text-base sm:text-lg">{t("transactions.editTransaction")}</h3> : <h3 className="text-base sm:text-lg">{t("transactions.newTransaction")}</h3>} {/* Applied consistent typography */}
+            </DialogTitle>
           </DrawerHeader>
           <div className="p-4">
             {FormContent}
@@ -436,7 +436,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
       <DialogContent className="sm:max-w-[425px] glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            {isEditing ? <h3 className="h3">{t("transactions.editTransaction")}</h3> : <h3 className="h3">{t("transactions.newTransaction")}</h3>}
+            {isEditing ? <h3 className="text-base sm:text-lg">{t("transactions.editTransaction")}</h3> : <h3 className="text-base sm:text-lg">{t("transactions.newTransaction")}</h3>} {/* Applied consistent typography */}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

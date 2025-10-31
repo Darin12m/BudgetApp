@@ -55,11 +55,11 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
           whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
           whileTap={{ scale: 0.98 }}
         >
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 min-w-0"> {/* Added min-w-0 */}
             <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
-            <span className="text-sm text-foreground truncate">{entry.name}</span>
+            <span className="text-sm text-foreground truncate">{entry.name}</span> {/* Added truncate */}
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <span className="text-sm text-muted-foreground font-mono">{entry.percentage.toFixed(0)}%</span>
             <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
           </div>
@@ -84,37 +84,38 @@ const EnhancedPortfolioAllocationChart: React.FC<EnhancedPortfolioAllocationChar
   }, [data, CHART_PALETTE]); // Corrected: changed 'palette' to 'CHART_PALETTE'
 
   return (
-    <motion.div
-      className="glassmorphic-card"
-      whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-    >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold tracking-tight">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6">
-        {chartData.length > 0 ? (
-          <>
-            <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
-              <ProDonut
-                chartId="portfolio-allocation"
-                data={chartData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
-                totalValue={totalPortfolioValue}
-                totalLabel={t("dashboard.totalAllocated")}
-                innerRadius={60}
-                outerRadius={90}
+    <Card className="glassmorphic-card"> {/* Applied consistent card style */}
+      <motion.div
+        whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <CardHeader className="p-4 sm:p-5 lg:p-6 pb-2"> {/* Applied consistent padding */}
+          <CardTitle className="text-base sm:text-lg font-semibold tracking-tight">{title}</CardTitle> {/* Applied consistent typography */}
+        </CardHeader>
+        <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 lg:p-6 pt-0"> {/* Applied consistent padding */}
+          {chartData.length > 0 ? (
+            <>
+              <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
+                <ProDonut
+                  chartId="portfolio-allocation"
+                  data={chartData.map(item => ({ name: item.name, value: item.value, color: item.color }))}
+                  totalValue={totalPortfolioValue}
+                  totalLabel={t("dashboard.totalAllocated")}
+                  innerRadius={60}
+                  outerRadius={90}
+                />
+              </div>
+              <AllocationLegendList
+                chartData={chartData}
+                formatCurrency={formatCurrency}
               />
-            </div>
-            <AllocationLegendList
-              chartData={chartData}
-              formatCurrency={formatCurrency}
-            />
-          </>
-        ) : (
-          <p className="text-muted-foreground w-full text-center">{emptyMessage}</p>
-        )}
-      </CardContent>
-    </motion.div>
+            </>
+          ) : (
+            <p className="text-sm sm:text-base text-muted-foreground w-full text-center break-words text-balance">{emptyMessage}</p> // Applied consistent typography and text wrapping
+          )}
+        </CardContent>
+      </motion.div>
+    </Card>
   );
 };
 

@@ -46,7 +46,7 @@ const CategoryCard: React.FC<CategoryCardProps> = memo(({ category, onEdit, onDe
 
   return (
     <motion.div
-      className="p-4 sm:p-6 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted"
+      className="py-3 px-4 sm:px-5 lg:px-6 hover:bg-muted/50 rounded-lg transition-colors active:bg-muted" // Applied consistent padding
       whileHover={{ scale: 1.01, backgroundColor: "hsl(var(--muted)/20%)" }}
       whileTap={{ scale: 0.99 }}
     >
@@ -54,17 +54,17 @@ const CategoryCard: React.FC<CategoryCardProps> = memo(({ category, onEdit, onDe
         <div className="flex items-center space-x-3 flex-1 min-w-0">
           <span className="text-2xl flex-shrink-0">{category.emoji}</span>
           <div className="flex-1 min-w-0">
-            <h4 className="h4 font-semibold text-foreground truncate tracking-tight">{category.name}</h4>
-            <p className="p text-muted-foreground font-mono">
+            <h4 className="text-base sm:text-lg font-semibold text-foreground truncate tracking-tight">{category.name}</h4> {/* Applied consistent typography and truncate */}
+            <p className="text-sm sm:text-base text-muted-foreground font-mono truncate"> {/* Applied consistent typography and truncate */}
               {formatCurrency(category.spent)} {t("common.of")} {formatCurrency(category.budgeted)}
             </p>
           </div>
         </div>
         <div className="text-right ml-2 flex-shrink-0 flex items-center space-x-2">
-          <p className={`font-semibold p ${health.color} font-mono`}>
+          <p className={`font-semibold text-sm sm:text-base ${health.color} font-mono`}> {/* Applied consistent typography */}
             {formatCurrency(category.budgeted - category.spent)}
           </p>
-          <p className="p text-muted-foreground font-mono">{Math.round(percentage)}%</p>
+          <p className="text-sm sm:text-base text-muted-foreground font-mono">{Math.round(percentage)}%</p> {/* Applied consistent typography */}
           <Button variant="ghost" size="icon" onClick={() => onEdit(category)} className="h-8 w-8 text-muted-foreground">
             <Edit className="h-4 w-4" />
           </Button>

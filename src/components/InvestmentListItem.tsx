@@ -57,10 +57,10 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
           <Icon className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-foreground p truncate">{investment.name}</p>
+          <p className="font-semibold text-foreground text-sm truncate">{investment.name}</p> {/* Applied consistent typography and truncate */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <p className="caption truncate cursor-help">
+              <p className="text-xs text-muted-foreground truncate cursor-help"> {/* Applied consistent typography and truncate */}
                 {investment.type} • {formatCurrency(currentValue)}
                 <span className="ml-2 text-arrowUp text-xs font-medium flex items-center">
                   <span className="relative flex h-2 w-2">
@@ -78,17 +78,17 @@ const InvestmentListItem: React.FC<InvestmentListItemProps> = ({ investment, onE
         {typeof change24hPercent === 'number' && (
           <div className={`flex items-center justify-end rounded-full px-2 py-1 ${isPositive24h ? 'bg-arrowUp/10' : 'bg-arrowDown/10'} ${priceChangeClasses[priceChangeStatus]} animate-float-up-down`}>
             {Change24hIcon && <Change24hIcon className={`w-3 h-3 mr-1 ${change24hColor}`} />}
-            <p className={`font-semibold p ${change24hColor} font-mono`}>
+            <p className={`font-semibold text-sm ${change24hColor} font-mono`}> {/* Applied consistent typography */}
               {change24hPercent.toFixed(2)}%
             </p>
           </div>
         )}
         {isAlerted && (
-          <p className="text-destructive text-xs mt-1 flex items-center justify-end">
-            <AlertTriangle className="w-3 h-3 mr-1" /> {t("investments.alert")}
+          <p className="text-destructive text-xs mt-1 flex items-center justify-end break-words text-balance"> {/* Applied consistent typography and text wrapping */}
+            <AlertTriangle className="w-3 h-3 mr-1 flex-shrink-0" /> <span className="min-w-0">{t("investments.alert")}</span>
           </p>
         )}
-        <p className={`caption ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]} font-mono`}>{formatCurrency(gainLoss)}</p>
+        <p className={`text-xs ${overallGainLossColor} mt-1 ${priceChangeClasses[priceChangeStatus]} font-mono`}>{formatCurrency(gainLoss)}</p> {/* Applied consistent typography */}
       </div>
       <Button variant="ghost" size="icon" onClick={() => onEdit(investment)} className="ml-2 flex-shrink-0 text-muted-foreground">
         <Edit className="h-4 w-4" />

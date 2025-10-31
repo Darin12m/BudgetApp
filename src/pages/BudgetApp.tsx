@@ -130,81 +130,83 @@ const FinanceFlow: React.FC<BudgetAppProps> = ({ userUid, setShowProfilePopup })
           setShowProfilePopup={setShowProfilePopup}
         />
 
-        <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full">
-          {error && <ErrorMessage message={error} />}
-          {loading ? (
-            <LoadingSpinner />
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              {activeView === 'dashboard' && (
-                <DashboardView
-                  totalBudgeted={totalBudgeted}
-                  totalSpent={totalSpent}
-                  remainingBudget={remainingBudget}
-                  remainingPerDay={remainingPerDay}
-                  daysLeft={daysLeft}
-                  budgetSettings={budgetSettings}
-                  smartSummary={smartSummary}
-                  runOutIcon={RunOutIcon}
-                  runOutColor={runOutColor}
-                  runOutMessage={runOutMessage}
-                  dailyAvgSpending={dailyAvgSpending}
-                  spendingForecastChartData={spendingForecastChartData}
-                  netWorth={netWorth}
-                  accounts={accounts}
-                  spendingTrend={spendingTrend}
-                  categoryData={categoryData}
-                  recurringTransactions={recurringTemplates}
-                  transactions={transactions}
-                  categories={categories}
-                  formatCurrency={formatCurrency}
-                  netWorthTrend={netWorthTrend}
-                />
-              )}
-              {activeView === 'budget' && (
-                <BudgetView
-                  totalBudgeted={totalBudgeted}
-                  totalSpent={totalSpent}
-                  remainingBudget={remainingBudget}
-                  remainingPerDay={remainingPerDay}
-                  daysLeft={daysLeft}
-                  budgetSettings={budgetSettings}
-                  formatCurrency={formatCurrency}
-                  categories={categories}
-                  handleAddCategory={handleAddCategory}
-                  handleEditCategory={handleEditCategory}
-                  handleDeleteCategory={handleDeleteCategory}
-                />
-              )}
-              {activeView === 'goals' && (
-                <GoalsView
-                  goals={goals}
-                  handleAddGoal={handleAddGoal}
-                  handleEditGoal={handleEditGoal}
-                  handleDeleteGoal={handleDeleteGoal}
-                  handleOpenAddFunds={handleOpenAddFunds}
-                  formatCurrency={formatCurrency}
-                />
-              )}
-              {activeView === 'transactions' && (
-                <TransactionsView
-                  transactions={transactions}
-                  categories={categories}
-                  transactionSearchTerm={transactionSearchTerm}
-                  setTransactionSearchTerm={setTransactionSearchTerm}
-                  transactionFilterPeriod={transactionFilterPeriod}
-                  setTransactionFilterPeriod={setTransactionFilterPeriod}
-                  setIsAddEditTransactionModalOpen={setIsAddEditTransactionModalOpen}
-                  handleEditTransaction={handleEditTransaction}
-                  formatCurrency={formatCurrency}
-                />
-              )}
-            </motion.div>
-          )}
+        <main className="min-h-screen bg-background/40 md:bg-background p-3 sm:p-4 lg:p-6 pt-16 pb-20"> {/* Applied global layout polish */}
+          <div className="max-w-6xl mx-auto w-full space-y-4"> {/* Applied max-width container */}
+            {error && <ErrorMessage message={error} />}
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                {activeView === 'dashboard' && (
+                  <DashboardView
+                    totalBudgeted={totalBudgeted}
+                    totalSpent={totalSpent}
+                    remainingBudget={remainingBudget}
+                    remainingPerDay={remainingPerDay}
+                    daysLeft={daysLeft}
+                    budgetSettings={budgetSettings}
+                    smartSummary={smartSummary}
+                    runOutIcon={RunOutIcon}
+                    runOutColor={runOutColor}
+                    runOutMessage={runOutMessage}
+                    dailyAvgSpending={dailyAvgSpending}
+                    spendingForecastChartData={spendingForecastChartData}
+                    netWorth={netWorth}
+                    accounts={accounts}
+                    spendingTrend={spendingTrend}
+                    categoryData={categoryData}
+                    recurringTransactions={recurringTemplates}
+                    transactions={transactions}
+                    categories={categories}
+                    formatCurrency={formatCurrency}
+                    netWorthTrend={netWorthTrend}
+                  />
+                )}
+                {activeView === 'budget' && (
+                  <BudgetView
+                    totalBudgeted={totalBudgeted}
+                    totalSpent={totalSpent}
+                    remainingBudget={remainingBudget}
+                    remainingPerDay={remainingPerDay}
+                    daysLeft={daysLeft}
+                    budgetSettings={budgetSettings}
+                    formatCurrency={formatCurrency}
+                    categories={categories}
+                    handleAddCategory={handleAddCategory}
+                    handleEditCategory={handleEditCategory}
+                    handleDeleteCategory={handleDeleteCategory}
+                  />
+                )}
+                {activeView === 'goals' && (
+                  <GoalsView
+                    goals={goals}
+                    handleAddGoal={handleAddGoal}
+                    handleEditGoal={handleEditGoal}
+                    handleDeleteGoal={handleDeleteGoal}
+                    handleOpenAddFunds={handleOpenAddFunds}
+                    formatCurrency={formatCurrency}
+                  />
+                )}
+                {activeView === 'transactions' && (
+                  <TransactionsView
+                    transactions={transactions}
+                    categories={categories}
+                    transactionSearchTerm={transactionSearchTerm}
+                    setTransactionSearchTerm={setTransactionSearchTerm}
+                    transactionFilterPeriod={transactionFilterPeriod}
+                    setTransactionFilterPeriod={setTransactionFilterPeriod}
+                    setIsAddEditTransactionModalOpen={setIsAddEditTransactionModalOpen}
+                    handleEditTransaction={handleEditTransaction}
+                    formatCurrency={formatCurrency}
+                  />
+                )}
+              </motion.div>
+            )}
+          </div>
         </main>
       </div>
 

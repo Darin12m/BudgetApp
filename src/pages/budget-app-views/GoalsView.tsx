@@ -19,6 +19,8 @@ import { Goal } from '@/hooks/use-finance-data';
 import { formatDate } from '@/lib/utils';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { motion } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Import Card
+import { cn } from '@/lib/utils';
 
 interface GoalsViewProps {
   goals: Goal[];
@@ -46,7 +48,7 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
       className="space-y-4 sm:space-y-6 pb-24 sm:pb-6"
     >
       <div className="flex items-center justify-between">
-        <h2 className="h2 font-bold tracking-tight">{t("goals.title")}</h2>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight truncate">{t("goals.title")}</h2> {/* Applied consistent typography and truncate */}
         <Button
           onClick={handleAddGoal}
           className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-xl transition-colors text-sm active:bg-primary/80"
@@ -57,83 +59,83 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6 lg:grid-cols-2 xl:grid-cols-3"> {/* Responsive grid */}
         {goals.length > 0 ? (
           goals.map((goal) => {
             const percentage = (goal.current / goal.target) * 100;
 
             return (
-              <motion.div
-                key={goal.id}
-                className="glassmorphic-card p-5 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
-                whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <Target className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: goal.color }} />
-                  <span className="text-sm font-medium text-muted-foreground font-mono">{Math.round(percentage)}%</span>
-                </div>
-                <h3 className="h4 font-semibold text-foreground mb-3 tracking-tight">{goal.name}</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">{t("goals.current")}</span>
-                    <span className="font-semibold text-foreground font-mono">{formatCurrency(goal.current)}</span>
+              <Card key={goal.id} className="glassmorphic-card p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"> {/* Applied consistent card style and padding */}
+                <motion.div
+                  whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <Target className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0" style={{ color: goal.color }} />
+                    <span className="text-sm font-medium text-muted-foreground font-mono flex-shrink-0">{Math.round(percentage)}%</span> {/* Applied consistent typography */}
                   </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">{t("goals.target")}</span>
-                    <span className="font-semibold text-foreground font-mono">{formatCurrency(goal.target)}</span>
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 tracking-tight truncate">{goal.name}</h3> {/* Applied consistent typography and truncate */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm sm:text-base"> {/* Applied consistent typography */}
+                      <span className="text-muted-foreground">{t("goals.current")}</span>
+                      <span className="font-semibold text-foreground font-mono">{formatCurrency(goal.current)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm sm:text-base"> {/* Applied consistent typography */}
+                      <span className="text-muted-foreground">{t("goals.target")}</span>
+                      <span className="font-semibold text-foreground font-mono">{formatCurrency(goal.target)}</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-3 overflow-hidden mt-3">
+                      <div
+                        className="h-full transition-all duration-500 rounded-full"
+                        style={{
+                          width: `${Math.min(percentage, 100)}%`,
+                          backgroundColor: goal.color
+                        }}
+                      />
+                    </div>
+                    <p className="text-sm sm:text-base text-muted-foreground mt-2 break-words text-balance"> {/* Applied consistent typography and text wrapping */}
+                      {formatCurrency(goal.target - goal.current)} {t("goals.toGo")} • {t("goals.due")} {formatDate(goal.targetDate, 'MMM dd, yyyy')}
+                    </p>
                   </div>
-                  <div className="w-full bg-muted rounded-full h-3 overflow-hidden mt-3">
-                    <div
-                      className="h-full transition-all duration-500 rounded-full"
-                      style={{
-                        width: `${Math.min(percentage, 100)}%`,
-                        backgroundColor: goal.color
-                      }}
-                    />
+                  <div className="flex gap-2 mt-4">
+                    <Button
+                      onClick={() => handleOpenAddFunds(goal)}
+                      className="flex-1"
+                    >
+                      {t("goals.addFunds")}
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleEditGoal(goal)} className="h-10 w-10 text-muted-foreground">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="glassmorphic-card">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{t("common.areYouSure")}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t("goals.goalDeleteConfirmation", { goalName: goal.name })}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">{t("common.cancel")}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteGoal(goal.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("common.delete")}</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
-                  <p className="p text-muted-foreground mt-2">
-                    {formatCurrency(goal.target - goal.current)} {t("goals.toGo")} • {t("goals.due")} {formatDate(goal.targetDate, 'MMM dd, yyyy')}
-                  </p>
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    onClick={() => handleOpenAddFunds(goal)}
-                    className="flex-1"
-                  >
-                    {t("goals.addFunds")}
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleEditGoal(goal)} className="h-10 w-10 text-muted-foreground">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="glassmorphic-card">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{t("common.areYouSure")}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {t("goals.goalDeleteConfirmation", { goalName: goal.name })}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="bg-muted/50 border-none hover:bg-muted">{t("common.cancel")}</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteGoal(goal.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("common.delete")}</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </motion.div>
+                </motion.div>
+              </Card>
             );
           })
         ) : (
           <div className="col-span-full glassmorphic-card p-6 text-center">
             <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="h3 font-semibold text-foreground">{t("goals.noGoalsSetup")}</p>
-            <p className="p mt-2 text-muted-foreground">{t("goals.createFirstGoalDescription")}</p>
+            <p className="text-base sm:text-lg font-semibold text-foreground break-words text-balance">{t("goals.noGoalsSetup")}</p> {/* Applied consistent typography and text wrapping */}
+            <p className="text-xs sm:text-sm mt-2 text-muted-foreground break-words text-balance">{t("goals.createFirstGoalDescription")}</p> {/* Applied consistent typography and text wrapping */}
             <Button onClick={handleAddGoal} className="mt-4">
               {t("goals.createFirstGoal")}
             </Button>
@@ -141,36 +143,37 @@ const GoalsView: React.FC<GoalsViewProps> = memo(({
         )}
       </div>
 
-      <motion.div
-        className="glassmorphic-card p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
-        whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-      >
-        <h3 className="h4 font-semibold text-foreground mb-4 tracking-tight">{t("goals.goalProgressOverTime")}</h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={[
-            { month: 'Apr', emergency: 5200, vacation: 800, laptop: 1100 },
-            { month: 'May', emergency: 5600, vacation: 900, laptop: 1300 },
-            { month: 'Jun', emergency: 5900, vacation: 950, laptop: 1450 },
-            { month: 'Jul', emergency: 6100, vacation: 1000, laptop: 1500 },
-            { month: 'Aug', emergency: 6250, vacation: 1050, laptop: 1550 },
-            { month: 'Sep', emergency: 6400, vacation: 1150, laptop: 1600 },
-            { month: 'Oct', emergency: 6500, vacation: 1200, laptop: 1650 },
-          ]}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
-            <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} tickFormatter={(value) => formatCurrency(Number(value))} />
-            <Tooltip
-              contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
-              formatter={(value) => formatCurrency(Number(value))}
-            />
-            <Legend wrapperStyle={{ fontSize: '12px' }} />
-            <Line type="monotone" dataKey="emergency" stroke="hsl(var(--emerald))" strokeWidth={2} name={t("goals.emergency")} dot={false} />
-            <Line type="monotone" dataKey="vacation" stroke="hsl(var(--blue))" strokeWidth={2} name={t("goals.vacation")} dot={false} />
-            <Line type="monotone" dataKey="laptop" stroke="hsl(var(--lilac))" strokeWidth={2} name={t("goals.laptop")} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
-      </motion.div>
+      <Card className="glassmorphic-card p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"> {/* Applied consistent card style and padding */}
+        <motion.div
+          whileHover={{ scale: 1.01, boxShadow: "var(--tw-shadow-glass-md)" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
+          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 tracking-tight">{t("goals.goalProgressOverTime")}</h3> {/* Applied consistent typography */}
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={[
+              { month: 'Apr', emergency: 5200, vacation: 800, laptop: 1100 },
+              { month: 'May', emergency: 5600, vacation: 900, laptop: 1300 },
+              { month: 'Jun', emergency: 5900, vacation: 950, laptop: 1450 },
+              { month: 'Jul', emergency: 6100, vacation: 1000, laptop: 1500 },
+              { month: 'Aug', emergency: 6250, vacation: 1050, laptop: 1550 },
+              { month: 'Sep', emergency: 6400, vacation: 1150, laptop: 1600 },
+              { month: 'Oct', emergency: 6500, vacation: 1200, laptop: 1650 },
+            ]}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+              <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} tickFormatter={(value) => formatCurrency(Number(value))} />
+              <Tooltip
+                contentStyle={{ backgroundColor: 'hsl(var(--tooltip-bg))', border: '1px solid hsl(var(--tooltip-border-color))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--tooltip-text-color))' }}
+                formatter={(value) => formatCurrency(Number(value))}
+              />
+              <Legend wrapperStyle={{ fontSize: '12px' }} />
+              <Line type="monotone" dataKey="emergency" stroke="hsl(var(--emerald))" strokeWidth={2} name={t("goals.emergency")} dot={false} />
+              <Line type="monotone" dataKey="vacation" stroke="hsl(var(--blue))" strokeWidth={2} name={t("goals.vacation")} dot={false} />
+              <Line type="monotone" dataKey="laptop" stroke="hsl(var(--lilac))" strokeWidth={2} name={t("goals.laptop")} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
+      </Card>
     </motion.div>
   );
 });

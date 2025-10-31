@@ -120,7 +120,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
   const FormContent = (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="name" className="text-right">
+        <Label htmlFor="name" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("goals.goalName")}
         </Label>
         <div className="col-span-3">
@@ -136,7 +136,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="target" className="text-right">
+        <Label htmlFor="target" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("goals.targetAmount")}
         </Label>
         <div className="col-span-3">
@@ -154,7 +154,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="current" className="text-right">
+        <Label htmlFor="current" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("goals.currentAmount")}
         </Label>
         <div className="col-span-3">
@@ -172,7 +172,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="targetDate" className="text-right">
+        <Label htmlFor="targetDate" className="text-right text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("goals.targetDate")}
         </Label>
         <div className="col-span-3">
@@ -193,7 +193,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
               <Calendar
                 mode="single"
                 selected={targetDate}
-                onSelect={(date) => { setTargetDate(date); setErrors(prev => ({ ...prev, targetDate: '' })); }}
+                onSelect={(date) => { setTargetDate(date || undefined); setErrors(prev => ({ ...prev, targetDate: '' })); }}
                 initialFocus
               />
             </PopoverContent>
@@ -203,7 +203,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       </div>
 
       <div className="grid grid-cols-4 items-start gap-4">
-        <Label className="text-right pt-2">
+        <Label className="text-right pt-2 text-sm sm:text-base"> {/* Applied consistent typography */}
           {t("budget.color")}
         </Label>
         <div className="col-span-3">
@@ -227,9 +227,9 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="safe-top safe-bottom glassmorphic-card">
           <DrawerHeader className="text-left">
-            <DrawerTitle className="flex items-center">
-              {goalToEdit ? <h3 className="h3">{t("goals.editGoal")}</h3> : <h3 className="h3">{t("goals.newGoalTitle")}</h3>}
-            </DrawerTitle>
+            <DialogTitle className="flex items-center">
+              {goalToEdit ? <h3 className="text-base sm:text-lg">{t("goals.editGoal")}</h3> : <h3 className="text-base sm:text-lg">{t("goals.newGoalTitle")}</h3>} {/* Applied consistent typography */}
+            </DialogTitle>
           </DrawerHeader>
           <div className="p-4">
             {FormContent}
@@ -244,7 +244,7 @@ const AddEditGoalModal: React.FC<AddEditGoalModalProps> = ({ isOpen, onClose, on
       <DialogContent className="glassmorphic-card" onPointerDown={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            {goalToEdit ? <h3 className="h3">{t("goals.editGoal")}</h3> : <h3 className="h3">{t("goals.newGoalTitle")}</h3>}
+            {goalToEdit ? <h3 className="text-base sm:text-lg">{t("goals.editGoal")}</h3> : <h3 className="text-base sm:text-lg">{t("goals.newGoalTitle")}</h3>} {/* Applied consistent typography */}
           </DialogTitle>
         </DialogHeader>
         {FormContent}

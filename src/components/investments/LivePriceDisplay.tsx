@@ -16,7 +16,7 @@ const LivePriceDisplay: React.FC<LivePriceDisplayProps> = ({ price, loading, err
 
   if (loading) {
     return (
-      <div className="flex items-center space-x-2 p text-muted-foreground">
+      <div className="flex items-center space-x-2 text-sm text-muted-foreground"> {/* Applied consistent typography */}
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -27,15 +27,15 @@ const LivePriceDisplay: React.FC<LivePriceDisplayProps> = ({ price, loading, err
   }
 
   if (error) {
-    return <p className="text-destructive text-xs">{error}</p>;
+    return <p className="text-destructive text-xs break-words text-balance">{error}</p>; // Applied consistent typography and text wrapping
   }
 
   if (price === null || price === 0) {
-    return <p className="caption text-muted-foreground">{t("investments.priceNotAvailable")}</p>;
+    return <p className="text-xs text-muted-foreground break-words text-balance">{t("investments.priceNotAvailable")}</p>; // Applied consistent typography and text wrapping
   }
 
   return (
-    <div className="flex items-center space-x-2 p font-medium text-arrowUp">
+    <div className="flex items-center space-x-2 text-sm font-medium text-arrowUp"> {/* Applied consistent typography */}
       <span className="relative flex h-2 w-2">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-arrowUp/40 opacity-75"></span>
         <span className="relative inline-flex rounded-full h-2 w-2 bg-arrowUp"></span>

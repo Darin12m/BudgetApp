@@ -171,7 +171,10 @@
 
 /* Glassmorphism effect for elements */
 .glassmorphic-card {
-  @apply backdrop-blur-xl bg-card border border-border/50 rounded-2xl shadow-glass; /* Using rounded-2xl */
+  @apply backdrop-blur-xl rounded-2xl shadow-lg; /* Using rounded-2xl */
+  /* Updated background and border for consistency */
+  background-color: hsl(var(--background) / 0.4); /* bg-background/40 */
+  border: 1px solid hsl(var(--border) / 0.2); /* border-border/20 */
 }
 
 /* Gradient border for SmartDonut */

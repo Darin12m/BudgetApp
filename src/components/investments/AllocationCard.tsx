@@ -58,11 +58,11 @@ const AllocationLegendList: React.FC<AllocationLegendListProps> = ({
           whileHover={{ scale: 1.02, backgroundColor: "hsl(var(--muted)/20%)" }}
           whileTap={{ scale: 0.98 }}
         >
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 min-w-0"> {/* Added min-w-0 */}
             <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
-            <span className="text-sm text-foreground truncate">{entry.name}</span>
+            <span className="text-sm text-foreground truncate">{entry.name}</span> {/* Added truncate */}
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <span className="text-sm text-muted-foreground font-mono">{entry.percentage.toFixed(0)}%</span>
             <span className="text-sm font-semibold text-foreground font-mono">{formatCurrency(entry.value)}</span>
           </div>
@@ -95,22 +95,22 @@ const AllocationCard: React.FC<AllocationCardProps> = ({ title, data, emptyMessa
       transition={{ duration: 0.2, ease: "easeOut" }}
     >
       <Card className="glassmorphic-card rounded-[calc(2rem-1px)] h-full"> {/* Adjusted rounded to match parent border */}
-        <CardHeader className="flex flex-col space-y-2 p-4 sm:p-6 pb-2">
+        <CardHeader className="flex flex-col space-y-2 p-4 sm:p-5 lg:p-6 pb-2"> {/* Applied consistent padding */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 min-w-0"> {/* Added min-w-0 */}
               <motion.div
                 initial={{ rotate: 0 }}
                 animate={{ rotate: 360 }}
                 transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                className="p-2 bg-primary/10 rounded-full text-primary"
+                className="p-2 bg-primary/10 rounded-full text-primary flex-shrink-0"
               >
                 <Icon className="w-5 h-5" />
               </motion.div>
-              <CardTitle className="text-lg font-semibold tracking-tight">{title}</CardTitle>
+              <CardTitle className="text-base sm:text-lg font-semibold tracking-tight truncate">{title}</CardTitle> {/* Applied consistent typography and truncate */}
             </div>
             {sevenDayChange && (
               <motion.div
-                className={cn("flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium", sevenDayChange.isPositive ? 'bg-emerald/10' : 'bg-destructive/10')}
+                className={cn("flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium flex-shrink-0", sevenDayChange.isPositive ? 'bg-emerald/10' : 'bg-destructive/10')}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
@@ -128,7 +128,7 @@ const AllocationCard: React.FC<AllocationCardProps> = ({ title, data, emptyMessa
             transition={{ duration: 0.8, ease: "easeOut" }}
           />
         </CardHeader>
-        <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-6 pt-0">
+        <CardContent className="h-[280px] flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 lg:p-6 pt-0"> {/* Applied consistent padding */}
           {chartData.length > 0 ? (
             <>
               <div className="relative w-full sm:w-1/2 h-full flex items-center justify-center mb-4 sm:mb-0">
@@ -148,7 +148,7 @@ const AllocationCard: React.FC<AllocationCardProps> = ({ title, data, emptyMessa
               />
             </>
           ) : (
-            <p className="text-muted-foreground w-full text-center">{emptyMessage}</p>
+            <p className="text-sm sm:text-base text-muted-foreground w-full text-center break-words text-balance">{emptyMessage}</p> // Applied consistent typography and text wrapping
           )}
         </CardContent>
       </Card>
