@@ -18,7 +18,7 @@ interface DateRange {
 // Define the shape of the context value
 interface DateRangeContextType {
   selectedRange: DateRange;
-  setRange: (range: DateRange) => void;
+  setRange: (range: DateRange | undefined) => void; // Updated to accept undefined for "All Time"
   goToPreviousPeriod: () => void;
   goToNextPeriod: () => void;
   setQuickPeriod: (period: 'today' | 'thisWeek' | 'thisMonth' | 'lastMonth') => void;
@@ -75,13 +75,16 @@ const generateLabel = (from: Date | undefined, to: Date | undefined): string => 
   if (!from && to) return format(to, 'MMM dd, yyyy');
 
   // If both are defined
-  if (isSameDay(from!, to!)) {
-    return format(from!, 'MMM dd, yyyy');
+  if (from && to && isSameDay(from, to)) {
+    return format(from, 'MMM dd, yyyy');
   }
-  if (isSameMonth(from!, to!)) {
-    return `${format(from!, 'MMM dd')} - ${format(to!, 'MMM dd, yyyy')}`;
+  if (from && to && isSameMonth(from, to)) {
+    return `${format(from, 'MMM dd')} - ${format(to, 'MMM dd, yyyy')}`;
   }
-  return `${format(from!, 'MMM dd, yyyy')} - ${format(to!, 'MMM dd, yyyy')}`;
+  if (from && to) {
+    return `${format(from, 'MMM dd, yyyy')} - ${format(to, 'MMM dd, yyyy')}`;
+  }
+  return 'Select Date Range'; // Fallback
 };
 
 
@@ -110,13 +113,18 @@ export const DateRangeProvider: React.FC<{ children: ReactNode }> = ({ children 
   }, []);
 
   // Function to set a new date range and save to localStorage
-  const setRange = useCallback((range: DateRange) => {
-    setSelectedRange(range);
-    localStorage.setItem('selectedDateRange', JSON.stringify({
-      from: range.from?.toISOString(),
-      to: range.to?.toISOString(),
-      label: range.label,
-    }));
+  const setRange = useCallback((range: DateRange | undefined) => {
+    if (range === undefined) { // Handle "All Time"
+      setSelectedRange({ from: undefined, to: undefined, label: 'All Time' });
+      localStorage.removeItem('selectedDateRange');
+    } else {
+      setSelectedRange(range);
+      localStorage.setItem('selectedDateRange', JSON.stringify({
+        from: range.from?.toISOString(),
+        to: range.to?.toISOString(),
+        label: range.label,
+      }));
+    }
   }, []);
 
   const goToPreviousPeriod = useCallback(() => {
@@ -176,7 +184,6 @@ export const DateRangeProvider: React.FC<{ children: ReactNode }> = ({ children 
   }, [selectedRange, setRange]);
 
   const setQuickPeriod = useCallback((period: 'today' | 'thisWeek' | 'thisMonth' | 'lastMonth') => {
-    const now = new Date();
     let newRange: DateRange;
 
     switch (period) {

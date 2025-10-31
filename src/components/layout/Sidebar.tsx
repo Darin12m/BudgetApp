@@ -27,6 +27,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onViewChange, setSho
   const userEmail = user?.email || t("common.notLoggedIn");
   const userInitials = userDisplayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
+  const navItems = [
+    { id: 'dashboard', label: t("navigation.dashboard"), icon: Home, path: '/' },
+    { id: 'budget', label: t("navigation.budget"), icon: DollarSign, path: '/budget-app?view=budget' },
+    { id: 'transactions', label: t("navigation.transactions"), icon: List, path: '/budget-app?view=transactions' },
+    { id: 'goals', label: t("navigation.goals"), icon: Target, path: '/budget-app?view=goals' },
+    { id: 'investments', label: t("navigation.investments"), icon: Wallet, path: '/investments' },
+    { id: 'settings', label: t("navigation.settings"), icon: Settings, path: '/settings' },
+  ];
+
   return (
     <>
       {/* Sidebar */}

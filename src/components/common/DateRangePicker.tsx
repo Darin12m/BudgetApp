@@ -23,46 +23,57 @@ interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function DateRangePicker({ className }: DateRangePickerProps) {
   const { t } = useTranslation();
-  const { selectedRange, setSelectedRange } = useDateRange();
+  const { selectedRange, setRange } = useDateRange(); // Use setRange from context
 
   const handleSelectChange = (value: string) => {
     const today = new Date();
     let newRange: DateRange | undefined;
+    let label: string;
 
     switch (value) {
       case "today":
         newRange = { from: today, to: today };
+        label = format(today, 'MMM dd, yyyy');
         break;
       case "yesterday":
         const yesterday = addDays(today, -1);
         newRange = { from: yesterday, to: yesterday };
+        label = format(yesterday, 'MMM dd, yyyy');
         break;
       case "last7days":
         newRange = { from: addDays(today, -6), to: today };
+        label = `${format(addDays(today, -6), 'MMM dd')} - ${format(today, 'MMM dd, yyyy')}`;
         break;
       case "last30days":
         newRange = { from: addDays(today, -29), to: today };
+        label = `${format(addDays(today, -29), 'MMM dd')} - ${format(today, 'MMM dd, yyyy')}`;
         break;
       case "thismonth":
         newRange = { from: new Date(today.getFullYear(), today.getMonth(), 1), to: today };
+        label = format(today, 'MMMM yyyy');
         break;
       case "lastmonth":
-        newRange = {
-          from: new Date(today.getFullYear(), today.getMonth() - 1, 1),
-          to: new Date(today.getFullYear(), today.getMonth(), 0),
-        };
+        const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+        newRange = { from: lastMonthStart, to: lastMonthEnd };
+        label = format(lastMonthStart, 'MMMM yyyy');
         break;
       case "thisyear":
         newRange = { from: new Date(today.getFullYear(), 0, 1), to: today };
+        label = format(today, 'yyyy');
         break;
       case "alltime":
         newRange = undefined; // Represents all time
+        label = t("dateRangePicker.allTime");
         break;
       default:
         newRange = undefined;
+        label = t("dateRangePicker.selectDateRange");
     }
-    setSelectedRange(newRange);
+    setRange(newRange ? { ...newRange, label } : undefined);
   };
+
+  const displayLabel = selectedRange?.label || t("dateRangePicker.selectDateRange");
 
   return (
     <div className={cn("grid gap-2", className)}>
@@ -73,21 +84,11 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
             variant="default" // Set variant to default
             className={cn(
               "w-full justify-start text-left font-normal px-4 py-2 min-h-[44px]", // Removed glassmorphic-card
-              !selectedRange && "text-muted-foreground"
+              !selectedRange?.from && "text-muted-foreground"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {selectedRange?.from ? (
-              selectedRange.to ? (
-                selectedRange.from.toDateString() === selectedRange.to.toDateString() ?
-                  format(selectedRange.from, "LLL dd, y") :
-                  `${format(selectedRange.from, "LLL dd, y")} - ${format(selectedRange.to, "LLL dd, y")}`
-              ) : (
-                format(selectedRange.from, "LLL dd, y")
-              )
-            ) : (
-              <span>{t("dateRangePicker.pickADate")}</span>
-            )}
+            <span>{displayLabel}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 glassmorphic-card" align="start">
@@ -107,18 +108,18 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
             }
           >
             <SelectTrigger className="m-2 w-[calc(100%-1rem)] bg-muted/50 border-none focus-visible:ring-primary focus-visible:ring-offset-0 min-h-[44px]">
-              <SelectValue placeholder={t("dateRangePicker.select")} />
+              <SelectValue placeholder={t("dateRangePicker.selectDateRange")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="today">{t("dateRangePicker.today")}</SelectItem>
               <SelectItem value="yesterday">{t("dateRangePicker.yesterday")}</SelectItem>
-              <SelectItem value="last7days">{t("dateRangePicker.last7Days")}</SelectItem>
-              <SelectItem value="last30days">{t("dateRangePicker.last30Days")}</SelectItem>
+              <SelectItem value="last7days">{t("dateRangePicker.last7days")}</SelectItem>
+              <SelectItem value="last30days">{t("dateRangePicker.last30days")}</SelectItem>
               <SelectItem value="thismonth">{t("dateRangePicker.thisMonth")}</SelectItem>
               <SelectItem value="lastmonth">{t("dateRangePicker.lastMonth")}</SelectItem>
               <SelectItem value="thisyear">{t("dateRangePicker.thisYear")}</SelectItem>
               <SelectItem value="alltime">{t("dateRangePicker.allTime")}</SelectItem>
-              <SelectItem value="custom">{t("dateRangePicker.customRange")}</SelectItem>
+              <SelectItem value="custom">{t("dateRangePicker.selectDateRange")}</SelectItem>
             </SelectContent>
           </Select>
           <Calendar
@@ -126,7 +127,7 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
             mode="range"
             defaultMonth={selectedRange?.from}
             selected={selectedRange}
-            onSelect={setSelectedRange}
+            onSelect={(range: DateRange | undefined) => setRange(range ? { ...range, label: selectedRange?.label || '' } : undefined)}
             numberOfMonths={2}
           />
         </PopoverContent>

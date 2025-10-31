@@ -19,9 +19,8 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, onRetry }) => (
         <p className="text-sm text-destructive mt-1 break-words text-balance">{message}</p> {/* Applied consistent typography and text wrapping */}
         {onRetry && (
           <Button
-            onClick={onRetry}
             variant="link"
-            className="mt-2 text-sm text-destructive hover:text-destructive/80 underline h-auto px-0" {/* Applied consistent typography */}
+            className="mt-2 text-sm text-destructive hover:text-destructive/80 underline h-auto px-0" /* Applied consistent typography */
           >
             Try again
           </Button>

@@ -322,7 +322,7 @@ const AddEditTransactionModal: React.FC<AddEditTransactionModalProps> = ({
             {isRecurring ? t("transactions.enabled") : t("transactions.disabled")}
           </span>
           {isInstanceFromRecurringTemplate && (
-            <span className="ml-2 text-xs text-muted-foreground break-words text-balance">({t("transactions.managedAsRecurringTemplate")})</span> {/* Applied consistent typography and text wrapping */}
+            <span className="ml-2 text-xs text-muted-foreground break-words text-balance">({t("transactions.managedAsRecurringTemplate")})</span> /* Applied consistent typography and text wrapping */
           )}
         </div>
       </div>

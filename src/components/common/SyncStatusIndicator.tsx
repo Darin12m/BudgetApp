@@ -52,15 +52,18 @@ const SyncStatusIndicator: React.FC = () => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Card className={cn(
-          "fixed bottom-4 left-4 p-2 rounded-full glassmorphic-card z-50 flex items-center justify-center transition-colors duration-300",
-          colorClass
-        )}
+        <motion.div // Wrap Card in motion.div
+          className={cn(
+            "fixed bottom-4 left-4 p-2 rounded-full glassmorphic-card z-50 flex items-center justify-center transition-colors duration-300",
+            colorClass
+          )}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          {icon}
-        </Card>
+          <Card className="p-0 border-none bg-transparent shadow-none flex items-center justify-center"> {/* Keep Card for styling, but remove motion props */}
+            {icon}
+          </Card>
+        </motion.div>
       </TooltipTrigger>
       <TooltipContent className="bg-tooltip-bg border-tooltip-border-color text-tooltip-text-color">
         <p className="p">{tooltipText}</p>

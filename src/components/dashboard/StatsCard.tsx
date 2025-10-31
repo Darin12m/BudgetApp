@@ -46,7 +46,7 @@ const StatsCard: React.FC<StatsCardProps> = memo(({ title, value, subtitle, icon
                 <span>{formattedValueParts.value}</span>
               </p>
             ) : (
-              <p className="text-xl sm:text-2xl font-bold text-foreground font-mono tracking-tight truncate">{value}</p> {/* Applied consistent typography and truncate */}
+              <p className="text-xl sm:text-2xl font-bold text-foreground font-mono tracking-tight truncate">{value}</p> /* Applied consistent typography and truncate */
             )}
             {subtitle && <p className="text-xs text-muted-foreground mt-1 truncate">{subtitle}</p>} {/* Applied consistent typography and truncate */}
             {trend && (

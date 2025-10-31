@@ -62,7 +62,7 @@ interface SettingsPageProps {
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopup }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { user } = useAuth(); // Get the current user from AuthContext
   const [monthlyBudgetInput, setMonthlyBudgetInput] = useState<string>('');
   const [microInvestingEnabled, setMicroInvestingEnabled] = useState<boolean>(true);
@@ -479,7 +479,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => setShowChangeEmailModal(true)}
                 >
                   {t("settings.changeEmail")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -487,7 +487,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => setShowChangePasswordModal(true)}
                 >
                   {t("settings.changePassword")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -522,7 +522,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all" /* Applied consistent typography and padding */
                   onClick={handleLogout}
                 >
                   <LogOut className="w-5 h-5 mr-2" /> {t("settings.signOut")}
@@ -539,7 +539,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
               </CardHeader>
               <CardContent className="space-y-2 p-4 sm:p-5 lg:p-6 pt-0"> {/* Applied consistent padding */}
                 <Button
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-4 py-3 rounded-lg" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-4 py-3 rounded-lg" /* Applied consistent typography and padding */
                   onClick={handleConnectGoogle}
                   disabled={isConnectingGoogle || isGoogleLinked}
                 >
@@ -649,7 +649,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <Upload className="w-5 h-5 mr-2" /> {t("settings.importCSV")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -657,7 +657,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <Download className="w-5 h-5 mr-2" /> {t("settings.exportCSVAdvanced")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -665,7 +665,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <Database className="w-5 h-5 mr-2" /> {t("settings.backupData")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -673,7 +673,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <Download className="w-5 h-5 mr-2" /> {t("settings.restoreFromBackup")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -707,7 +707,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <Clock className="w-5 h-5 mr-2" /> {t("settings.regionTimezone")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -741,7 +741,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   <LinkIcon className="w-5 h-5 mr-2" /> {t("settings.bankConnections")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -760,7 +760,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   {t("settings.gdprNotice")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -768,7 +768,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   {t("settings.privacyPolicy")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -776,7 +776,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ userUid, setShowProfilePopu
                 <motion.button
                   whileHover={{ scale: 1.01, x: 5 }}
                   whileTap={{ scale: 0.99 }}
-                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" {/* Applied consistent typography and padding */}
+                  className="w-full flex justify-between items-center text-sm sm:text-base px-0 py-3 rounded-lg hover:bg-muted/50 transition-all" /* Applied consistent typography and padding */
                   onClick={() => toast.info(t("common.comingSoon"))}
                 >
                   {t("settings.termsOfService")} <ChevronRight className="w-4 h-4 text-muted-foreground" />
