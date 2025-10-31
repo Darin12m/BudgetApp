@@ -8,8 +8,8 @@ import {
   isSameMonth, isSameWeek, subDays, addDays
 } from 'date-fns';
 
-// Define the shape of a date range
-interface DateRange {
+// Define the shape of a date range for the context
+interface ContextDateRange {
   from: Date | undefined;
   to: Date | undefined;
   label: string; // A human-readable label for the selected range
@@ -17,8 +17,8 @@ interface DateRange {
 
 // Define the shape of the context value
 interface DateRangeContextType {
-  selectedRange: DateRange;
-  setRange: (range: DateRange | undefined) => void; // Updated to accept undefined for "All Time"
+  selectedRange: ContextDateRange;
+  setRange: (range: ContextDateRange | undefined) => void; // Updated to accept undefined for "All Time"
   goToPreviousPeriod: () => void;
   goToNextPeriod: () => void;
   setQuickPeriod: (period: 'today' | 'thisWeek' | 'thisMonth' | 'lastMonth') => void;
@@ -28,7 +28,7 @@ interface DateRangeContextType {
 const DateRangeContext = createContext<DateRangeContextType | undefined>(undefined);
 
 // Helper to get default "This Month" range
-const getThisMonthRange = (): DateRange => {
+const getThisMonthRange = (): ContextDateRange => {
   const now = new Date();
   return {
     from: startOfMonth(now),
@@ -38,7 +38,7 @@ const getThisMonthRange = (): DateRange => {
 };
 
 // Helper to get default "Today" range
-const getTodayRange = (): DateRange => {
+const getTodayRange = (): ContextDateRange => {
   const now = new Date();
   return {
     from: startOfDay(now),
@@ -48,7 +48,7 @@ const getTodayRange = (): DateRange => {
 };
 
 // Helper to get default "This Week" range
-const getThisWeekRange = (): DateRange => {
+const getThisWeekRange = (): ContextDateRange => {
   const now = new Date();
   return {
     from: startOfWeek(now, { weekStartsOn: 1 }), // Monday
@@ -58,7 +58,7 @@ const getThisWeekRange = (): DateRange => {
 };
 
 // Helper to get default "Last Month" range
-const getLastMonthRange = (): DateRange => {
+const getLastMonthRange = (): ContextDateRange => {
   const now = new Date();
   const lastMonth = subMonths(now, 1);
   return {
@@ -89,7 +89,7 @@ const generateLabel = (from: Date | undefined, to: Date | undefined): string => 
 
 
 export const DateRangeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [selectedRange, setSelectedRange] = useState<DateRange>(getThisMonthRange());
+  const [selectedRange, setSelectedRange] = useState<ContextDateRange>(getThisMonthRange());
 
   // Use useLayoutEffect to read from localStorage before the first render
   useLayoutEffect(() => {
@@ -113,7 +113,7 @@ export const DateRangeProvider: React.FC<{ children: ReactNode }> = ({ children 
   }, []);
 
   // Function to set a new date range and save to localStorage
-  const setRange = useCallback((range: DateRange | undefined) => {
+  const setRange = useCallback((range: ContextDateRange | undefined) => {
     if (range === undefined) { // Handle "All Time"
       setSelectedRange({ from: undefined, to: undefined, label: 'All Time' });
       localStorage.removeItem('selectedDateRange');
@@ -184,7 +184,7 @@ export const DateRangeProvider: React.FC<{ children: ReactNode }> = ({ children 
   }, [selectedRange, setRange]);
 
   const setQuickPeriod = useCallback((period: 'today' | 'thisWeek' | 'thisMonth' | 'lastMonth') => {
-    let newRange: DateRange;
+    let newRange: ContextDateRange;
 
     switch (period) {
       case 'today':

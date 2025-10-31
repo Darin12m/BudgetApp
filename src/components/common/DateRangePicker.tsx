@@ -3,7 +3,7 @@
 import * as React from "react";
 import { CalendarIcon } from "lucide-react";
 import { addDays, format } from "date-fns";
-import { DateRange } from "react-day-picker";
+import { DateRange as ReactDayPickerDateRange } from "react-day-picker"; // Renamed import
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDateRange } from "@/context/DateRangeContext";
+import { ContextDateRange } from "@/context/DateRangeContext"; // Import the renamed interface
 
 interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
@@ -27,40 +28,33 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
 
   const handleSelectChange = (value: string) => {
     const today = new Date();
-    let newRange: DateRange | undefined;
+    let newRange: ContextDateRange | undefined;
     let label: string;
 
     switch (value) {
       case "today":
-        newRange = { from: today, to: today };
-        label = format(today, 'MMM dd, yyyy');
+        newRange = { from: today, to: today, label: format(today, 'MMM dd, yyyy') };
         break;
       case "yesterday":
         const yesterday = addDays(today, -1);
-        newRange = { from: yesterday, to: yesterday };
-        label = format(yesterday, 'MMM dd, yyyy');
+        newRange = { from: yesterday, to: yesterday, label: format(yesterday, 'MMM dd, yyyy') };
         break;
       case "last7days":
-        newRange = { from: addDays(today, -6), to: today };
-        label = `${format(addDays(today, -6), 'MMM dd')} - ${format(today, 'MMM dd, yyyy')}`;
+        newRange = { from: addDays(today, -6), to: today, label: `${format(addDays(today, -6), 'MMM dd')} - ${format(today, 'MMM dd, yyyy')}` };
         break;
       case "last30days":
-        newRange = { from: addDays(today, -29), to: today };
-        label = `${format(addDays(today, -29), 'MMM dd')} - ${format(today, 'MMM dd, yyyy')}`;
+        newRange = { from: addDays(today, -29), to: today, label: `${format(addDays(today, -29), 'MMM dd')} - ${format(today, 'MMM dd, yyyy')}` };
         break;
       case "thismonth":
-        newRange = { from: new Date(today.getFullYear(), today.getMonth(), 1), to: today };
-        label = format(today, 'MMMM yyyy');
+        newRange = { from: new Date(today.getFullYear(), today.getMonth(), 1), to: today, label: format(today, 'MMMM yyyy') };
         break;
       case "lastmonth":
         const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-        newRange = { from: lastMonthStart, to: lastMonthEnd };
-        label = format(lastMonthStart, 'MMMM yyyy');
+        newRange = { from: lastMonthStart, to: lastMonthEnd, label: format(lastMonthStart, 'MMMM yyyy') };
         break;
       case "thisyear":
-        newRange = { from: new Date(today.getFullYear(), 0, 1), to: today };
-        label = format(today, 'yyyy');
+        newRange = { from: new Date(today.getFullYear(), 0, 1), to: today, label: format(today, 'yyyy') };
         break;
       case "alltime":
         newRange = undefined; // Represents all time
@@ -70,7 +64,7 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
         newRange = undefined;
         label = t("dateRangePicker.selectDateRange");
     }
-    setRange(newRange ? { ...newRange, label } : undefined);
+    setRange(newRange);
   };
 
   const displayLabel = selectedRange?.label || t("dateRangePicker.selectDateRange");
@@ -127,7 +121,17 @@ export function DateRangePicker({ className }: DateRangePickerProps) {
             mode="range"
             defaultMonth={selectedRange?.from}
             selected={selectedRange}
-            onSelect={(range: DateRange | undefined) => setRange(range ? { ...range, label: selectedRange?.label || '' } : undefined)}
+            onSelect={(range: ReactDayPickerDateRange | undefined) => {
+              if (range) {
+                setRange({
+                  from: range.from,
+                  to: range.to,
+                  label: selectedRange?.label || 'Custom Range', // Keep existing label or set a default
+                });
+              } else {
+                setRange(undefined); // Handle clearing the range
+              }
+            }}
             numberOfMonths={2}
           />
         </PopoverContent>
